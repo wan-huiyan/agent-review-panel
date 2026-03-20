@@ -1,0 +1,17 @@
+{
+  "name": "wan-huiyan-agent-review-panel",
+  "owner": {
+    "name": "wan-huiyan"
+  },
+  "metadata": {
+    "description": "Agent Review Panel plugin marketplace"
+  },
+  "plugins": [
+    {
+      "name": "agent-review-panel",
+      "source": ".",
+      "description": "Multi-agent adversarial review panel with debate, claim verification, and epistemic labels",
+      "version": "2.5.0"
+    }
+  ]
+}

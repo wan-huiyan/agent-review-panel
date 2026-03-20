@@ -1,0 +1,12 @@
+{
+  "name": "agent-review-panel",
+  "version": "2.5.0",
+  "description": "Multi-agent adversarial review panel with debate, claim verification, and epistemic labels",
+  "author": {
+    "name": "wan-huiyan",
+    "url": "https://github.com/wan-huiyan"
+  },
+  "repository": "https://github.com/wan-huiyan/agent-review-panel",
+  "license": "MIT",
+  "keywords": ["review", "multi-agent", "debate", "code-review", "adversarial", "evaluation"]
+}
