@@ -78,9 +78,9 @@ Key design decisions:
 ## Step 4: Test v1
 
 ### Test Cases
-Two real-world tests from the enrollment pipeline project:
-1. **Pipeline setup review** — `goal_term_enrollment/` (code + architecture + docs)
-2. **Implementation plan review** — `docs/plan_expand_application_stage.md` (plan with code snippets)
+Two real-world tests from a production ML pipeline project:
+1. **Pipeline setup review** — full scoring pipeline (code + architecture + docs)
+2. **Implementation plan review** — feature expansion plan (plan with code snippets)
 
 ### Test Method
 For each test case, ran two parallel agents:
@@ -232,7 +232,7 @@ Wrote a detailed implementation spec (plan mode) addressing every panel finding:
 
 ### Testing
 
-Tested on two production ML pipelines from a university enrollment project:
+Tested on two production ML pipelines:
 
 | Dimension | Test 1 (Scoring Pipeline) | Test 2 (Retraining Pipeline) |
 |-----------|--------------------------|------------------------------|
@@ -341,7 +341,7 @@ All 4 changes were prompt-only edits to SKILL.md:
 
 ~/.claude/skills/agent-review-panel-workspace/
 ├── iteration-1/                # v1 test results
-│   ├── eval-1-goal-term-enrollment/
+│   ├── eval-1-scoring-pipeline/
 │   │   ├── with_skill/         # Panel review output + timing + grading
 │   │   └── without_skill/      # Baseline output + timing + grading
 │   ├── eval-2-expand-app-stage/
@@ -349,7 +349,7 @@ All 4 changes were prompt-only edits to SKILL.md:
 │   │   └── without_skill/
 │   └── benchmark.json          # v1 aggregate metrics
 └── iteration-2/                # v2 test results
-    ├── eval-1-goal-term-enrollment/
+    ├── eval-1-scoring-pipeline/
     │   ├── with_skill/
     │   └── without_skill/
     ├── eval-2-expand-app-stage/
