@@ -2,19 +2,24 @@
 name: agent-review-panel
 description: >
   Orchestrate a multi-agent adversarial review panel where several Claude Code
-  subagents with different perspectives review a piece of work, debate with each
-  other, reach (or fail to reach) consensus, then a supreme judge renders the
-  final verdict. Use this skill whenever the user asks for a "review panel",
-  "multi-agent review", "adversarial review", "have agents debate this",
-  "review with multiple perspectives", "panel review", "get different opinions on
-  this code/plan/doc", or invokes /agent-review-panel. Also trigger when a user
-  says things like "I want thorough feedback from different angles", "stress-test
-  this design", "red team this", or "get a second (third, fourth) opinion". This
-  skill is specifically about launching multiple reviewer agents with distinct
-  personas who discuss and debate — not about a single code review. Supports
-  "deep research mode" when user says "deep review", "thorough review",
-  "research review", or passes "deep" to /agent-review-panel — adds web
-  research for domain best practices before launching reviewers.
+  subagents with different perspectives independently review a piece of work,
+  debate with each other, reach (or fail to reach) consensus, then a supreme
+  judge renders the final verdict. Use this skill whenever the user asks for a
+  "review panel", "multi-agent review", "adversarial review", "have agents
+  debate this", "review with multiple perspectives", "panel review", "get
+  different opinions on this code/plan/doc", or invokes /agent-review-panel.
+  Also trigger when a user says things like "I want thorough feedback from
+  different angles", "stress-test this design", "red team this", "get a second
+  (third, fourth) opinion", "fresh eyes on this", "multiple reviewers",
+  "devil's advocate perspective", "every angle covered", "I want agents to
+  argue pros and cons", "independently evaluate", "critical look from security
+  and performance angles", "high-stakes — cover every angle", or "debate the
+  pros and cons". This skill is specifically about launching multiple reviewer
+  agents with distinct personas who discuss and debate — not about a single
+  code review or a quick sanity check. Supports "deep research mode" when user
+  says "deep review", "thorough review", "research review", or passes "deep"
+  to /agent-review-panel — adds web research for domain best practices before
+  launching reviewers.
 ---
 
 # Agent Review Panel v2.5
