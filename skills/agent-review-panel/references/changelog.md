@@ -1,5 +1,13 @@
 # Changelog
 
+## v2.6 (2026-03-25) — Efficiency & Composability
+- **References directory** — signal detection tables, domain checklists, prompt templates, and changelog extracted to `references/`. SKILL.md reduced from 1,331 → 340 lines (75% token reduction).
+- **Explicit negative scope** — "When NOT to Use" section prevents false triggers on single reviews, bug fixes, deployment tasks, skill improvement.
+- **Input/dependency declarations** — explicit input spec, dependency on Agent tool + Opus model, version compatibility, handoff points to schliff and plan-review-integrator.
+- **Structured examples** — two concrete input→output examples.
+- **Schliff composite score:** 75.1 → 85.6 (+10.5). Structure 65→100, Composability 56→91, Efficiency 42→61.
+- **A/B validated** — full panel run on same document (Barry enrollment plan) produced identical verdict (4/10) with marginal improvements in checklist discipline (+2 findings) and judge structure (P0/P1/P2 tiers). See `docs/v25-vs-v26-comparison.md`.
+
 ## v2.5 (2026-03-20) — Trust & Verification Layer
 - **Phase 4.6: Claim Verification** — new agent verifies all reviewer line-number citations against source. Classifies as [VERIFIED], [INACCURATE], [MISATTRIBUTED], [HALLUCINATED], or [UNVERIFIABLE]. Inspired by SAFE pipeline.
 - **Epistemic labels on all findings** — judge classifies every finding. Labels appear on action items so users know what to act on vs investigate.
