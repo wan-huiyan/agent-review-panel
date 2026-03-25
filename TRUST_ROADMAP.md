@@ -5,12 +5,14 @@ Items below are future enhancements identified by running the
 on the panel itself. See the full evaluation at
 `~/Documents/brainstorm/agent_review_panel_trust_evaluation.md`.
 
-## Implemented (v2.5)
+## Implemented (v2.5–v2.6)
 
-- [x] "Scope & Limitations" section in every report
-- [x] Epistemic labels on all findings ([VERIFIED], [CONSENSUS], etc.)
-- [x] Correlated-bias disclaimer on unanimous verdicts
-- [x] Phase 4.6: Claim Verification Agent
+- [x] "Scope & Limitations" section in every report (v2.5)
+- [x] Epistemic labels on all findings ([VERIFIED], [CONSENSUS], etc.) (v2.5)
+- [x] Correlated-bias disclaimer on unanimous verdicts (v2.5)
+- [x] Phase 4.6: Claim Verification Agent (v2.5)
+- [x] Structured domain checklists in references/ with explicit pass/fail format (v2.6)
+- [x] Priority-tiered judge output (P0/P1/P2) for actionable triage (v2.6, emerged from A/B test)
 
 ## Roadmap
 
