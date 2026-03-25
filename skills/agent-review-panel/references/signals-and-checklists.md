@@ -16,6 +16,7 @@ A signal triggers when **3+ distinct keywords** from its group appear in the wor
 | Cost/Billing | `pricing`, `cost`, `billing`, `budget`, `free tier`, `SKU`, `invoice`, `quota`, `egress`, `per-unit` | **Cost Auditor** — Hidden charges, shared free-tier assumptions, scaling costs, one-time vs steady-state separation | 40% |
 | Data Pipeline/ETL | `pipeline`, `backfill`, `idempotent`, `lookforward`, `target_date`, `label_valid`, `training window`, `data freshness`, `CURRENT_DATE`, `retrain` | **Pipeline Safety Reviewer** — Temporal correctness, data freshness lag, idempotency, label validity, train/serve parity | 35% |
 | Skill/Docs Portability | `universal`, `all projects`, `any warehouse`, `convention`, `best practice`, `Databricks`, `Snowflake`, `BigQuery`, `Redshift`, `dialect`, `cross-platform` | **Portability Auditor** — Dialect-specific claims labeled as universal, single-project patterns presented as standards, broken cross-references, platform assumptions | 35% |
+| Repo/Data Hygiene | `.csv`, `.parquet`, `data/`, `snapshot`, `export`, `requirements`, `hardcoded`, `/Users/`, `/home/`, `analysis_runs.db`, `.db` (in tracked files) | **Reproducibility Auditor** — Data files committed to git, hardcoded absolute paths, missing dependency pins, stale artifacts, secrets in tracked files | 40% |
 
 ## Domain Checklists
 
@@ -86,6 +87,16 @@ Each auto-added persona receives a built-in domain checklist injected into their
 - Hash stability for entity resolution
 - Pipeline ordering dependencies (retrain before scoring after logic changes)
 - `.fillna(0)` destroys structural missingness signal
+
+### Repo/Data Hygiene
+- Data files committed to git (CSVs, Parquet, SQLite DBs — should be .gitignored with export scripts)
+- Hardcoded absolute paths (`/Users/`, `/home/`, `C:\`) — should use relative paths or `Path(__file__).parent`
+- Missing or unpinned dependency files (no requirements.txt, or uses `>=` without upper bounds)
+- Stale build artifacts tracked in git (`.db`, `__pycache__/`, `node_modules/`)
+- Secrets or credentials in tracked files (API keys, OAuth tokens, connection strings)
+- Internal document framing inconsistent with client-facing deliverables (exec summary says X, deck says Y)
+- Placeholder/synthetic values presented as real data without disclosure (Math.random(), hardcoded constants)
+- Branch ownership confusion (deliverable fixes on feature branch, code changes on docs branch)
 
 ### Skill/Docs Portability
 - Claims labeled "universal" or "all projects" — verify against official docs for each platform
