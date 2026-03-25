@@ -10,8 +10,8 @@
     {
       "name": "agent-review-panel",
       "source": ".",
-      "description": "Multi-agent adversarial review panel with debate, claim verification, and epistemic labels",
-      "version": "2.5.0"
+      "description": "Multi-agent adversarial review panel with debate, claim verification, epistemic labels, and structured domain checklists",
+      "version": "2.6.0"
     }
   ]
 }

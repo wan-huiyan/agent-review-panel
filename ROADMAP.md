@@ -4,9 +4,9 @@ A living document mapping academic research and open-source projects to skill fe
 
 ---
 
-## Already Incorporated (v1–v2.1)
+## Already Incorporated (v1–v2.6)
 
-These five foundations form the core architecture. All were adopted in v1 or v2.
+These foundations form the core architecture. Research adopted in v1–v2.5; structural optimisation in v2.6.
 
 | Source | What We Took | Version |
 |--------|-------------|---------|
