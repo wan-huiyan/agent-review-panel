@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.pyc
+*.egg-info/
+venv*/
+.venv/
+
+# Runtime
+*.db
+*.sqlite
+.env
+.DS_Store
+
+# Backups
+*.bak
+
+# IDE
+.vscode/
+.idea/

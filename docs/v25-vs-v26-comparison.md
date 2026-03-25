@@ -1,7 +1,7 @@
 # v2.5 vs v2.6 A/B Test Results
 
 **Test date:** 2026-03-25
-**Document reviewed:** Barry University enrollment propensity model enhancement plan (1,132 lines, mixed content with SQL + Python)
+**Document reviewed:** a university enrollment propensity model enhancement plan (1,132 lines, mixed content with SQL + Python)
 **Methodology:** Full 6-reviewer panel run on the same document using v2.5 (inline, 1,331-line SKILL.md) then v2.6 (references/, 340-line SKILL.md)
 
 ---
