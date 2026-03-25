@@ -108,6 +108,12 @@ v2.5 adds a trust & verification layer (from applying the [AI Trust Evaluation F
 - **Correlated-bias disclaimer** — when all reviewers converge (score spread < 2 points), the report warns that unanimity may reflect shared model biases rather than genuine quality. Key insight: the most dangerous failure mode for a multi-agent panel is unanimous agreement on something wrong.
 - See [TRUST_ROADMAP.md](TRUST_ROADMAP.md) for future items: model diversity (different-architecture models like Codex/Gemini), synthetic benchmark suite, and calibration footnotes.
 
+v2.6 restructures for efficiency and composability (schliff score 75 → 86):
+- **References directory** — domain checklists, prompt templates, and changelog extracted to `references/` files. SKILL.md reduced from 1,331 → 340 lines (75% token reduction) while preserving all review methodology.
+- **Explicit negative scope** — "When NOT to Use" section prevents false triggers on single code reviews, bug fixes, deployment tasks, and skill improvement requests.
+- **Structured domain checklists** — specialist reviewers (Data Quality, Pipeline Safety) now use explicit checklist format from `references/signals-and-checklists.md`, producing systematic assessments.
+- **Validated via A/B test** — v2.5 and v2.6 ran the same review on a 1,132-line ML pipeline plan. Both reached identical verdict (4/10, "Needs Significant Revision") with the same core findings. v2.6 showed marginal improvements in checklist discipline (+2 findings) and judge output structure (P0/P1/P2 tiers). See `docs/v25-vs-v26-comparison.md` for full comparison.
+
 ### 3. Anti-Groupthink Mechanisms
 
 Research shows multi-agent systems are prone to conformity — agents abandon correct findings under social pressure. We counter this with:
