@@ -159,13 +159,31 @@ the #1 cause of incorrect [CRITICAL] recommendations.**
    how many instances of the excluded event exist in the date range and verify
    ALL are excluded, not just one."
 
-4. **Knowledge Mining** — Mine local knowledge sources:
-   - `feedback_*.md` (HIGHEST PRIORITY — past corrections with Why/How)
-   - `project_*.md`, `MEMORY.md`, `lessons.md` (project + global)
-   - Skills (`~/.claude/skills/*/SKILL.md`) — extract relevant caveats
-   - `CLAUDE.md` — conventions and constraints
-   - Deduplication: if the same insight appears in multiple sources, include only
-     the most specific version (project > global > skill).
+4. **Knowledge Mining (tiered loading)** — Mine local knowledge using a 3-tier
+   approach to minimize token waste while maximizing relevant context:
+
+   **L0 — Index scan (~100 tokens each).** Read only index lines and frontmatter
+   `description` fields. Filter for relevance to the work under review.
+   - `MEMORY.md` — read index lines only (each ~150 chars). Match keywords from
+     the work's content type, domain, and technology signals.
+   - `~/.claude/skills/*/SKILL.md` — read only the YAML `description:` field
+     (glob + grep for `^description:`). Match against detected content signals.
+   - `CLAUDE.md` — always load (small, high-authority).
+
+   **L1 — Summary scan (~500 tokens each).** For L0-matched items only, read
+   frontmatter + first paragraph to confirm relevance.
+   - Memory files (`feedback_*.md`, `project_*.md`) — read first 20 lines.
+     `feedback_*.md` files matching the review domain get automatic L2 promotion
+     (past corrections are HIGHEST PRIORITY).
+   - Skill files — read the `description:` + `## When NOT to Use` section.
+   - `lessons.md` — scan for lines matching review domain keywords.
+
+   **L2 — Full content (no limit).** Only for confirmed-relevant items from L1.
+   - Read the complete file for items that passed L1 relevance check.
+   - Typical yield: 3-8 files at L2 out of 50+ candidates at L0.
+
+   **Deduplication:** if the same insight appears in multiple sources, include
+   only the most specific version (project > global > skill).
 
 5. **Web Research** (deep research mode only) — Triggers when user requests
    "deep review" or 5+ keywords from a signal group with no built-in checklist.
