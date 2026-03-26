@@ -126,6 +126,18 @@ the #1 cause of incorrect [CRITICAL] recommendations.**
    `_flag`, `_guard`, `_check`, `_mask`, `<= target_date`, `BETWEEN`, `fillna`,
    `COALESCE`, `try/except`. Note what each guards against.
 
+3b. **Temporal Scope Verification** — When the work contains ANY temporal
+   claims (e.g., "excludes Christmas", "masks winter period", "filters out
+   weekends", "pre-period starts after X"), verify that the exclusion applies
+   to ALL instances across the full date range, not just the first/most-obvious
+   one. Common failure: "excludes Christmas" via a Jan 6 start date only
+   excludes the first Christmas — a second Christmas 12 months later may still
+   be in the training window. This class of bug evaded 3 rounds of adversarial
+   review (12 reviewers) in a real engagement — the user caught it 6 days later.
+   **Inject into reviewer prompts:** "For any temporal exclusion claim, count
+   how many instances of the excluded event exist in the date range and verify
+   ALL are excluded, not just one."
+
 4. **Knowledge Mining** — Mine local knowledge sources:
    - `feedback_*.md` (HIGHEST PRIORITY — past corrections with Why/How)
    - `project_*.md`, `MEMORY.md`, `lessons.md` (project + global)
@@ -252,6 +264,13 @@ points, recommendation, one-line verdict. Others do NOT see these.
 Single agent (`model: "opus"`) hunts for what the entire panel missed. Does NOT
 evaluate quality — only finds overlooked details, edge cases, constants, code.
 See `references/prompt-templates.md` for full prompt.
+
+**Mandatory audit checks (in addition to general completeness):**
+- **Temporal scope verification:** For every claim that excludes, filters, or
+  masks a time period, count all instances in the full date range and verify
+  each is handled. Example: "excludes Christmas" with 2 years of data must
+  exclude BOTH Christmases. This is the #1 class of bug that reviewers miss
+  because they focus on the method, not the temporal arithmetic.
 
 ---
 
