@@ -297,24 +297,11 @@ See `references/prompt-templates.md` for full prompt.
 
 ## Phase 4.55: Verification Command Execution (v2.8)
 
-Collect all `verification_command` entries from Phase 2 reviewer outputs for
-P0/P1 findings. Select up to 5 commands, prioritized by: P0 before P1, then
-by number of reviewers citing the same finding.
-
-**For each command:**
-1. Validate it is read-only (grep, cat, head, tail, wc — reject write/install/network commands)
-2. Execute via Bash tool
-3. Record: command, exit code, first 50 lines of output, match against reviewer's expectation
-
-**Annotate results:**
-- `[CMD_CONFIRMED]` — output matches expectation
-- `[CMD_CONTRADICTED]` — output contradicts claim (demote finding by 1 severity level)
-- `[CMD_INCONCLUSIVE]` — command ran but output is ambiguous
-- `[CMD_FAILED]` — command errored (file not found, etc.)
-
-**Advisory, not gating:** Failed verification demotes severity and annotates
-the finding — it does NOT delete findings. The judge sees both the original
-severity and the verification result.
+Run up to 5 reviewer `verification_command` entries for P0/P1 findings (P0 first).
+Validate read-only (grep/cat/head/tail/wc only), execute via Bash, annotate:
+`[CMD_CONFIRMED]`, `[CMD_CONTRADICTED]` (demote 1 level), `[CMD_INCONCLUSIVE]`,
+`[CMD_FAILED]`. **Advisory, not gating** — demotes but does not delete.
+Skip this phase if no verification commands were provided.
 
 ---
 
@@ -368,19 +355,17 @@ verification table when ruling on disagreements.
 
 ## Phase 5: Supreme Judge
 
-Single agent (`model: "opus"`). Receives everything. Steps:
-0. Review claim verification, severity verification, AND verification command results
-0.5c. Severity dampening — "What is the MINIMUM severity justified by concrete evidence?" In Precise mode, findings without code citations cannot exceed P2.
+Single agent (`model: "opus"`). Receives all prior outputs. Steps (in order):
+0. Review verification results (claims, severity, commands)
+0.5a-b. Verify audit findings, anti-rhetoric assessment
+0.5c. Severity dampening — minimum evidence-justified severity. **In Precise mode, findings without code citations cannot exceed P2.**
 0.5d. Coverage check — flag unexamined risk categories, scan source for gaps
-1. Verify audit findings, anti-rhetoric assessment
-2. Evaluate debate quality, rule on disagreements
-3. Check consensus correctness, absent-safeguard check
-4. Independent gap check, score assessment
-5. Classify all findings with epistemic labels
-6. Final verdict: recommendation, confidence, strengths, issues, action items
-7. Meta-observation on what the process revealed
+1-3. Debate quality, disagreement rulings, consensus correctness
+4-5. Absent-safeguard check, independent gap scan, score assessment
+6-7. Epistemic label classification, final verdict
+8-9. Action items, meta-observation
 
-See `references/prompt-templates.md` for full judge prompt.
+See `references/prompt-templates.md` for the full judge prompt.
 
 ---
 
@@ -452,6 +437,15 @@ disagreements count, audit findings count, top action item.
   an independent panel with no side effects from previous runs.
 - **Auto-persona algorithm:** Classify → base set → signal scan → add up to 6 →
   replace DA first. See `references/signals-and-checklists.md` for signal table.
+
+## Edge Cases
+
+- **No content provided:** Ask user what to review. Do not launch a panel with empty input.
+- **Very large files (>500 lines):** Use Phase 3.5 summaries with excerpts instead of full content in debate rounds. Cap at 20k lines total.
+- **Binary/image files:** Skip. Note in report: "Binary files excluded from review."
+- **Single tiny file (<20 lines):** Reduce to 2 reviewers (minimum). Full panel is overkill.
+- **No P0/P1 findings:** Skip Phases 4.55 and 4.7. Proceed directly to claim verification.
+- **All reviewers agree (score spread < 2):** Flag correlated-bias warning in report. Do NOT skip debate — unanimous agreement is the most dangerous failure mode.
 
 For full prompt templates, see `references/prompt-templates.md`.
 For version history, see `references/changelog.md`.
