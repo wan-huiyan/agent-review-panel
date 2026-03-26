@@ -164,10 +164,14 @@ the #1 cause of incorrect [CRITICAL] recommendations.**
    - `project_*.md`, `MEMORY.md`, `lessons.md` (project + global)
    - Skills (`~/.claude/skills/*/SKILL.md`) — extract relevant caveats
    - `CLAUDE.md` — conventions and constraints
+   - Deduplication: if the same insight appears in multiple sources, include only
+     the most specific version (project > global > skill).
 
 5. **Web Research** (deep research mode only) — Triggers when user requests
    "deep review" or 5+ keywords from a signal group with no built-in checklist.
-   Cap at 2 web searches. Tag findings with [WEB].
+   Cap at 2 web searches. Tag findings with [WEB]. If the built-in domain
+   checklist already covers the signal group, web research is skipped unless
+   explicitly requested.
 
 6. **Context Brief** — Compile into structured brief with sections: System
    Documentation Found, Referenced Files, Safety Mechanisms, Knowledge Mining
@@ -256,7 +260,8 @@ Launch all reviewers **in parallel** each round. Each receives their own review
 After each round, summarize (no agent needed):
 - **Resolved this round** — who agreed, what convinced them
 - **Still in dispute** — with inlined source excerpts (max 10 lines per dispute,
-  max 3 disputes). Tag `[source not cited]` for vague claims.
+  first 5 + last 5 if longer; max 3 disputes). If a reviewer's claim cannot be
+  traced to a specific source location, tag `[source not cited by reviewer]`.
 - **New discoveries** — from which reviewer
 
 ### Sycophancy Detection (CONSENSAGENT)
