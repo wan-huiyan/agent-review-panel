@@ -396,27 +396,80 @@ Full comparison: `docs/v25-vs-v26-comparison.md`
 
 ---
 
+## Step 13: Panel-Reviewed v2.8 Roadmap (2026-03-26)
+
+### Motivation
+
+Deep research across 19 sources (ConfMAD, Tool-MAD, Nexus, CORE, SGCR, Qodo 2.0, CodeRabbit, DAR, etc.) produced 6 candidate improvements for v2.8. Rather than shipping all 6, we used the skill itself to review its own roadmap — a 4-reviewer panel (Feasibility Analyst, Stakeholder Advocate, Risk Assessor, Devil's Advocate) + Supreme Judge.
+
+### Panel Process
+
+- **19-source research document** compiled at `references/research-v28.md`
+- **4 parallel reviewers** evaluated feasibility, user impact, failure modes, and the case against each proposal
+- **Supreme Judge** synthesized and arbitrated disagreements
+
+### Key Findings
+
+| Reviewer | Score | Key Position |
+|----------|-------|-------------|
+| Feasibility Analyst | 7/10 | Most proposals feasible; token compounding is binding constraint |
+| Stakeholder Advocate | 6/10 | Ship 3 not 6; over-engineered for two user complaints |
+| Risk Assessor | 4/10 | **Systematic false-negative blindness** — all changes push downward |
+| Devil's Advocate | 3/10 | Complexity ratchet; try prompt-only first |
+| **Supreme Judge** | **5/10** | Ship 3 + 1 new mechanism; defer 3 |
+
+**Critical finding:** The Risk Assessor (lowest score) surfaced the most important insight — every single proposed change suppressed findings with zero upward pressure. This would create invisible false negatives where the panel looks cleaner but misses more real issues. The coverage check mechanism was added to counterbalance this.
+
+### Decision
+
+**Ship (v2.8):**
+1. Severity-dampening judge prompt (zero-cost prompt edit)
+2. Coverage check (NEW — panel-surfaced, counterbalances suppression)
+3. Verify-before-claim in advisory mode (grep/read for P0/P1, annotate don't gate)
+4. Auto-detected Precise/Exhaustive mode (from input type)
+
+**Defer (v2.9):**
+- Three-tier classification (double-suppression risk)
+- Confidence scores 0-100 (poorly calibrated, all reviewers opposed)
+- Defend/retract step (high token cost, commitment bias)
+
+Full report: `docs/archive/review_panel_report.md`
+
+### Lessons
+
+18. **Use the skill to review the skill's own roadmap.** The panel caught a systemic bias (false-negative blindness) that informal review missed. The most valuable insight came from the lowest-scoring reviewer — this validates the adversarial design philosophy.
+
+19. **Every downward-pressure mechanism needs a corresponding upward-pressure mechanism.** Severity dampening, verification gates, and tier caps all suppress findings. Without a coverage check, the system optimizes for the measurable metric (false positive rate) at the expense of the unmeasurable one (missed critical findings).
+
+20. **Ship fewer changes, measure, then decide.** The panel recommended 3 of 6 proposals. This follows the A/B testing lesson (#17) — bundling 6 interacting changes makes it impossible to attribute improvement or regression to any single change.
+
+21. **Prompt-only changes should ship before structural changes.** The Devil's Advocate was right that severity dampening (#5) is a prompt edit that could ship same-day, while verify-before-claim (#1) requires orchestration work. Ship the cheap win first.
+
+---
+
 ## File Inventory
 
 ```
-skills/agent-review-panel/
-├── SKILL.md                           # The skill itself (v2.6, ~340 lines)
+├── SKILL.md                           # The skill itself (v2.7, ~340 lines)
+├── skills/agent-review-panel/
+│   └── SKILL.md                       # Plugin copy (synced with root)
 ├── references/
 │   ├── signals-and-checklists.md      # 9 signal groups + domain checklists
 │   ├── prompt-templates.md            # All phase prompt templates
-│   └── changelog.md                   # Version history (v2–v2.6)
-├── SKILL.v2.1.md                      # Archived v2.1
-├── SKILL.v2.md                        # Archived v2
-
-docs/
-├── demo-flow.png                      # Architecture diagram
-└── v25-vs-v26-comparison.md           # A/B test results
-
-Root:
+│   ├── changelog.md                   # Version history (v2–v2.8 plan)
+│   └── research-v28.md               # 19-source v2.8 research compilation
+├── docs/
+│   ├── demo-flow.png                  # Architecture diagram (referenced by README)
+│   └── archive/                       # Historical artifacts
+│       ├── SKILL.v2.md, SKILL.v2.1.md # Old skill versions
+│       ├── review_panel_report.md     # v2.8 roadmap panel review
+│       └── v25-vs-v26-comparison.md   # A/B test results
+├── .claude-plugin/
+│   ├── plugin.json                    # Plugin metadata
+│   └── marketplace.json               # Marketplace listing
 ├── README.md                          # User-facing documentation
 ├── HOW_WE_BUILT_THIS.md               # This file
-├── ROADMAP.md                         # Research roadmap (11 papers, 14 projects)
-├── TRUST_ROADMAP.md                   # Trust & verification layer roadmap
+├── ROADMAP.md                         # Unified research + trust roadmap (17+ papers, 14 projects)
 ├── eval-suite.json                    # Schliff eval suite (triggers + assertions)
 └── LICENSE                            # MIT
 ```

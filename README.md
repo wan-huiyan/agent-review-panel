@@ -106,13 +106,25 @@ v2.5 adds a trust & verification layer (from applying the [AI Trust Evaluation F
 - **Epistemic labels** — the judge classifies every finding as [VERIFIED], [CONSENSUS], [SINGLE-SOURCE], [UNVERIFIED], or [DISPUTED]. Users instantly know which findings to act on vs. investigate.
 - **Scope & Limitations section** — every report explicitly states what the panel cannot evaluate (runtime behavior, production data, shared model biases). Prevents over-trust.
 - **Correlated-bias disclaimer** — when all reviewers converge (score spread < 2 points), the report warns that unanimity may reflect shared model biases rather than genuine quality. Key insight: the most dangerous failure mode for a multi-agent panel is unanimous agreement on something wrong.
-- See [TRUST_ROADMAP.md](TRUST_ROADMAP.md) for future items: model diversity (different-architecture models like Codex/Gemini), synthetic benchmark suite, and calibration footnotes.
+- See `ROADMAP.md` for future items including model diversity, synthetic benchmarks, and calibration footnotes (merged from former TRUST_ROADMAP.md).
 
 v2.6 restructures for efficiency and composability (schliff score 75 → 86):
 - **References directory** — domain checklists, prompt templates, and changelog extracted to `references/` files. SKILL.md reduced from 1,331 → 340 lines (75% token reduction) while preserving all review methodology.
 - **Explicit negative scope** — "When NOT to Use" section prevents false triggers on single code reviews, bug fixes, deployment tasks, and skill improvement requests.
 - **Structured domain checklists** — specialist reviewers (Data Quality, Pipeline Safety) now use explicit checklist format from `references/signals-and-checklists.md`, producing systematic assessments.
-- **Validated via A/B test** — v2.5 and v2.6 ran the same review on a 1,132-line ML pipeline plan. Both reached identical verdict (4/10, "Needs Significant Revision") with the same core findings. v2.6 showed marginal improvements in checklist discipline (+2 findings) and judge output structure (P0/P1/P2 tiers). See `docs/v25-vs-v26-comparison.md` for full comparison.
+- **Validated via A/B test** — v2.5 and v2.6 ran the same review on a 1,132-line ML pipeline plan. Both reached identical verdict (4/10, "Needs Significant Revision") with the same core findings. v2.6 showed marginal improvements in checklist discipline (+2 findings) and judge output structure (P0/P1/P2 tiers). See `docs/archive/v25-vs-v26-comparison.md` for full comparison.
+
+v2.7 adds severity verification and temporal scope checks:
+- **Phase 4.7: Severity Verification** — new Opus agent reads actual code for every P0/P1 finding before the judge. Produces severity verification table. Motivated by benchmark showing 2/3 P0 findings were overstated.
+- **`[EXISTING_DEFECT]` vs `[PLAN_RISK]` labels** — P0 requires `[EXISTING_DEFECT]` (with code evidence). `[PLAN_RISK]` caps at P1.
+- **Temporal scope verification (Step 3b)** — mandatory check that temporal exclusion claims apply to ALL instances across the full date range. Born from a real engagement where "excludes Christmas" only excluded the first of two Christmases, evading 12 reviewers across 3 debate rounds.
+
+v2.8 (planned) — panel-reviewed roadmap, shipping 3 proposals + 1 new mechanism:
+- **Severity-dampening judge prompt** — "What is the minimum severity justified by concrete evidence?" (prompt edit, zero latency)
+- **Coverage check** — new judge sub-step asking "Are there unexamined risk categories?" Counterbalances the downward pressure of severity-reduction mechanisms. Surfaced by the review panel itself — the Risk Assessor identified that all proposed changes suppressed findings with no upward pressure.
+- **Verify-before-claim (advisory mode)** — agents include verification commands; orchestrator runs grep/read and annotates. Failed verification demotes, does not delete.
+- **Auto-detected Precise/Exhaustive mode** — code reviews require concrete evidence; plan reviews allow broader risk. Auto-detected from input type.
+- See `references/research-v28.md` for the 19-source research backing and `docs/archive/review_panel_report.md` for the full panel deliberation.
 
 ### 3. Anti-Groupthink Mechanisms
 

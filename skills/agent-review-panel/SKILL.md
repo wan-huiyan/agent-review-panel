@@ -24,7 +24,7 @@ description: >
   launching reviewers.
 ---
 
-# Agent Review Panel v2.6
+# Agent Review Panel v2.7
 
 A multi-agent adversarial review system based on nine research foundations:
 ChatEval (ICLR 2024), AutoGen, Du et al. (ICML 2024), MachineSoM (ACL 2024),
@@ -85,7 +85,8 @@ Phase 3.5: Summarize        → Distill resolved/unresolved points between round
 Phase 4: Blind Final        → Each reviewer gives final score independently
 Phase 4.5: Completeness Audit → Dedicated agent scans for what the panel missed
 Phase 4.6: Claim Verification → Verify all line-number citations against source
-Phase 5: Supreme Judge      → Opus arbitrates everything including audit findings
+Phase 4.7: Severity Verification → Read actual code for every P0/P1, downgrade if overstated
+Phase 5: Supreme Judge      → Opus arbitrates everything including verification results
 Phase 6: Document           → Structured markdown report for human review
 ```
 
@@ -124,7 +125,12 @@ the #1 cause of incorrect [CRITICAL] recommendations.**
 
 3. **Safety Mechanism Discovery** — Grep reviewed code + imports for: `_valid`,
    `_flag`, `_guard`, `_check`, `_mask`, `<= target_date`, `BETWEEN`, `fillna`,
-   `COALESCE`, `try/except`. Note what each guards against.
+   `COALESCE`, `try/except`, `DELETE FROM`, `MERGE`, `WRITE_TRUNCATE`,
+   `upsert`, `idempoten`, `--dry-run`, `duplicate`, `assertion`. Note what each
+   guards against. **Critical:** When a finding claims "X is missing", verify
+   the claim by grepping the actual code — existing safety mechanisms are the
+   #1 thing panels miss (v2.6 benchmark: panel claimed "non-idempotent writes"
+   but DELETE-then-INSERT with duplicate validation already existed).
 
 3b. **Temporal Scope Verification** — When the work contains ANY temporal
    claims (e.g., "excludes Christmas", "masks winter period", "filters out
@@ -282,10 +288,50 @@ or [UNVERIFIABLE]. Results feed into judge prompt.
 
 ---
 
+## Phase 4.7: Severity Verification (v2.7)
+
+Single agent (`model: "opus"`) that reads the actual codebase to verify every
+P0 and P1 finding before the judge sees them. This phase exists because panels
+systematically overstate severity when they lack runtime context (v2.6
+benchmark: 2/3 P0 findings were overstated after code investigation).
+
+**For each P0/P1 finding, the agent must:**
+
+1. **Classify as `[EXISTING_DEFECT]` or `[PLAN_RISK]`**
+   - `[EXISTING_DEFECT]`: The bug exists in the current running code right now
+   - `[PLAN_RISK]`: The risk would only materialise if the plan is implemented as written
+   - P0 severity requires `[EXISTING_DEFECT]`. A `[PLAN_RISK]` is at most P1.
+
+2. **Verify the claim against actual code**
+   - If the finding says "X is missing", grep for X in the actual codebase
+   - If the finding says "X pattern is wrong", read the referenced code and check
+   - If the finding cites a specific file/line, read that file and verify
+   - If no reviewer cited a specific line number, flag as `[UNCITED]`
+
+3. **Check for existing safety mechanisms**
+   - Grep for DELETE, MERGE, upsert, idempotent, dry-run, duplicate, assertion
+     patterns near the referenced code
+   - A finding about "missing safety" is invalid if the safety exists but the
+     reviewer didn't look for it
+
+4. **Output a severity verification table:**
+
+```
+| Finding | Panel Severity | Verified? | Actual Severity | Reason |
+|---------|---------------|-----------|-----------------|--------|
+| ...     | P0            | No        | Not a bug       | Grep found no bf/af COALESCE pattern |
+| ...     | P0            | Partial   | P1              | DELETE-then-INSERT already exists |
+```
+
+Results feed into the Supreme Judge prompt. The judge MUST reference the
+verification table when ruling on disagreements.
+
+---
+
 ## Phase 5: Supreme Judge
 
 Single agent (`model: "opus"`). Receives everything. Steps:
-0. Review claim verification — disregard inaccurate/hallucinated claims
+0. Review claim verification AND severity verification — disregard overstated findings
 1. Verify audit findings, anti-rhetoric assessment
 2. Evaluate debate quality, rule on disagreements
 3. Check consensus correctness, absent-safeguard check
@@ -320,6 +366,7 @@ Write structured markdown report to `review_panel_report.md` (or user-specified 
 {What was reviewed. What CANNOT be evaluated: runtime behavior, production
 data, security via dynamic analysis. Structural limitation: shared base model.}
 Epistemic labels: [VERIFIED] [CONSENSUS] [SINGLE-SOURCE] [UNVERIFIED] [DISPUTED]
+Defect type labels: [EXISTING_DEFECT] (bug in current code) [PLAN_RISK] (risk if plan is implemented as written)
 
 ## Score Summary
 | Reviewer | Persona | Intensity | Initial | Final | Recommendation |
@@ -339,6 +386,7 @@ Epistemic labels: [VERIFIED] [CONSENSUS] [SINGLE-SOURCE] [UNVERIFIED] [DISPUTED]
 - Final Blind Assessments
 - Completeness Audit
 - Claim Verification Report
+- Severity Verification Table
 - Supreme Judge Full Analysis
 ```
 
