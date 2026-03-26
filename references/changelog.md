@@ -10,16 +10,22 @@ Motivated by S57 benchmark: 2/3 P0 findings were overstated after code investiga
 - **`[UNCITED]` flag** — findings without specific line numbers are tagged for review.
 - **Judge references verification table** — Step 0 updated to review both claim verification AND severity verification.
 
-### v2.8 Roadmap (planned)
+### v2.8 Plan (panel-reviewed 2026-03-26)
 
-Based on deep research across 19 sources (see `references/research-v28.md`):
+Reviewed by a 4-reviewer panel (Feasibility Analyst, Stakeholder Advocate, Risk Assessor, Devil's Advocate). Original proposal had 6 changes; panel recommended shipping 3 + 1 new mechanism, deferring 3. See `docs/archive/review_panel_report.md`.
 
-1. **Verify-before-claim with tool use** — agents include `verification_command` for P0/P1 findings; orchestrator runs grep/read before debate. (Tool-MAD 2026, CodeRabbit, Nexus)
-2. **Three-tier finding classification** — Confirmed Defect (P0 eligible), Design Risk (caps at P2), Quality Concern (non-blocking). (Blincoe et al. IST 2022)
-3. **Confidence scores (0-100) + diversity-aware retention** — agents emit calibrated confidence; debate amplifies dissenters over echoes. (ConfMAD EMNLP 2025, DAR March 2026)
-4. **Precise/Exhaustive mode** — code reviews require concrete evidence; plan reviews allow broader risk. (Qodo 2.0, 60.1% F1)
-5. **Severity-dampening judge prompt** — "What is the minimum severity justified by concrete evidence?" (Datadog FP filtering)
-6. **Meta-Review "defend or retract" step** — agents explicitly defend or withdraw findings after cross-review. (adversarial-review repo)
+**Shipping in v2.8:**
+1. **Severity-dampening judge prompt** — "What is the minimum severity justified by concrete evidence?" Prompt edit, zero latency. (Datadog FP filtering)
+2. **Coverage check** (NEW — surfaced by panel) — Judge sub-step: "Are there unexamined risk categories given these changes?" Counterbalances the downward pressure of all other severity-reduction mechanisms.
+3. **Verify-before-claim (advisory mode)** — agents include `verification_command` for P0/P1; orchestrator runs grep/read and annotates results. Failed verification demotes, does not delete. Max 5 verifications. (Tool-MAD 2026, CodeRabbit, Nexus)
+4. **Auto-detected Precise/Exhaustive mode** — code reviews require concrete evidence; plan reviews allow broader risk. Auto-detected from input type, no user toggle. (Qodo 2.0)
+
+**Deferred to v2.9:**
+- **Three-tier finding classification** — Double-suppression risk with severity-dampening judge. Reassess after measuring #1's impact. (Blincoe et al. IST 2022)
+- **Confidence scores (0-100)** — All 4 reviewers opposed user-facing numeric scores. LLMs poorly calibrated on self-assessed confidence. Keep diversity-aware retention as internal mechanism only. (ConfMAD EMNLP 2025, DAR March 2026)
+- **Meta-Review "defend or retract"** — High token cost (16-42k), creates commitment bias. Fold useful part into judge step instead. (adversarial-review repo)
+
+**Critical panel finding:** All 6 original proposals pushed findings downward (suppress, dampen, cap, gate) with zero upward pressure. The coverage check mechanism was added to counterbalance this systematic false-negative risk.
 
 New research foundations: ConfMAD (EMNLP 2025), DAR (March 2026), Tool-MAD (Jan 2026), Nexus (Oct 2025), CORE (Microsoft FSE 2024), SGCR (ASE 2025).
 
