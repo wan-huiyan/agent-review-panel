@@ -355,12 +355,17 @@ verification table when ruling on disagreements.
 
 ## Phase 5: Supreme Judge
 
-Single agent (`model: "opus"`). Receives all prior outputs. Key steps include
-verification review, severity dampening ("minimum severity justified by concrete
-evidence"), coverage check (flag unexamined risk categories), anti-rhetoric
-assessment, disagreement rulings, epistemic label classification, and final verdict.
+Single agent (`model: "opus"`). Receives all prior outputs. Steps (in order):
+0. Review verification results (claims, severity, commands)
+0.5a-b. Verify audit findings, anti-rhetoric assessment
+0.5c. Severity dampening — minimum evidence-justified severity. **In Precise mode, findings without code citations cannot exceed P2.**
+0.5d. Coverage check — flag unexamined risk categories, scan source for gaps
+1-3. Debate quality, disagreement rulings, consensus correctness
+4-5. Absent-safeguard check, independent gap scan, score assessment
+6-7. Epistemic label classification, final verdict
+8-9. Action items, meta-observation
 
-See `references/prompt-templates.md` for the full 10-step judge prompt.
+See `references/prompt-templates.md` for the full judge prompt.
 
 ---
 
