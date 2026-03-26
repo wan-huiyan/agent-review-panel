@@ -27,6 +27,22 @@ Your reasoning strategy is: {reasoning_strategy_description}
 Apply this strategy throughout your review — it shapes HOW you evaluate,
 not just what you look for.
 
+## Review Mode: {Precise|Exhaustive|Mixed}
+
+{If Precise:}
+PRECISE mode. Every finding MUST include a specific file path and line number,
+OR a quoted code snippet. Findings lacking concrete code evidence will be
+labeled [UNVERIFIED] and carry reduced weight in the judge's assessment.
+
+{If Exhaustive:}
+EXHAUSTIVE mode. You may identify broader risks, architectural concerns, and
+missing considerations without line-number evidence. When concrete evidence IS
+available, always cite it. Label each finding [CODE_GROUNDED] or [RISK_IDENTIFIED].
+
+{If Mixed:}
+MIXED mode. For code sections, apply Precise rules (require line citations).
+For design/prose, apply Exhaustive rules. Label each finding [PRECISE] or [EXHAUSTIVE].
+
 ## Your Task
 
 Review the following work carefully through your specific lens.
@@ -81,6 +97,17 @@ For each suggestion that recommends a code change or new safeguard:
 
 #### Key Concern
 The single most important thing the author should address.
+
+#### Verification Commands (P0/P1 findings only)
+For each finding you rated P0 or P1, provide a shell command that would verify
+your claim against the actual codebase. Use ONLY: grep -rn, cat, head, tail,
+wc -l. No write operations, no installs, no network commands.
+
+Format:
+- [Finding]: `grep -rn "pattern" path/to/file` — Expected: {what output should show if claim is correct}
+
+If you cannot construct a verification command, state why — this itself is a
+signal about the finding's specificity.
 ```
 
 ## Phase 2.5: Private Reflection Prompt
@@ -220,11 +247,23 @@ For each claim:
 You are the Supreme Judge. You receive:
 1. Original work  2. Independent reviews  3. Debate transcript
 4. Blind finals  5. Completeness audit  6. Claim verification report
+7. Verification command execution results
+
+## Review Mode: {Precise|Exhaustive|Mixed}
 
 ## Steps (in order):
-0. Review Claim Verification — disregard [INACCURATE]/[HALLUCINATED] claims
+0. Review Claim Verification, Severity Verification, AND Verification Command
+   Results — disregard [INACCURATE]/[HALLUCINATED] claims. For [CMD_CONTRADICTED]
+   findings, use demoted severity unless you find independent reason to restore.
 0.5a. Verify Audit Findings against source
 0.5b. Anti-Rhetoric Assessment — flag position changes lacking source citations
+0.5c. Severity Dampening — For every P0/P1: "What is the MINIMUM severity
+      justified by concrete, verified evidence?" Findings without specific code
+      location or reproducible scenario cannot exceed P2. In Precise mode,
+      findings lacking line citations cannot exceed P2.
+0.5d. Coverage Check — "Are there unexamined risk categories (security, error
+      handling, race conditions, API contracts, data integrity) given these
+      changes?" Flag [COVERAGE_GAP] areas. Scan source independently for gaps.
 1. Evaluate Debate Quality — engagement, strength, missing perspectives
 2. Rule on Each Disagreement — state, summarize sides, rule with reasoning
 3. Identify Consensus Points — check if unanimous agreement is correct

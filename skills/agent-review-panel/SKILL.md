@@ -24,7 +24,7 @@ description: >
   launching reviewers.
 ---
 
-# Agent Review Panel v2.7
+# Agent Review Panel v2.8
 
 A multi-agent adversarial review system based on nine research foundations:
 ChatEval (ICLR 2024), AutoGen, Du et al. (ICML 2024), MachineSoM (ACL 2024),
@@ -84,6 +84,7 @@ Phase 3: Debate             → Reviewers engage with each other + find new issu
 Phase 3.5: Summarize        → Distill resolved/unresolved points between rounds
 Phase 4: Blind Final        → Each reviewer gives final score independently
 Phase 4.5: Completeness Audit → Dedicated agent scans for what the panel missed
+Phase 4.55: Verify Commands  → Run up to 5 reviewer verification commands (advisory)
 Phase 4.6: Claim Verification → Verify all line-number citations against source
 Phase 4.7: Severity Verification → Read actual code for every P0/P1, downgrade if overstated
 Phase 5: Supreme Judge      → Opus arbitrates everything including verification results
@@ -104,6 +105,20 @@ Collect full content, then run Context Gathering (below).
 - **Pure plan/design** — architecture docs, proposals, RFCs
 - **Mixed** — plans with code snippets, SQL, or config
 - **Documentation** — READMEs, guides, API docs
+
+### Review Mode Detection (v2.8)
+
+Auto-detect review mode from content type. No user toggle.
+
+| Content Type | Review Mode | Behavior |
+|---|---|---|
+| Pure code | **Precise** | Every finding MUST cite a specific file, line number, or code snippet. Findings without concrete evidence are demoted to [UNVERIFIED]. |
+| Pure plan/design | **Exhaustive** | Broader risk identification allowed. Findings may reference design sections or architectural patterns without line-number evidence. |
+| Mixed | **Precise** for code, **Exhaustive** for prose | Reviewers label each finding with its mode. Code findings without line citations are demoted. |
+| Documentation | **Exhaustive** | Same as plan/design. |
+
+The detected mode is injected into Phase 2 reviewer prompts and the judge prompt.
+Report header states the detected mode.
 
 ### Detect Content Signals
 
@@ -280,6 +295,29 @@ See `references/prompt-templates.md` for full prompt.
 
 ---
 
+## Phase 4.55: Verification Command Execution (v2.8)
+
+Collect all `verification_command` entries from Phase 2 reviewer outputs for
+P0/P1 findings. Select up to 5 commands, prioritized by: P0 before P1, then
+by number of reviewers citing the same finding.
+
+**For each command:**
+1. Validate it is read-only (grep, cat, head, tail, wc — reject write/install/network commands)
+2. Execute via Bash tool
+3. Record: command, exit code, first 50 lines of output, match against reviewer's expectation
+
+**Annotate results:**
+- `[CMD_CONFIRMED]` — output matches expectation
+- `[CMD_CONTRADICTED]` — output contradicts claim (demote finding by 1 severity level)
+- `[CMD_INCONCLUSIVE]` — command ran but output is ambiguous
+- `[CMD_FAILED]` — command errored (file not found, etc.)
+
+**Advisory, not gating:** Failed verification demotes severity and annotates
+the finding — it does NOT delete findings. The judge sees both the original
+severity and the verification result.
+
+---
+
 ## Phase 4.6: Claim Verification
 
 Single agent (`model: "opus"`) checks all reviewer citations against source.
@@ -331,7 +369,9 @@ verification table when ruling on disagreements.
 ## Phase 5: Supreme Judge
 
 Single agent (`model: "opus"`). Receives everything. Steps:
-0. Review claim verification AND severity verification — disregard overstated findings
+0. Review claim verification, severity verification, AND verification command results
+0.5c. Severity dampening — "What is the MINIMUM severity justified by concrete evidence?" In Precise mode, findings without code citations cannot exceed P2.
+0.5d. Coverage check — flag unexamined risk categories, scan source for gaps
 1. Verify audit findings, anti-rhetoric assessment
 2. Evaluate debate quality, rule on disagreements
 3. Check consensus correctness, absent-safeguard check
@@ -356,6 +396,7 @@ Write structured markdown report to `review_panel_report.md` (or user-specified 
 **Panel:** {N} reviewers + Auditor + Judge
 **Verdict:** {recommendation}  |  **Confidence:** {High|Medium|Low}
 **Auto-detected signals:** {list or "None — base set used"}
+**Review mode:** {Precise|Exhaustive|Mixed} (auto-detected from content type)
 
 ## Executive Summary
 {Judge's verdict, 3-5 sentences. Score X/10.}
@@ -377,6 +418,8 @@ Defect type labels: [EXISTING_DEFECT] (bug in current code) [PLAN_RISK] (risk if
 {Each disagreement: Side A, Side B, Judge's ruling with reasoning}
 ## Completeness Audit Findings
 {New issues found by auditor, verified by judge}
+## Coverage Gaps (if any)
+{Risk categories no reviewer examined, with judge's independent assessment}
 ## Action Items (with severity AND epistemic labels)
 
 ## Detailed Reviews (collapsible sections)
@@ -385,6 +428,7 @@ Defect type labels: [EXISTING_DEFECT] (bug in current code) [PLAN_RISK] (risk if
 - Debate Rounds + Summaries
 - Final Blind Assessments
 - Completeness Audit
+- Verification Command Execution Results
 - Claim Verification Report
 - Severity Verification Table
 - Supreme Judge Full Analysis
@@ -398,7 +442,8 @@ disagreements count, audit findings count, top action item.
 ## Implementation Notes
 
 - **Parallel execution:** Phases 2, 2.5, 3, 4 use single message with multiple
-  Agent tool calls. Phases 4.5, 4.6, 5 are sequential single agents.
+  Agent tool calls. Phases 4.5, 4.55, 4.6, 4.7, 5 are sequential (4.55 is
+  orchestrator-driven via Bash, not a subagent).
 - **Context management:** Full content in Phases 2, 4.5, 5. Phase 3.5 summaries
   with source excerpts in debate rounds for long works (>500 lines).
 - **Error handling:** Retry failed agents once. Proceed with minimum 2 reviewers.
