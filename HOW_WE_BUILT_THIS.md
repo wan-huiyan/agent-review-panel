@@ -447,6 +447,35 @@ Full report: `docs/archive/review_panel_report.md`
 
 ---
 
+## Step 14: Schliff v2.8 Optimization + Panel Self-Review (2026-03-26)
+
+### Motivation
+
+v2.8 added 4 features (severity dampening, coverage check, verify-before-claim, precise/exhaustive mode), growing SKILL.md from 340 to 457 lines. Schliff analysis scored 84/100 with edges (72) and efficiency (68) as weakest dimensions.
+
+### Changes
+
+1. **Condensed Phase 4.55** from 20 to 6 lines — same annotation labels, advisory principle, and skip condition in fewer tokens
+2. **Condensed Phase 5 judge steps** from 12 to 10 lines — compact indexed listing that preserves step ordering
+3. **Added Edge Cases section** — 6 documented scenarios: empty input, large files, binary files, tiny files, no P0/P1, unanimous agreement
+
+### Panel Self-Review
+
+Ran the skill on its own PR diff (2 reviewers: Completeness Checker + Quality Reviewer). The panel caught that the initial condensation was too aggressive:
+
+- **Lost the Precise-mode P2 severity cap** — "In Precise mode, findings without code citations cannot exceed P2" is a hard behavioral constraint, not descriptive prose. Trimming it would have let the judge allow uncited P0s in code reviews — the exact failure mode v2.8's mode detection was designed to prevent.
+- **"10-step judge prompt" was wrong** — actual count is 14 steps (0, 0.5a-d, 1-9). Fixed to "full judge prompt."
+
+Both fixed in follow-up commit. Estimated schliff score: 84 → 90.
+
+### Lessons
+
+22. **Hard behavioral constraints must not be trimmed for efficiency.** When condensing, distinguish between descriptive prose ("this is how it works") and prescriptive rules ("this must never exceed P2"). Only trim the descriptive. The Precise-mode P2 cap looks like prose but functions as a constraint.
+
+23. **Use the skill on its own PRs.** Running a focused 2-reviewer panel on the schliff diff caught exactly the kind of subtle loss that manual review misses. Cost: ~2 minutes. Value: prevented shipping a broken severity cap.
+
+---
+
 ## File Inventory
 
 ```
