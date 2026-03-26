@@ -1,5 +1,19 @@
 # Changelog
 
+## v2.8 (2026-03-26) — Severity Calibration, Coverage Check, Verify-Before-Claim, Precise/Exhaustive Mode
+
+Motivated by panel review of 6 proposed changes (see `docs/archive/review_panel_report.md`).
+Critical panel finding: all original proposals pushed findings downward with zero upward pressure.
+
+- **Severity-dampening judge prompt** — Judge Step 0.5c: "What is the MINIMUM severity justified by concrete evidence?" Prompt edit, zero latency. (Datadog FP filtering)
+- **Coverage check** (NEW — surfaced by panel) — Judge Step 0.5d: "Are there unexamined risk categories?" Flags [COVERAGE_GAP] areas. Counterbalances downward pressure.
+- **Verify-before-claim (advisory mode)** — Phase 2 reviewers include `verification_command` for P0/P1. New Phase 4.55 runs up to 5 commands, annotates [CMD_CONFIRMED]/[CMD_CONTRADICTED]/[CMD_INCONCLUSIVE]/[CMD_FAILED]. Advisory, not gating. (Tool-MAD, CodeRabbit, Nexus)
+- **Auto-detected Precise/Exhaustive mode** — Code → Precise (require line citations). Plans → Exhaustive (allow broader risk). Auto-detected, no toggle. Report header shows mode. (Qodo 2.0)
+
+New research foundations: Tool-MAD (Jan 2026), Nexus (Oct 2025), CORE (Microsoft FSE 2024), SGCR (ASE 2025), Qodo 2.0.
+
+---
+
 ## v2.7 (2026-03-26) — Severity Verification & Defect Classification
 
 Motivated by S57 benchmark: 2/3 P0 findings were overstated after code investigation.
