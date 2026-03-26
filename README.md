@@ -225,6 +225,12 @@ git clone https://github.com/wan-huiyan/agent-review-panel.git ~/.cursor/skills/
 >
 > **Adapting for Cursor:** The core pattern is straightforward — one subagent/task per reviewer in Phase 2, collect results, then one per reviewer in Phase 3 (debate), then single agents for the completeness audit and judge. If you adapt it, PRs are welcome!
 
+## Companion Skills
+
+| Skill | What It Does | When to Use |
+|-------|-------------|-------------|
+| [plan-review-integrator](https://github.com/wan-huiyan/plan-review-integrator) | Takes review panel output and integrates findings into an implementation plan — classifies each finding, applies concrete edits, produces a traceability summary | After a panel review of a plan document, run `/plan-review-integrator` to turn findings into plan updates |
+
 ---
 
 The skill triggers automatically when you ask for multi-perspective reviews, panel reviews, adversarial reviews, or invoke `/agent-review-panel`.
