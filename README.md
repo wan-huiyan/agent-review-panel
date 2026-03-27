@@ -34,7 +34,7 @@ A Claude Code skill that orchestrates multi-agent adversarial review panels. Mul
 | Anti-rhetoric guard | Judge flags position changes driven by eloquence rather than evidence |
 | Dynamic sycophancy intervention | Detects and intervenes when >50% of position changes lack new evidence |
 | Judge confidence gating | Low-confidence verdicts get "HUMAN REVIEW RECOMMENDED" flag instead of forcing a call |
-| Knowledge mining (Phase 1) | Mines feedback memories, lessons, skills, and CLAUDE.md for domain-specific pitfalls before review |
+| Tiered knowledge mining (Phase 1) | L0/L1/L2 loading: scans index lines first, then summaries, then full content only for relevant items — reduces token waste by ~80% vs flat reads |
 | Built-in domain checklists | 9 signal groups get pre-built review checklists (ML, SQL, Pipeline, Cost, etc.) — zero-latency domain expertise |
 | Deep research mode | Opt-in web research for domain best practices; triggered by "deep review" or offered when strong signals detected |
 
@@ -119,11 +119,13 @@ v2.7 adds severity verification and temporal scope checks:
 - **`[EXISTING_DEFECT]` vs `[PLAN_RISK]` labels** — P0 requires `[EXISTING_DEFECT]` (with code evidence). `[PLAN_RISK]` caps at P1.
 - **Temporal scope verification (Step 3b)** — mandatory check that temporal exclusion claims apply to ALL instances across the full date range. Born from a real engagement where "excludes Christmas" only excluded the first of two Christmases, evading 12 reviewers across 3 debate rounds.
 
-v2.8 (planned) — panel-reviewed roadmap, shipping 3 proposals + 1 new mechanism:
+v2.8 adds 4 new mechanisms + tiered knowledge mining:
 - **Severity-dampening judge prompt** — "What is the minimum severity justified by concrete evidence?" (prompt edit, zero latency)
 - **Coverage check** — new judge sub-step asking "Are there unexamined risk categories?" Counterbalances the downward pressure of severity-reduction mechanisms. Surfaced by the review panel itself — the Risk Assessor identified that all proposed changes suppressed findings with no upward pressure.
-- **Verify-before-claim (advisory mode)** — agents include verification commands; orchestrator runs grep/read and annotates. Failed verification demotes, does not delete.
-- **Auto-detected Precise/Exhaustive mode** — code reviews require concrete evidence; plan reviews allow broader risk. Auto-detected from input type.
+- **Phase 4.55: Verify-before-claim (advisory mode)** — agents include verification commands; orchestrator runs grep/read and annotates `[CMD_CONFIRMED]`/`[CMD_CONTRADICTED]`. Failed verification demotes, does not delete.
+- **Auto-detected Precise/Exhaustive mode** — code reviews require concrete evidence; plan reviews allow broader risk. Auto-detected from content type.
+- **Tiered knowledge mining (L0/L1/L2)** — inspired by [OpenViking](https://github.com/volcengine/OpenViking)'s context layers. L0 scans index lines/descriptions (~100 tokens each), L1 reads summaries of matched items (~500 tokens), L2 loads full content only for confirmed-relevant items. Typical yield: 3-8 files at L2 out of 50+ candidates at L0.
+- **Lost constraint restoration** — panel self-review of the v2.6 schliff pass caught 15+ prescriptive constraints lost during optimization. Judge prompt restored from skeleton (~20 lines) to full behavioral detail (~80 lines) including anti-rhetoric nuance, absent-safeguard procedures, epistemic label definitions, and verdict confidence calibration.
 - See `references/research-v28.md` for the 19-source research backing and `docs/archive/review_panel_report.md` for the full panel deliberation.
 
 ### 3. Anti-Groupthink Mechanisms
@@ -188,7 +190,7 @@ The skill auto-detects content type (pure code, pure plan, mixed, documentation)
 | [Trust or Escalate](https://arxiv.org/abs/2407.18370) (ICLR 2025) | Judge confidence gating |
 | [AI Trust Evaluation Framework](https://github.com/wan-huiyan/ai-trust-evaluation) | Claim verification, epistemic labels, scope disclosure, correlated-bias detection |
 
-See `ROADMAP.md` for the full research roadmap and `TRUST_ROADMAP.md` for the trust & verification layer roadmap.
+See `ROADMAP.md` for the full research roadmap (includes trust & verification items, merged from former TRUST_ROADMAP.md).
 
 ## Cost & Performance
 
