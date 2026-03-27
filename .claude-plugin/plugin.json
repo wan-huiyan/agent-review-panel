@@ -1,7 +1,7 @@
 {
   "name": "agent-review-panel",
-  "version": "2.6.0",
-  "description": "Multi-agent adversarial review panel with debate, claim verification, epistemic labels, and structured domain checklists",
+  "version": "2.8.0",
+  "description": "Multi-agent adversarial review panel with debate, claim verification, severity verification, auto Precise/Exhaustive mode, tiered knowledge mining, and structured domain checklists",
   "author": {
     "name": "wan-huiyan",
     "url": "https://github.com/wan-huiyan"
