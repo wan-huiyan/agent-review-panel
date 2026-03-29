@@ -131,7 +131,7 @@ v2.8 adds 4 new mechanisms + tiered knowledge mining:
 v2.9 adds VoltAgent specialist agent integration:
 - **VoltAgent integration** — when [VoltAgent specialist agents](https://github.com/VoltAgent/awesome-claude-code-subagents) are installed, the panel upgrades generic persona-prompted reviewers to domain-specific agents (127+ available across 10 families). A `voltagent-qa-sec:code-reviewer` has deeper built-in code review heuristics than a generic agent prompted as "Correctness Hawk."
 - **3-tier mapping** — core personas (16), signal-detected specialists (35 content signals), and orchestration phases (completeness audit, verification) all map to VoltAgent agents with graceful fallback.
-- **Smart installation prompts** — when VoltAgent agents would help but aren't installed, suggests the relevant `claude install-skill` commands (only once per session, non-blocking).
+- **Smart installation prompts** — when VoltAgent agents would help but aren't installed, suggests the relevant `claude plugin install` commands (only once per session, non-blocking).
 - **Devil's Advocate stays generic** — the contrarian role intentionally avoids domain specialization to maintain unbiased skepticism.
 - Born from real production use: a 4-VoltAgent-specialist panel (QA Expert, Data Scientist, DevOps Engineer, Code Reviewer) reviewing a test plan produced 38 findings with <10% cross-reviewer overlap — each specialist caught blind spots the others missed.
 
