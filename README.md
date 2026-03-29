@@ -128,6 +128,13 @@ v2.8 adds 4 new mechanisms + tiered knowledge mining:
 - **Lost constraint restoration** — panel self-review of the v2.6 schliff pass caught 15+ prescriptive constraints lost during optimization. Judge prompt restored from skeleton (~20 lines) to full behavioral detail (~80 lines) including anti-rhetoric nuance, absent-safeguard procedures, epistemic label definitions, and verdict confidence calibration.
 - See `references/research-v28.md` for the 19-source research backing and `docs/archive/review_panel_report.md` for the full panel deliberation.
 
+v2.9 adds VoltAgent specialist agent integration:
+- **VoltAgent integration** — when [VoltAgent specialist agents](https://github.com/VoltAgent/awesome-claude-code-subagents) are installed, the panel upgrades generic persona-prompted reviewers to domain-specific agents (127+ available across 10 families). A `voltagent-qa-sec:code-reviewer` has deeper built-in code review heuristics than a generic agent prompted as "Correctness Hawk."
+- **3-tier mapping** — core personas (16), signal-detected specialists (35 content signals), and orchestration phases (completeness audit, verification) all map to VoltAgent agents with graceful fallback.
+- **Smart installation prompts** — when VoltAgent agents would help but aren't installed, suggests the relevant `claude plugin install` commands (only once per session, non-blocking).
+- **Devil's Advocate stays generic** — the contrarian role intentionally avoids domain specialization to maintain unbiased skepticism.
+- Born from real production use: a 4-VoltAgent-specialist panel (QA Expert, Data Scientist, DevOps Engineer, Code Reviewer) reviewing a test plan produced 38 findings with <10% cross-reviewer overlap — each specialist caught blind spots the others missed.
+
 ### 3. Anti-Groupthink Mechanisms
 
 Research shows multi-agent systems are prone to conformity — agents abandon correct findings under social pressure. We counter this with:
@@ -189,6 +196,7 @@ The skill auto-detects content type (pure code, pure plan, mixed, documentation)
 | [CONSENSAGENT](https://aclanthology.org/2025.findings-acl.1141/) (ACL 2025) | Dynamic sycophancy intervention |
 | [Trust or Escalate](https://arxiv.org/abs/2407.18370) (ICLR 2025) | Judge confidence gating |
 | [AI Trust Evaluation Framework](https://github.com/wan-huiyan/ai-trust-evaluation) | Claim verification, epistemic labels, scope disclosure, correlated-bias detection |
+| [VoltAgent/awesome-claude-code-subagents](https://github.com/VoltAgent/awesome-claude-code-subagents) | 127+ specialist agents across 10 families; persona-to-agent mapping for domain-specific reviews |
 
 See `ROADMAP.md` for the full research roadmap (includes trust & verification items, merged from former TRUST_ROADMAP.md).
 

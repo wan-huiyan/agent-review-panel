@@ -1,5 +1,17 @@
 # Changelog
 
+## v2.9 (2026-03-29) — VoltAgent Specialist Agent Integration
+
+- **VoltAgent integration** — when [VoltAgent specialist agents](https://github.com/VoltAgent/awesome-claude-code-subagents) are installed (127+ across 10 families), the panel upgrades generic persona-prompted reviewers to domain-specific agents via `subagent_type`.
+- **3-tier mapping** — core persona mapping (16 personas), signal-detected specialist mapping (35 content signals → language/domain agents), orchestration phase mapping (completeness audit, claim/severity verification).
+- **Smart installation prompts** — suggests relevant `claude plugin install voltagent-*` commands when specialist agents would help but aren't installed. Non-blocking, once per session.
+- **Graceful fallback** — all functionality works without VoltAgent; it's a transparent upgrade.
+- **Credits:** [VoltAgent/awesome-claude-code-subagents](https://github.com/VoltAgent/awesome-claude-code-subagents) for the 127+ agent catalog across `voltagent-qa-sec`, `voltagent-data-ai`, `voltagent-infra`, `voltagent-lang`, `voltagent-core-dev`, `voltagent-biz`, `voltagent-domains`, `voltagent-meta`, `voltagent-dev-exp`, `voltagent-research`.
+
+Born from real production use: 4 VoltAgent specialists reviewing a test plan produced 38 findings with <10% overlap vs generic persona agents.
+
+---
+
 ## v2.8 (2026-03-26) — Severity Calibration, Coverage Check, Verify-Before-Claim, Precise/Exhaustive Mode
 
 Motivated by panel review of 6 proposed changes (see `docs/archive/review_panel_report.md`).
