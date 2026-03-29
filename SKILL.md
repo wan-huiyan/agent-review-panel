@@ -346,13 +346,16 @@ installation to the user:
 > "This review would benefit from VoltAgent specialist agents for deeper
 > domain-specific analysis. You can install the relevant families with:
 >
-> `claude plugin install voltagent-qa-sec`  — security, code review, testing, compliance
-> `claude plugin install voltagent-data-ai` — data science, ML, databases, NLP
-> `claude plugin install voltagent-infra`   — DevOps, cloud, Docker, Kubernetes, Terraform
-> `claude plugin install voltagent-lang`    — language-specific reviewers (TS, Python, Go, Rust, etc.)
-> `claude plugin install voltagent-core-dev` — API design, microservices, frontend, backend
-> `claude plugin install voltagent-biz`     — product, business analysis, risk management
-> `claude plugin install voltagent-domains` — fintech, blockchain, IoT, embedded systems
+> ```
+> /plugin marketplace add VoltAgent/awesome-claude-code-subagents
+> /plugin install voltagent-qa-sec@voltagent-subagents
+> /plugin install voltagent-data-ai@voltagent-subagents
+> /plugin install voltagent-infra@voltagent-subagents
+> /plugin install voltagent-lang@voltagent-subagents
+> /plugin install voltagent-core-dev@voltagent-subagents
+> /plugin install voltagent-biz@voltagent-subagents
+> /plugin install voltagent-domains@voltagent-subagents
+> ```
 >
 > Continue without them? They're optional — the review will still work
 > with generic persona-prompted agents."
