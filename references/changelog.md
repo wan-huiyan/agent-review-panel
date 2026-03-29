@@ -4,7 +4,7 @@
 
 - **VoltAgent integration** — when [VoltAgent specialist agents](https://github.com/VoltAgent/awesome-claude-code-subagents) are installed (127+ across 10 families), the panel upgrades generic persona-prompted reviewers to domain-specific agents via `subagent_type`.
 - **3-tier mapping** — core persona mapping (16 personas), signal-detected specialist mapping (35 content signals → language/domain agents), orchestration phase mapping (completeness audit, claim/severity verification).
-- **Smart installation prompts** — suggests relevant `claude install-skill voltagent-*` commands when specialist agents would help but aren't installed. Non-blocking, once per session.
+- **Smart installation prompts** — suggests relevant `claude plugin install voltagent-*` commands when specialist agents would help but aren't installed. Non-blocking, once per session.
 - **Graceful fallback** — all functionality works without VoltAgent; it's a transparent upgrade.
 - **Credits:** [VoltAgent/awesome-claude-code-subagents](https://github.com/VoltAgent/awesome-claude-code-subagents) for the 127+ agent catalog across `voltagent-qa-sec`, `voltagent-data-ai`, `voltagent-infra`, `voltagent-lang`, `voltagent-core-dev`, `voltagent-biz`, `voltagent-domains`, `voltagent-meta`, `voltagent-dev-exp`, `voltagent-research`.
 
