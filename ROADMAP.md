@@ -244,6 +244,7 @@ Techniques evaluated and rejected for our use case.
 | LLM-Judge-Trajectories | — | Trajectory scoring (deferred) |
 | Multi-Agent-Review-Bench | — | Benchmark suite for review panels |
 | AgentReview | — | Survey of agent-based review systems |
+| [VoltAgent/awesome-claude-code-subagents](https://github.com/VoltAgent/awesome-claude-code-subagents) | 127+ agents | Specialist agent catalog for persona-to-agent mapping (v2.9) |
 
 ---
 
@@ -260,7 +261,8 @@ Techniques evaluated and rejected for our use case.
 | v2.5 | 2026-03-20 | Trust & verification layer (claim verification, epistemic labels) |
 | v2.6 | 2026-03-25 | Schliff optimisation (75→86), reference extraction, A/B validated |
 | v2.7 | 2026-03-26 | Severity verification, temporal scope, defect classification |
-| v2.8 | planned | Panel-reviewed: severity dampening, coverage check, verify-before-claim, auto mode |
+| v2.8 | 2026-03-26 | Panel-reviewed: severity dampening, coverage check, verify-before-claim, auto mode |
+| v2.9 | 2026-03-29 | VoltAgent specialist agent integration (127+ agents, 10 families) |
 
 ---
 
