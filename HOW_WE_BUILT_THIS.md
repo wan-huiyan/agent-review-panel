@@ -476,16 +476,53 @@ Both fixed in follow-up commit. Estimated schliff score: 84 → 90.
 
 ---
 
+## Step 15: VoltAgent Specialist Agent Integration (v2.9, 2026-03-29)
+
+### Motivation
+
+During a test plan review for a causal impact analysis webapp, we bypassed the full review panel ceremony and instead launched 4 VoltAgent specialist agents directly (`voltagent-qa-sec:qa-expert`, `voltagent-data-ai:data-scientist`, `voltagent-infra:devops-engineer`, `voltagent-qa-sec:code-reviewer`). The result was striking: 38 findings with <10% cross-reviewer overlap. Each specialist caught blind spots the others missed — QA found error path gaps, DataSci found statistical fixture contamination, DevOps found hardcoded paths and state isolation issues, and the code reviewer challenged scope achievability.
+
+The VoltAgent agents have built-in domain expertise via their system prompts, making them genuinely stronger reviewers than generic agents prompted as "you are the Security Auditor." The question was: could we integrate this into the review panel skill while keeping it portable?
+
+### Implementation
+
+Added a "VoltAgent Integration (v2.9)" section to SKILL.md with:
+
+1. **Availability check** — scan system-reminder for `voltagent-*` agents during Phase 1
+2. **3-tier mapping tables:**
+   - Core persona mapping (16 rows) — every built-in persona → VoltAgent primary + alt
+   - Signal-detected specialist mapping (35 rows) — content signals → language/domain agents
+   - Orchestration mapping (4 rows) — completeness audit, claim/severity verification
+3. **Smart installation prompts** — suggest only relevant families, once per session, non-blocking
+4. **Graceful fallback** — everything works without VoltAgent; it's a transparent upgrade
+
+Full catalog sourced from [VoltAgent/awesome-claude-code-subagents](https://github.com/VoltAgent/awesome-claude-code-subagents) (127+ agents across 10 families).
+
+### Key Design Decisions
+
+- **Devil's Advocate stays generic** — the contrarian role benefits from having no domain bias
+- **Supreme Judge stays generic** — must be domain-neutral to arbitrate
+- **Persona prompts still included** — VoltAgent agents get the review-specific context (agreement intensity, reasoning strategy, evaluation criteria) that their built-in system prompts don't cover
+- **Installation suggestion is non-blocking** — "Continue without them? They're optional"
+
+### Lessons
+
+24. **Domain-specific system prompts beat persona prompts for specialist reviews.** A `voltagent-qa-sec:code-reviewer` has built-in code review heuristics that a generic agent prompted as "Correctness Hawk" cannot match. The difference is most visible in edge case detection and error path coverage.
+
+25. **VoltAgent integration must be a transparent upgrade, not a requirement.** The skill has users who don't have VoltAgent installed. Making it required would break portability. The graceful-fallback + smart-suggestion pattern preserves the skill's universality while rewarding users who have specialist agents available.
+
+---
+
 ## File Inventory
 
 ```
-├── SKILL.md                           # The skill itself (v2.7, ~340 lines)
+├── SKILL.md                           # The skill itself (v2.9, ~460 lines)
 ├── skills/agent-review-panel/
 │   └── SKILL.md                       # Plugin copy (synced with root)
 ├── references/
 │   ├── signals-and-checklists.md      # 9 signal groups + domain checklists
 │   ├── prompt-templates.md            # All phase prompt templates
-│   ├── changelog.md                   # Version history (v2–v2.8 plan)
+│   ├── changelog.md                   # Version history (v2–v2.9)
 │   └── research-v28.md               # 19-source v2.8 research compilation
 ├── docs/
 │   ├── demo-flow.png                  # Architecture diagram (referenced by README)
