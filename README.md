@@ -8,16 +8,6 @@ A Claude Code skill that orchestrates multi-agent adversarial review panels. Mul
 
 [![Agent Review Panel demo](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/demo.gif?v=1)](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/demo.gif?v=1)
 
-<details>
-<summary>See full terminal screenshot (click to expand)</summary>
-
-![Agent Review Panel — terminal demo](docs/demo-flow.png)
-*4-6 reviewers independently review an ML pipeline, debate each other's findings, then a completeness auditor and supreme judge weigh in.*
-
-> To re-record the GIF demo: `./docs/record-demo.sh` (requires [VHS](https://github.com/charmbracelet/vhs) or asciinema)
-
-</details>
-
 ## Why This Exists
 
 **The single-reviewer problem:** When you ask Claude to "review this code" or "check this plan," you get one perspective. It's thorough, but it's one mind looking at one thing. It won't argue with itself. It won't catch its own blind spots. And it will never tell you "I'm not sure about this" the way a real team would.
