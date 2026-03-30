@@ -4,17 +4,16 @@
 
 A Claude Code skill that orchestrates multi-agent adversarial review panels. Multiple AI reviewers with distinct personas independently evaluate your work, debate each other's findings, then a supreme judge renders the final verdict — all compiled into a structured report for human review.
 
+[![Agent Review Panel — animated sketch flow](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/sketch-flow.gif?v=3)](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/sketch-flow-animated.svg?v=3)
+
 [![Agent Review Panel — pipeline architecture](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/hero-flow.svg?v=1)](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/hero-flow.svg?v=1)
 
-[![Agent Review Panel — pixel art flow](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/pixel-flow.svg?v=1)](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/pixel-flow.svg?v=1)
-*Cute version: Claude Code orchestrates 6 persona-based reviewers through adversarial debate to a final verdict.*
+<details>
+<summary>Terminal demo (click to expand)</summary>
 
-[![Agent Review Panel — animated flow](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/pixel-flow.gif?v=1)](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/pixel-flow.gif?v=1)
+[![Agent Review Panel demo](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/demo.gif?v=3)](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/demo.gif?v=3)
 
-[![Agent Review Panel — sketch art flow](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/sketch-flow.gif?v=1)](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/sketch-flow-animated.svg?v=1)
-*Sketchy version: 8-scene animated story from prompt to verdict with expressive characters, adversarial debate, blind finals, and gavel slam.*
-
-[![Agent Review Panel demo](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/demo.gif?v=1)](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/demo.gif?v=1)
+</details>
 
 ## Why This Exists
 

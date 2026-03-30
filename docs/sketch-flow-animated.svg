@@ -52,68 +52,75 @@
     .s3-r6      { animation: fadeIn 0.3s ease-out 11.4s forwards; }
     .s3-out     { animation: fadeOut 0.6s ease-out 14.0s forwards; }
 
-    /* ── Scene 4: Debate with 3 rounds (15-33s) ── */
-    /* Round 1 (15-21s) */
-    .s4-in      { animation: fadeIn 0.5s ease-out 15.0s forwards; }
-    .s4-b1      { animation: fadeIn 0.4s ease-out 15.8s forwards; }
-    .s4-impact1 { animation: impactBurst 0.6s ease-out 15.8s forwards; }
-    .s4-b2      { animation: fadeIn 0.4s ease-out 17.0s forwards; }
-    .s4-b3      { animation: fadeIn 0.4s ease-out 18.0s forwards; }
-    .s4-code    { animation: fadeIn 0.3s ease-out 18.4s forwards; }
-    .s4-b4      { animation: fadeIn 0.4s ease-out 19.2s forwards; }
-    .s4-round   { animation: fadeIn 0.3s ease-out 19.8s forwards; }
-    .s4-r1out   { animation: fadeOut 0.5s ease-out 20.5s forwards; }
+    /* ── Scene 3.5: Private Reflection (15-21s) ── */
+    .s35-in     { animation: fadeIn 0.5s ease-out 15.0s forwards; }
+    .s35-char1  { animation: fadeIn 0.4s ease-out 15.5s forwards; }
+    .s35-char2  { animation: fadeIn 0.4s ease-out 16.2s forwards; }
+    .s35-char3  { animation: fadeIn 0.4s ease-out 16.9s forwards; }
+    .s35-out    { animation: fadeOut 0.6s ease-out 20.5s forwards; }
 
-    /* Round 2 (21-27s) */
-    .s4-r2in    { animation: fadeIn 0.5s ease-out 21.0s forwards; }
-    .s4-r2b1    { animation: fadeIn 0.4s ease-out 21.8s forwards; }
-    .s4-r2b2    { animation: fadeIn 0.4s ease-out 23.0s forwards; }
-    .s4-r2badge { animation: fadeIn 0.3s ease-out 24.0s forwards; }
-    .s4-r2out   { animation: fadeOut 0.5s ease-out 26.5s forwards; }
+    /* ── Scene 4: Debate with 3 rounds (21-39s) ── */
+    /* Round 1 (21-27s) */
+    .s4-in      { animation: fadeIn 0.5s ease-out 21.0s forwards; }
+    .s4-b1      { animation: fadeIn 0.4s ease-out 21.8s forwards; }
+    .s4-impact1 { animation: impactBurst 0.6s ease-out 21.8s forwards; }
+    .s4-b2      { animation: fadeIn 0.4s ease-out 23.0s forwards; }
+    .s4-b3      { animation: fadeIn 0.4s ease-out 24.0s forwards; }
+    .s4-code    { animation: fadeIn 0.3s ease-out 24.4s forwards; }
+    .s4-b4      { animation: fadeIn 0.4s ease-out 25.2s forwards; }
+    .s4-round   { animation: fadeIn 0.3s ease-out 25.8s forwards; }
+    .s4-r1out   { animation: fadeOut 0.5s ease-out 26.5s forwards; }
 
-    /* Round 3 (27-33s) */
-    .s4-r3in    { animation: fadeIn 0.5s ease-out 27.0s forwards; }
-    .s4-r3b1    { animation: fadeIn 0.4s ease-out 27.8s forwards; }
-    .s4-r3b2    { animation: fadeIn 0.4s ease-out 29.0s forwards; }
-    .s4-r3b3    { animation: fadeIn 0.4s ease-out 30.0s forwards; }
-    .s4-r3b4    { animation: fadeIn 0.4s ease-out 31.0s forwards; }
-    .s4-r3badge { animation: fadeIn 0.3s ease-out 31.8s forwards; }
-    .s4-out     { animation: fadeOut 0.6s ease-out 32.5s forwards; }
+    /* Round 2 (27-33s) */
+    .s4-r2in    { animation: fadeIn 0.5s ease-out 27.0s forwards; }
+    .s4-r2b1    { animation: fadeIn 0.4s ease-out 27.8s forwards; }
+    .s4-r2b2    { animation: fadeIn 0.4s ease-out 29.0s forwards; }
+    .s4-r2badge { animation: fadeIn 0.3s ease-out 30.0s forwards; }
+    .s4-r2out   { animation: fadeOut 0.5s ease-out 32.5s forwards; }
 
-    /* ── Scene 5: Blind Finals (33-39s) ── shifted +11s */
-    .s5-in       { animation: fadeIn 0.4s ease-out 33.0s forwards; }
-    .s5-normal   { animation: fadeOut 0.3s ease-out 33.4s forwards; }
-    .s5-blind    { animation: fadeIn 0.3s ease-out 33.4s forwards; }
-    .s5-label    { animation: fadeIn 0.3s ease-out 33.6s forwards; }
-    .s5-score1   { animation: fadeIn 0.2s ease-out 34.0s forwards; }
-    .s5-score2   { animation: fadeIn 0.2s ease-out 34.3s forwards; }
-    .s5-score3   { animation: fadeIn 0.2s ease-out 34.6s forwards; }
-    .s5-score4   { animation: fadeIn 0.2s ease-out 34.9s forwards; }
-    .s5-score5   { animation: fadeIn 0.2s ease-out 35.2s forwards; }
-    .s5-score6   { animation: fadeIn 0.2s ease-out 35.5s forwards; }
-    .s5-submitted { animation: fadeIn 0.3s ease-out 36.0s forwards; }
-    .s5-out      { animation: fadeOut 0.6s ease-out 38.0s forwards; }
+    /* Round 3 (33-39s) */
+    .s4-r3in    { animation: fadeIn 0.5s ease-out 33.0s forwards; }
+    .s4-r3b1    { animation: fadeIn 0.4s ease-out 33.8s forwards; }
+    .s4-r3b2    { animation: fadeIn 0.4s ease-out 35.0s forwards; }
+    .s4-r3b3    { animation: fadeIn 0.4s ease-out 36.0s forwards; }
+    .s4-r3b4    { animation: fadeIn 0.4s ease-out 37.0s forwards; }
+    .s4-r3badge { animation: fadeIn 0.3s ease-out 37.8s forwards; }
+    .s4-out     { animation: fadeOut 0.6s ease-out 38.5s forwards; }
 
-    /* ── Scene 6: Verify (39-44s) ── shifted +11s */
-    .s6-in      { animation: fadeIn 0.4s ease-out 39.0s forwards; }
-    .s6-check1  { animation: fadeIn 0.2s ease-out 39.8s forwards; }
-    .s6-check2  { animation: fadeIn 0.2s ease-out 40.3s forwards; }
-    .s6-check3  { animation: fadeIn 0.2s ease-out 40.8s forwards; }
-    .s6-out     { animation: fadeOut 0.6s ease-out 43.0s forwards; }
+    /* ── Scene 5: Blind Finals (39-45s) ── */
+    .s5-in       { animation: fadeIn 0.4s ease-out 39.0s forwards; }
+    .s5-normal   { animation: fadeOut 0.3s ease-out 39.4s forwards; }
+    .s5-blind    { animation: fadeIn 0.3s ease-out 39.4s forwards; }
+    .s5-label    { animation: fadeIn 0.3s ease-out 39.6s forwards; }
+    .s5-score1   { animation: fadeIn 0.2s ease-out 40.0s forwards; }
+    .s5-score2   { animation: fadeIn 0.2s ease-out 40.3s forwards; }
+    .s5-score3   { animation: fadeIn 0.2s ease-out 40.6s forwards; }
+    .s5-score4   { animation: fadeIn 0.2s ease-out 40.9s forwards; }
+    .s5-score5   { animation: fadeIn 0.2s ease-out 41.2s forwards; }
+    .s5-score6   { animation: fadeIn 0.2s ease-out 41.5s forwards; }
+    .s5-submitted { animation: fadeIn 0.3s ease-out 42.0s forwards; }
+    .s5-out      { animation: fadeOut 0.6s ease-out 44.0s forwards; }
 
-    /* ── Scene 7: Judge Verdict (44-51s) ── shifted +11s */
-    .s7-in         { animation: fadeIn 0.6s ease-out 44.0s forwards; }
-    .s7-gavel-up   { animation: fadeOut 0.15s ease-out 45.5s forwards; }
-    .s7-gavel-down { animation: fadeIn 0.15s ease-out 45.5s forwards; }
-    .s7-impact     { animation: impactBurst 0.5s ease-out 45.6s forwards; }
-    .s7-box        { animation: fadeIn 0.4s ease-out 46.0s forwards; }
-    .s7-v1         { animation: fadeIn 0.3s ease-out 46.3s forwards; }
-    .s7-v2         { animation: fadeIn 0.3s ease-out 46.8s forwards; }
-    .s7-v3         { animation: fadeIn 0.3s ease-out 47.3s forwards; }
+    /* ── Scene 6: Verify (45-50s) ── */
+    .s6-in      { animation: fadeIn 0.4s ease-out 45.0s forwards; }
+    .s6-check1  { animation: fadeIn 0.2s ease-out 45.8s forwards; }
+    .s6-check2  { animation: fadeIn 0.2s ease-out 46.3s forwards; }
+    .s6-check3  { animation: fadeIn 0.2s ease-out 46.8s forwards; }
+    .s6-out     { animation: fadeOut 0.6s ease-out 49.0s forwards; }
 
-    /* ── Scene 8: Hold (51-56s) ── shifted +11s */
-    .s8-zzz     { animation: pulseZzz 2s ease-in-out 51.0s infinite; }
-    .s8-footer  { animation: fadeIn 0.5s ease-out 51.5s forwards; }
+    /* ── Scene 7: Judge Verdict (50-57s) ── */
+    .s7-in         { animation: fadeIn 0.6s ease-out 50.0s forwards; }
+    .s7-gavel-up   { animation: fadeOut 0.15s ease-out 51.5s forwards; }
+    .s7-gavel-down { animation: fadeIn 0.15s ease-out 51.5s forwards; }
+    .s7-impact     { animation: impactBurst 0.5s ease-out 51.6s forwards; }
+    .s7-box        { animation: fadeIn 0.4s ease-out 52.0s forwards; }
+    .s7-v1         { animation: fadeIn 0.3s ease-out 52.3s forwards; }
+    .s7-v2         { animation: fadeIn 0.3s ease-out 52.8s forwards; }
+    .s7-v3         { animation: fadeIn 0.3s ease-out 53.3s forwards; }
+
+    /* ── Scene 8: Hold (57-62s) ── */
+    .s8-zzz     { animation: pulseZzz 2s ease-in-out 57.0s infinite; }
+    .s8-footer  { animation: fadeIn 0.5s ease-out 57.5s forwards; }
   </style>
 
   <!-- Background -->
@@ -225,50 +232,65 @@
         <text x="75" y="24" text-anchor="middle" fill="#E67E22" font-size="16" font-weight="700">Pipeline (3)</text>
       </g>
 
-      <!-- Step 2: Auto-adding personas (s2-step2 timing) -->
+      <!-- Step 2: Auto-adding personas with VoltAgent mapping (s2-step2 timing) -->
       <g class="hide s2-step2">
-        <text x="170" y="195" fill="#2C3E50" font-size="16" font-weight="600">Auto-adding personas:</text>
-        <!-- Specialist 1: purple dot -->
-        <circle cx="185" cy="220" r="6" fill="#8E44AD"/>
-        <text x="200" y="225" fill="#2C3E50" font-size="15">&#x2726; Statistical Rigor Reviewer</text>
-        <!-- Specialist 2: orange dot -->
-        <circle cx="185" cy="248" r="6" fill="#E67E22"/>
-        <text x="200" y="253" fill="#2C3E50" font-size="15">&#x2726; Data Quality Auditor</text>
-        <!-- Specialist 3: teal dot -->
-        <circle cx="185" cy="276" r="6" fill="#1ABC9C"/>
-        <text x="200" y="281" fill="#2C3E50" font-size="15">&#x2726; Pipeline Safety Reviewer</text>
+        <text x="170" y="190" fill="#2C3E50" font-size="15" font-weight="600">Persona → VoltAgent specialist mapping:</text>
+        <!-- Specialist 1: purple dot + agent mapping -->
+        <circle cx="185" cy="213" r="5" fill="#8E44AD"/>
+        <text x="198" y="218" fill="#2C3E50" font-size="13">Statistical Rigor</text>
+        <text x="340" y="218" fill="#B0A89E" font-size="13">→</text>
+        <rect x="356" y="204" width="230" height="20" rx="4" fill="#F3F0FF" stroke="#8E44AD" stroke-width="0.8"/>
+        <text x="366" y="218" fill="#8E44AD" font-size="11" font-family="monospace">voltagent-data-ai:data-scientist</text>
+        <!-- Specialist 2: orange dot + agent mapping -->
+        <circle cx="185" cy="240" r="5" fill="#E67E22"/>
+        <text x="198" y="245" fill="#2C3E50" font-size="13">Data Quality Auditor</text>
+        <text x="340" y="245" fill="#B0A89E" font-size="13">→</text>
+        <rect x="356" y="231" width="230" height="20" rx="4" fill="#FFF7ED" stroke="#E67E22" stroke-width="0.8"/>
+        <text x="366" y="245" fill="#E67E22" font-size="11" font-family="monospace">voltagent-qa-sec:code-reviewer</text>
+        <!-- Specialist 3: teal dot + agent mapping -->
+        <circle cx="185" cy="267" r="5" fill="#1ABC9C"/>
+        <text x="198" y="272" fill="#2C3E50" font-size="13">Pipeline Safety</text>
+        <text x="340" y="272" fill="#B0A89E" font-size="13">→</text>
+        <rect x="356" y="258" width="230" height="20" rx="4" fill="#EDFCF8" stroke="#1ABC9C" stroke-width="0.8"/>
+        <text x="366" y="272" fill="#1ABC9C" font-size="11" font-family="monospace">voltagent-infra:devops-engineer</text>
       </g>
 
-      <!-- Step 3: Mining knowledge (s2-step3 timing) -->
+      <!-- Step 3: Tiered knowledge mining (s2-step3 timing) -->
       <g class="hide s2-step3">
-        <text x="170" y="325" fill="#2C3E50" font-size="16" font-weight="600">Mining knowledge:</text>
-        <text x="190" y="350" fill="#7F8C8D" font-size="15" font-style="italic">3 feedback memories, 2 project lessons found</text>
+        <text x="170" y="310" fill="#2C3E50" font-size="15" font-weight="600">Tiered knowledge mining:</text>
+        <text x="190" y="332" fill="#4A90D9" font-size="12" font-weight="600">L0</text>
+        <text x="210" y="332" fill="#7F8C8D" font-size="12">index scan → 12 files</text>
+        <text x="350" y="332" fill="#8E44AD" font-size="12" font-weight="600">L1</text>
+        <text x="370" y="332" fill="#7F8C8D" font-size="12">summaries → 4 relevant</text>
+        <text x="530" y="332" fill="#27AE60" font-size="12" font-weight="600">L2</text>
+        <text x="550" y="332" fill="#7F8C8D" font-size="12">full content → 2 loaded</text>
+        <text x="190" y="352" fill="#B0A89E" font-size="12" font-style="italic">3 feedback memories, 2 project lessons found</text>
       </g>
 
       <!-- Step 4: Grepping safety mechanisms (s2-step4 timing) -->
       <g class="hide s2-step4">
-        <text x="170" y="395" fill="#2C3E50" font-size="16" font-weight="600">Grepping safety mechanisms:</text>
-        <g transform="translate(190, 408)">
+        <text x="170" y="385" fill="#2C3E50" font-size="15" font-weight="600">Grepping safety mechanisms:</text>
+        <g transform="translate(190, 398)">
           <rect width="72" height="26" rx="6" fill="#1E1E2E"/>
           <text x="36" y="18" text-anchor="middle" fill="#A6E3A1" font-size="13" font-family="monospace">_valid</text>
         </g>
-        <g transform="translate(272, 408)">
+        <g transform="translate(272, 398)">
           <rect width="72" height="26" rx="6" fill="#1E1E2E"/>
           <text x="36" y="18" text-anchor="middle" fill="#A6E3A1" font-size="13" font-family="monospace">_guard</text>
         </g>
-        <g transform="translate(354, 408)">
+        <g transform="translate(354, 398)">
           <rect width="72" height="26" rx="6" fill="#1E1E2E"/>
           <text x="36" y="18" text-anchor="middle" fill="#A6E3A1" font-size="13" font-family="monospace">_check</text>
         </g>
-        <g transform="translate(436, 408)">
+        <g transform="translate(436, 398)">
           <rect width="72" height="26" rx="6" fill="#1E1E2E"/>
           <text x="36" y="18" text-anchor="middle" fill="#A6E3A1" font-size="13" font-family="monospace">_mask</text>
         </g>
-        <g transform="translate(518, 408)">
+        <g transform="translate(518, 398)">
           <rect width="72" height="26" rx="6" fill="#1E1E2E"/>
           <text x="36" y="18" text-anchor="middle" fill="#A6E3A1" font-size="13" font-family="monospace">fillna</text>
         </g>
-        <g transform="translate(600, 408)">
+        <g transform="translate(600, 398)">
           <rect width="96" height="26" rx="6" fill="#1E1E2E"/>
           <text x="48" y="18" text-anchor="middle" fill="#A6E3A1" font-size="13" font-family="monospace">COALESCE</text>
         </g>
@@ -461,14 +483,141 @@
   </g>
 
   <!-- ═══════════════════════════════════════════
-       SCENE 4: ADVERSARIAL DEBATE (15-33s) — 3 Rounds
+       SCENE 3.5: PRIVATE REFLECTION (15-21s)
+  ═══════════════════════════════════════════ -->
+  <g class="hide s35-in">
+    <g class="s35-out" style="opacity:1;">
+      <!-- Title -->
+      <text x="480" y="38" text-anchor="middle" fill="#7F8C8D" font-size="16" font-weight="600" letter-spacing="2">PRIVATE REFLECTION</text>
+      <text x="480" y="58" text-anchor="middle" fill="#B0A89E" font-size="12" font-style="italic">each reviewer re-reads source, rates confidence</text>
+
+      <!-- Character 1: Statistical Rigor (purple) at x≈130 -->
+      <g class="hide s35-char1">
+        <g transform="translate(110, 130) scale(0.8)">
+          <path d="M16,0 C24,-1 30,4 32,12 C34,22 30,30 22,32 C14,34 6,28 4,18 C2,6 8,1 16,0Z" fill="#FFDBB8" stroke="#2C3E50" stroke-width="1.8"/>
+          <circle cx="13" cy="15" r="6" fill="none" stroke="#2C3E50" stroke-width="1.5"/>
+          <circle cx="27" cy="14" r="6" fill="none" stroke="#2C3E50" stroke-width="1.5"/>
+          <line x1="19" y1="14" x2="21" y2="14" stroke="#2C3E50" stroke-width="1.5"/>
+          <line x1="11" y1="15" x2="15" y2="15" stroke="#2C3E50" stroke-width="2" stroke-linecap="round"/>
+          <line x1="25" y1="14" x2="29" y2="14" stroke="#2C3E50" stroke-width="2" stroke-linecap="round"/>
+          <path d="M14,24 C16,22 22,22 24,24" fill="none" stroke="#2C3E50" stroke-width="1.2"/>
+          <ellipse cx="20" cy="52" rx="13" ry="15" fill="#8E44AD" stroke="#2C3E50" stroke-width="1.5"/>
+          <rect x="24" y="40" width="6" height="10" rx="1" fill="#FFF" stroke="#8E44AD" stroke-width="0.8"/>
+          <line x1="26" y1="40" x2="26" y2="36" stroke="#E74C3C" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="28" y1="40" x2="28" y2="37" stroke="#3498DB" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M6,44 C0,38 -2,32 2,28" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+          <circle cx="4" cy="27" r="3" fill="#FFDBB8" stroke="#2C3E50" stroke-width="1"/>
+          <path d="M34,44 C40,50 42,58 38,64" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M14,66 L10,82" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M26,66 L30,82" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+          <ellipse cx="8" cy="84" rx="6" ry="3" fill="#2C3E50"/>
+          <ellipse cx="32" cy="84" rx="6" ry="3" fill="#2C3E50"/>
+        </g>
+        <text x="130" y="210" text-anchor="middle" fill="#8E44AD" font-size="10" font-weight="700">Stat Rigor</text>
+        <!-- Thought cloud connector -->
+        <circle cx="138" cy="126" r="3" fill="#DDD" stroke="#BBB" stroke-width="0.8"/>
+        <circle cx="148" cy="115" r="4" fill="#DDD" stroke="#BBB" stroke-width="0.8"/>
+        <circle cx="162" cy="103" r="5" fill="#DDD" stroke="#BBB" stroke-width="0.8"/>
+        <!-- Thought bubble -->
+        <rect x="50" y="68" width="210" height="70" rx="12" fill="#FFF" stroke="#BBB" stroke-width="1.2" stroke-dasharray="4,3"/>
+        <text x="60" y="84" fill="#2C3E50" font-size="11" font-family="monospace">
+          <tspan x="60" dy="0">[train_test_split]: </tspan><tspan fill="#27AE60" font-weight="700">High</tspan>
+        </text>
+        <text x="60" y="100" fill="#2C3E50" font-size="11" font-family="monospace">
+          <tspan x="60" dy="0">[class weights]: </tspan><tspan fill="#E67E22" font-weight="700">Medium</tspan>
+        </text>
+        <text x="60" y="116" fill="#2C3E50" font-size="11" font-family="monospace">
+          <tspan x="60" dy="0" fill="#3498DB" font-weight="700">NEW: </tspan><tspan fill="#2C3E50">batch norm missing</tspan>
+        </text>
+      </g>
+
+      <!-- Character 2: Security (red) at x≈480 -->
+      <g class="hide s35-char2">
+        <g transform="translate(460, 130) scale(0.8)">
+          <path d="M16,0 C24,-1 30,4 32,12 C34,22 30,30 22,32 C14,34 6,28 4,18 C2,6 8,1 16,0Z" fill="#FFDBB8" stroke="#2C3E50" stroke-width="1.8"/>
+          <path d="M10,10 L16,12" fill="none" stroke="#2C3E50" stroke-width="2" stroke-linecap="round"/>
+          <path d="M30,10 L24,12" fill="none" stroke="#2C3E50" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="14" cy="16" r="2" fill="#2C3E50"/><circle cx="26" cy="16" r="2" fill="#2C3E50"/>
+          <line x1="14" y1="24" x2="26" y2="24" stroke="#2C3E50" stroke-width="1.5" stroke-linecap="round"/>
+          <ellipse cx="20" cy="52" rx="14" ry="16" fill="#E74C3C" stroke="#2C3E50" stroke-width="1.5"/>
+          <path d="M16,42 L20,38 L24,42 L24,50 C24,54 20,56 20,56 C20,56 16,54 16,50Z" fill="#C0392B" stroke="#FFF" stroke-width="0.8"/>
+          <text x="20" y="50" text-anchor="middle" fill="#FFF" font-size="6" font-weight="700">S</text>
+          <rect x="6" y="60" width="28" height="4" rx="2" fill="#8B4513" stroke="#2C3E50" stroke-width="0.8"/>
+          <rect x="12" y="59" width="4" height="6" rx="1" fill="#A0522D" stroke="#2C3E50" stroke-width="0.5"/>
+          <rect x="24" y="59" width="4" height="6" rx="1" fill="#A0522D" stroke="#2C3E50" stroke-width="0.5"/>
+          <path d="M6,46 C-4,44 -6,50 2,54 L20,50" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M34,46 C44,44 46,50 38,54 L20,50" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M14,66 L10,82" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M26,66 L30,82" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+          <ellipse cx="8" cy="84" rx="6" ry="3" fill="#2C3E50"/>
+          <ellipse cx="32" cy="84" rx="6" ry="3" fill="#2C3E50"/>
+        </g>
+        <text x="480" y="210" text-anchor="middle" fill="#E74C3C" font-size="10" font-weight="700">Security</text>
+        <!-- Thought cloud connector -->
+        <circle cx="488" cy="126" r="3" fill="#DDD" stroke="#BBB" stroke-width="0.8"/>
+        <circle cx="498" cy="115" r="4" fill="#DDD" stroke="#BBB" stroke-width="0.8"/>
+        <circle cx="512" cy="103" r="5" fill="#DDD" stroke="#BBB" stroke-width="0.8"/>
+        <!-- Thought bubble -->
+        <rect x="390" y="68" width="230" height="70" rx="12" fill="#FFF" stroke="#BBB" stroke-width="1.2" stroke-dasharray="4,3"/>
+        <text x="400" y="84" fill="#2C3E50" font-size="11" font-family="monospace">
+          <tspan x="400" dy="0">[SQL injection]: </tspan><tspan fill="#27AE60" font-weight="700">High</tspan>
+        </text>
+        <text x="400" y="100" fill="#2C3E50" font-size="11" font-family="monospace">
+          <tspan x="400" dy="0">[auth bypass]: </tspan><tspan fill="#E74C3C" font-weight="700">Low</tspan><tspan fill="#7F8C8D"> — false pos?</tspan>
+        </text>
+        <text x="400" y="116" fill="#2C3E50" font-size="11" font-family="monospace">
+          <tspan x="400" dy="0">Most defensible: SQL inj.</tspan>
+        </text>
+      </g>
+
+      <!-- Character 3: Data Quality (orange) at x≈830 -->
+      <g class="hide s35-char3">
+        <g transform="translate(810, 130) scale(0.8)">
+          <path d="M16,0 C24,-1 30,4 32,12 C34,22 30,30 22,32 C14,34 6,28 4,18 C2,6 8,1 16,0Z" fill="#FFDBB8" stroke="#2C3E50" stroke-width="1.8"/>
+          <path d="M6,10 C4,2 12,-2 22,-1 C30,0 34,6 32,10 C30,6 24,3 18,4 C10,5 8,8 6,10Z" fill="#D35400" stroke="#2C3E50" stroke-width="1"/>
+          <line x1="32" y1="4" x2="38" y2="-6" stroke="#E74C3C" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="38" cy="-7" r="1.5" fill="#E74C3C"/>
+          <circle cx="13" cy="14" r="2.5" fill="#2C3E50"/>
+          <circle cx="27" cy="14" r="4" fill="none" stroke="#2C3E50" stroke-width="1.5"/><circle cx="27" cy="14" r="2" fill="#2C3E50"/>
+          <ellipse cx="18" cy="22" rx="3" ry="2" fill="none" stroke="#2C3E50" stroke-width="1.2"/>
+          <ellipse cx="20" cy="50" rx="12" ry="14" fill="#E67E22" stroke="#2C3E50" stroke-width="1.5"/>
+          <path d="M34,42 C42,36 48,30 50,26" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+          <circle cx="52" cy="22" r="7" fill="none" stroke="#E67E22" stroke-width="2"/>
+          <path d="M6,44 C0,50 -2,58 0,62" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M14,62 L10,78" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M26,62 L30,78" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+          <ellipse cx="8" cy="80" rx="5" ry="3" fill="#2C3E50"/>
+          <ellipse cx="32" cy="80" rx="5" ry="3" fill="#2C3E50"/>
+        </g>
+        <text x="830" y="210" text-anchor="middle" fill="#E67E22" font-size="10" font-weight="700">Data Quality</text>
+        <!-- Thought cloud connector -->
+        <circle cx="838" cy="126" r="3" fill="#DDD" stroke="#BBB" stroke-width="0.8"/>
+        <circle cx="848" cy="115" r="4" fill="#DDD" stroke="#BBB" stroke-width="0.8"/>
+        <circle cx="862" cy="103" r="5" fill="#DDD" stroke="#BBB" stroke-width="0.8"/>
+        <!-- Thought bubble -->
+        <rect x="730" y="68" width="230" height="70" rx="12" fill="#FFF" stroke="#BBB" stroke-width="1.2" stroke-dasharray="4,3"/>
+        <text x="740" y="84" fill="#2C3E50" font-size="11" font-family="monospace">
+          <tspan x="740" dy="0">[null joins]: </tspan><tspan fill="#27AE60" font-weight="700">High</tspan>
+        </text>
+        <text x="740" y="100" fill="#2C3E50" font-size="11" font-family="monospace">
+          <tspan x="740" dy="0">[schema drift]: </tspan><tspan fill="#E67E22" font-weight="700">Medium</tspan>
+        </text>
+        <text x="740" y="116" fill="#2C3E50" font-size="11" font-family="monospace">
+          <tspan x="740" dy="0">Least certain: drift sev.</tspan>
+        </text>
+      </g>
+    </g>
+  </g>
+
+  <!-- ═══════════════════════════════════════════
+       SCENE 4: ADVERSARIAL DEBATE (21-39s) — 3 Rounds
   ═══════════════════════════════════════════ -->
   <g class="hide s4-in">
     <g class="s4-out" style="opacity:1;">
     <text x="480" y="70" text-anchor="middle" fill="#8E44AD" font-size="15" font-weight="700">ADVERSARIAL DEBATE</text>
     </g>
 
-    <!-- ─── ROUND 1 (15-21s): Stat Rigor vs Pipeline Safety ─── -->
+    <!-- ─── ROUND 1 (21-27s): Stat Rigor vs Pipeline Safety ─── -->
     <g class="s4-r1out" style="opacity:1;">
       <!-- Statistical Rigor Reviewer (left) -->
       <g transform="translate(60, 110) scale(1.0)">
@@ -574,7 +723,7 @@
       </g>
     </g>
 
-    <!-- ─── ROUND 2 (21-27s): Security vs Performance ─── -->
+    <!-- ─── ROUND 2 (27-33s): Security vs Performance ─── -->
     <g class="hide s4-r2in">
       <g class="s4-r2out" style="opacity:1;">
         <!-- Security character (left) — red, arms crossed, shield badge "S", utility belt -->
@@ -656,7 +805,7 @@
       </g>
     </g>
 
-    <!-- ─── ROUND 3 (27-33s): Data Quality vs Maintainability ─── -->
+    <!-- ─── ROUND 3 (33-39s): Data Quality vs Maintainability ─── -->
     <g class="hide s4-r3in">
       <g class="s4-out" style="opacity:1;">
         <!-- Data Quality Auditor (left) — orange, magnifying glass, red pen behind ear, one eye large -->
@@ -764,7 +913,7 @@
   </g>
 
   <!-- ═══════════════════════════════════════════
-       SCENE 5: BLIND FINALS (33-39s)
+       SCENE 5: BLIND FINALS (39-45s)
   ═══════════════════════════════════════════ -->
   <g class="hide s5-in">
     <g class="s5-out" style="opacity:1;">
@@ -865,7 +1014,7 @@
   </g>
 
   <!-- ═══════════════════════════════════════════
-       SCENE 6: VERIFY (39-44s)
+       SCENE 6: VERIFY (45-50s)
   ═══════════════════════════════════════════ -->
   <g class="hide s6-in">
     <g class="s6-out" style="opacity:1;">
@@ -917,7 +1066,7 @@
   </g>
 
   <!-- ═══════════════════════════════════════════
-       SCENE 7: SUPREME JUDGE VERDICT (44-51s)
+       SCENE 7: SUPREME JUDGE VERDICT (50-57s)
   ═══════════════════════════════════════════ -->
   <g class="hide s7-in">
     <!-- Judge character -->
@@ -984,7 +1133,7 @@
   </g>
 
   <!-- ═══════════════════════════════════════════
-       SCENE 8: HOLD (51-56s)
+       SCENE 8: HOLD (57-62s)
   ═══════════════════════════════════════════ -->
   <g class="hide s8-zzz" transform="translate(860, 340)">
     <text fill="#B8B0A4" font-size="16" font-weight="700">z</text>

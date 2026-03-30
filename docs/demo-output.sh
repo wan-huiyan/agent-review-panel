@@ -46,16 +46,18 @@ printf "  ${BBLUE}● ML/Statistics${RST} (7)  ${BGREEN}● SQL${RST} (4)  ${BYE
 sleep 1.6
 
 printf "\n"
-printf "Auto-adding personas:\n"
-printf "  ${BMAGENTA}✦ Statistical Rigor Reviewer${RST}\n"
+printf "Persona → VoltAgent specialist mapping:\n"
+printf "  ${BMAGENTA}✦ Statistical Rigor${RST}    → ${DIM}voltagent-data-ai:data-scientist${RST}\n"
 sleep 0.6
-printf "  ${BMAGENTA}✦ Data Quality Auditor${RST}\n"
+printf "  ${BMAGENTA}✦ Data Quality Auditor${RST} → ${DIM}voltagent-qa-sec:code-reviewer${RST}\n"
 sleep 0.6
-printf "  ${BMAGENTA}✦ Pipeline Safety Reviewer${RST}\n"
+printf "  ${BMAGENTA}✦ Pipeline Safety${RST}      → ${DIM}voltagent-infra:devops-engineer${RST}\n"
 sleep 1.6
 
 printf "\n"
-printf "${DIM}Mining knowledge: 3 feedback memories, 2 project lessons found${RST}\n"
+printf "Tiered knowledge mining:\n"
+printf "  ${BBLUE}L0${RST} index scan → 12 files  ${BMAGENTA}L1${RST} summaries → 4 relevant  ${BGREEN}L2${RST} full content → 2 loaded\n"
+printf "  ${DIM}3 feedback memories, 2 project lessons found${RST}\n"
 sleep 2.4
 
 # ── Review ──
@@ -77,9 +79,29 @@ sleep 0.8
 printf "  ${GRAY}[6/6]${RST} ${BYELLOW}Maintainability Reviewer${RST}   ${DIM}▸${RST} found ${BWHITE}1${RST} issue  (${GRAY}0 high${RST})\n"
 sleep 2.4
 
+# ── Private Reflection ──
+printf "\n"
+printf "${BCYAN}━━━ Review: Private Reflection ━━━${RST}\n"
+printf "${DIM}each reviewer re-reads source, rates confidence${RST}\n"
+sleep 1.6
+
+printf "\n"
+printf "  ${BYELLOW}Stat Rigor:${RST}     [train_test_split]: ${BGREEN}High${RST}  [class weights]: ${BYELLOW}Medium${RST}  ${BBLUE}NEW:${RST} batch norm missing\n"
+sleep 0.8
+printf "  ${BYELLOW}Security:${RST}       [SQL injection]: ${BGREEN}High${RST}  [auth bypass]: ${BRED}Low${RST} ${DIM}— false pos?${RST}\n"
+sleep 0.8
+printf "  ${BYELLOW}Data Quality:${RST}   [null joins]: ${BGREEN}High${RST}  [schema drift]: ${BYELLOW}Medium${RST}\n"
+sleep 0.8
+printf "  ${BYELLOW}Pipeline Safety:${RST} [retry logic]: ${BGREEN}High${RST}  [timeout]: ${BYELLOW}Medium${RST}\n"
+sleep 0.8
+printf "  ${BYELLOW}Performance:${RST}    [batch size]: ${BYELLOW}Medium${RST}  ${DIM}no new issues${RST}\n"
+sleep 0.8
+printf "  ${BYELLOW}Maintainability:${RST} [coupling]: ${BYELLOW}Medium${RST}  ${DIM}no new issues${RST}\n"
+sleep 2.4
+
 # ── Debate ──
 printf "\n"
-printf "${BCYAN}━━━ Debate: Adversarial Debate (Round 1) ━━━${RST}\n"
+printf "${BCYAN}━━━ Debate: Adversarial Debate (Round 1 of 3) ━━━${RST}\n"
 sleep 1.6
 
 printf "\n"
@@ -94,6 +116,41 @@ printf "                     raw CSV with no prior balancing step.\n"
 sleep 1.5
 printf "  ${BGREEN}Pipeline Safety:${RST}   ${BG_MAGENTA} CONCEDE ${RST} the raw ingest path is\n"
 printf "                     unprotected. ${BRED}Upgrading to HIGH.${RST}\n"
+sleep 2.4
+
+# ── Debate Round 2 ──
+printf "\n"
+printf "${BCYAN}━━━ Debate: Adversarial Debate (Round 2 of 3) ━━━${RST}\n"
+sleep 1.6
+
+printf "\n"
+printf "  ${BYELLOW}Security:${RST}    ${BG_RED} HIGH ${RST} SQL injection via raw string interpolation\n"
+printf "                 in query builder. User input unsanitized.\n"
+sleep 1.5
+printf "  ${BGREEN}Performance:${RST} ${BG_GREEN} AGREE ${RST} confirmed, parameterized queries needed.\n"
+printf "                 No performance trade-off here.\n"
+sleep 2.4
+
+# ── Debate Round 3 ──
+printf "\n"
+printf "${BCYAN}━━━ Debate: Adversarial Debate (Round 3 of 3) ━━━${RST}\n"
+sleep 1.6
+
+printf "\n"
+printf "  ${BYELLOW}Data Quality:${RST}    ${BG_YELLOW} MEDIUM ${RST} No null checks on upstream joins,\n"
+printf "                     23%% row loss detected in output table.\n"
+sleep 1.5
+printf "  ${BGREEN}Maintainability:${RST} ${BG_YELLOW} DISAGREE ${RST} outer join preserves all rows.\n"
+printf "                     No data loss if schema is correct.\n"
+sleep 1.5
+printf "  ${BYELLOW}Data Quality:${RST}    INNER JOIN at line 78, not LEFT JOIN.\n"
+printf "                     Rows without match are silently dropped.\n"
+sleep 1.5
+printf "  ${BGREEN}Maintainability:${RST} ${BG_MAGENTA} CONCEDE ${RST} the join type is wrong.\n"
+printf "                     ${BRED}Upgrading to HIGH.${RST}\n"
+sleep 1.5
+printf "\n"
+printf "  ${BG_GREEN} CONVERGED ${RST} all positions stable.\n"
 sleep 2.4
 
 # ── Blind Finals ──
