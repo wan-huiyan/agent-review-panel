@@ -68,7 +68,53 @@ These four techniques scored highest on impact-to-effort ratio. All are prompt-o
 
 ---
 
-## Deferred
+## v2.8 Adopts (Panel-Reviewed, 2026-03-26)
+
+Proposed 6 changes from 19-source deep research (`references/research-v28.md`). Ran a 4-reviewer panel (Feasibility Analyst, Stakeholder Advocate, Risk Assessor, Devil's Advocate) + Supreme Judge. Panel recommended 3 of 6 + 1 new mechanism. See `review_panel_report.md`.
+
+### 1. Severity-Dampening Judge Prompt (Datadog FP Filtering)
+
+**Source:** Datadog blog on LLM false positive filtering for static analysis.
+
+**What we take:** Replace "what severity is this?" with "what is the minimum severity justified by concrete evidence?" in the judge prompt. Zero-cost prompt edit targeting the 2/3 P0 overstatement rate from v2.6 benchmark.
+
+**Panel verdict:** Unanimous approval. Highest value-to-cost ratio of all proposals.
+
+### 2. Coverage Check — NEW (Panel-Surfaced)
+
+**Source:** Risk Assessor's finding that all 6 original proposals applied downward pressure on findings with zero upward pressure, creating systematic false-negative risk.
+
+**What we take:** Judge sub-step asking "given these file changes, are there risk categories (security, error handling, race conditions, API contract violations) that no reviewer examined?" Cost: ~500 tokens.
+
+**Why this matters:** Counterbalances the suppression stack. Without it, the panel would look cleaner but potentially miss more real issues. False positives are visible (user complains); false negatives are invisible (user never knows).
+
+### 3. Verify-Before-Claim in Advisory Mode (Tool-MAD, CodeRabbit, Nexus)
+
+**Sources:** Tool-MAD (Jan 2026), CodeRabbit AST-grep agent, Nexus execution-grounded verification (Oct 2025), CORE Proposer-Ranker (Microsoft FSE 2024).
+
+**What we take:** Agents include `verification_command` for P0/P1 findings. Orchestrator runs grep/read before debate and annotates results. **Advisory, not gating** — failed verification demotes and annotates but does not delete. Max 5 verifications per run.
+
+**Panel constraint:** The Risk Assessor correctly identified that grep failure does not equal disproof. Architectural/semantic findings cannot be grep-verified. Making verification gating would select for shallow, string-matchable issues and filter out high-value architectural critique.
+
+### 4. Auto-Detected Precise/Exhaustive Mode (Qodo 2.0)
+
+**Source:** Qodo 2.0 benchmark (60.1% F1 SOTA) with dual Precise/Exhaustive modes.
+
+**What we take:** Auto-detect from input type. Code files → Precise mode (require concrete evidence, line numbers, code snippets). Plan/design docs → Exhaustive mode (allow broader risk identification). No user-facing toggle. One sentence in report header explains mode.
+
+**Panel constraint:** Stakeholder Advocate emphasized auto-detection over user toggles (adoption ~0 for toggles).
+
+### v2.8 Deferred (to v2.9)
+
+| Proposal | Why Deferred | Reassess When |
+|----------|-------------|---------------|
+| **Three-tier finding classification** (Blincoe et al. IST 2022) | Double-suppression risk with severity-dampening judge. Two independent downward pressures with no upward pressure. | After measuring #1's impact on finding volume. If severity distribution is healthy, reconsider. |
+| **Confidence scores 0-100** (ConfMAD EMNLP 2025, DAR March 2026) | All 4 reviewers opposed user-facing numeric scores. LLMs poorly calibrated on self-assessed confidence. Creates illusion of precision. | If internal confidence routing is needed for judge, implement as non-displayed metadata only. |
+| **Meta-Review "defend or retract"** (adversarial-review repo) | High token cost (16-42k), creates commitment bias (high-confidence agents won't retract). Fold useful part into judge step instead. | If judge-only second-look proves insufficient at catching false positives. |
+
+---
+
+## Deferred (Pre-v2.8)
 
 Techniques with clear value but requiring architectural changes, additional infrastructure, or more research before adoption.
 
@@ -104,6 +150,31 @@ Techniques with clear value but requiring architectural changes, additional infr
 
 **Adopt when:** We find systematic single-judge blind spots that the anti-rhetoric guard doesn't catch.
 
+### Model Diversity (from Trust Evaluation, Priority: High)
+
+**Problem:** All reviewers share the same base model (Opus), so "independent" reviews have correlated biases. 5 Opus reviewers catching the same bug is less valuable than 4 Opus + 1 different-architecture model catching different bugs.
+
+**Proposed solution:** Assign 1-2 reviewer slots to a fundamentally different model architecture (e.g., Codex, Gemini, or open-source via API). A smaller Claude model (Sonnet) still shares the same training pipeline — true diversity requires a different architecture.
+
+**Why deferred:** Claude Code's Agent tool only spawns Claude subagents. Requires external API integration outside the skill framework. **Adopt when:** Claude Code gains multi-model agent support, or we build an external orchestration wrapper.
+
+### Synthetic Benchmark Suite (from Trust Evaluation, Priority: High)
+
+**Problem:** Panel scores (e.g., "7/10") are uncalibrated — no ground truth to know if higher scores correlate with fewer actual bugs.
+
+**Proposed solution:** Build a test corpus of 20-50 code samples with known bugs across difficulty tiers (easy/medium/hard/clean). Measure detection rate, false positive rate, score calibration, and model diversity impact. Add calibration footnote to every report.
+
+**Why deferred:** 2-3 days for initial corpus + automation. Re-calibrate quarterly. **Adopt when:** Resources available for benchmark creation. Would transform panel from "trust because authoritative" to "trust because measured."
+
+### Explicitly Deferred (Low ROI)
+
+| Item | Why Deferred |
+|------|-------------|
+| Provenance graph | Users care about the verdict, not the deliberation process. Transcript is already available. |
+| Run-over-run stability | Expensive (run panel twice) and stability ≠ accuracy. Better to invest in benchmarks. |
+| Confidence decay | Reviews are point-in-time; they don't "age" meaningfully. |
+| User correction feedback loop | Panel runs ad-hoc, not continuously. No natural feedback path. |
+
 ---
 
 ## Not Applicable
@@ -132,7 +203,7 @@ Techniques evaluated and rejected for our use case.
 
 ## Research Sources
 
-### Academic Papers (11)
+### Academic Papers (17+)
 
 | Paper | Venue | Year | Status |
 |-------|-------|------|--------|
@@ -143,6 +214,13 @@ Techniques evaluated and rejected for our use case.
 | "Talk Isn't Always Cheap" — Rhetoric in Debate | ICML | 2025 | **v2.2** |
 | CONSENSAGENT — Sycophancy Intervention | ACL | 2025 | **v2.2** |
 | Trust or Escalate — Judge Confidence | ICLR (Oral) | 2025 | **v2.2** |
+| CORE — Dual Proposer-Ranker | FSE (Microsoft) | 2024 | **v2.8** (verify-before-claim) |
+| SGCR — Specification-Grounded Code Review | ASE | 2025 | **v2.8** (compliance check) |
+| Tool-MAD — Tool-Augmented Debate | arXiv | 2026 | **v2.8** (tool use) |
+| Nexus — Execution-Grounded Verification | arXiv | 2025 | **v2.8** (advisory verification) |
+| ConfMAD — Confidence-Calibrated Debate | EMNLP | 2025 | v2.9 (deferred) |
+| DAR — Diversity-Aware Retention | arXiv | 2026 | v2.9 (deferred) |
+| Blincoe et al. — Code Review Concern Taxonomy | IST | 2022 | v2.9 (deferred) |
 | LLM-as-Judge Trajectories | EMNLP | 2025 | Deferred |
 | Game-Theoretic Debate | ASE | 2025 | Deferred |
 | CodeReviewer++ (AST + LLM) | ASE | 2025 | Deferred |
@@ -166,6 +244,7 @@ Techniques evaluated and rejected for our use case.
 | LLM-Judge-Trajectories | — | Trajectory scoring (deferred) |
 | Multi-Agent-Review-Bench | — | Benchmark suite for review panels |
 | AgentReview | — | Survey of agent-based review systems |
+| [VoltAgent/awesome-claude-code-subagents](https://github.com/VoltAgent/awesome-claude-code-subagents) | 127+ agents | Specialist agent catalog for persona-to-agent mapping (v2.9) |
 
 ---
 
@@ -177,6 +256,13 @@ Techniques evaluated and rejected for our use case.
 | v2 | 2026-03-15 | MachineSoM + DebateLLM additions |
 | v2.1 | 2026-03-17 | Auto-persona, inline snippets, prompt injection boundaries |
 | v2.2 | 2026-03-18 | DMAD reasoning strategies, anti-rhetoric guard, sycophancy intervention, confidence gating |
+| v2.3 | 2026-03-18 | Knowledge mining, domain checklists, deep research mode |
+| v2.4 | 2026-03-19 | Skill/Docs Portability signal group |
+| v2.5 | 2026-03-20 | Trust & verification layer (claim verification, epistemic labels) |
+| v2.6 | 2026-03-25 | Schliff optimisation (75→86), reference extraction, A/B validated |
+| v2.7 | 2026-03-26 | Severity verification, temporal scope, defect classification |
+| v2.8 | 2026-03-26 | Panel-reviewed: severity dampening, coverage check, verify-before-claim, auto mode |
+| v2.9 | 2026-03-29 | VoltAgent specialist agent integration (127+ agents, 10 families) |
 
 ---
 

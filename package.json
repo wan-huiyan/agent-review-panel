@@ -1,0 +1,17 @@
+{
+  "name": "agent-review-panel",
+  "version": "2.9.0",
+  "private": true,
+  "description": "Multi-agent adversarial review panel for Claude Code",
+  "scripts": {
+    "test": "node --test tests/trigger-classification.test.mjs tests/manifest-consistency.test.mjs tests/eval-suite-integrity.test.mjs tests/report-structure.test.mjs tests/behavioral-assertions.test.mjs tests/golden-file.test.mjs",
+    "test:triggers": "node --test tests/trigger-classification.test.mjs",
+    "test:manifest": "node --test tests/manifest-consistency.test.mjs",
+    "test:eval-suite": "node --test tests/eval-suite-integrity.test.mjs",
+    "test:report": "node --test tests/report-structure.test.mjs",
+    "test:behavioral": "node --test tests/behavioral-assertions.test.mjs",
+    "test:golden": "node --test tests/golden-file.test.mjs",
+    "test:golden:update": "UPDATE_GOLDEN=1 node --test tests/golden-file.test.mjs"
+  },
+  "type": "module"
+}

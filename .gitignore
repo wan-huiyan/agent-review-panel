@@ -5,6 +5,9 @@ __pycache__/
 venv*/
 .venv/
 
+# Node
+node_modules/
+
 # Runtime
 *.db
 *.sqlite

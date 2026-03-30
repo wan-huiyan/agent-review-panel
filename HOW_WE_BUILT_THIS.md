@@ -396,27 +396,146 @@ Full comparison: `docs/v25-vs-v26-comparison.md`
 
 ---
 
+## Step 13: Panel-Reviewed v2.8 Roadmap (2026-03-26)
+
+### Motivation
+
+Deep research across 19 sources (ConfMAD, Tool-MAD, Nexus, CORE, SGCR, Qodo 2.0, CodeRabbit, DAR, etc.) produced 6 candidate improvements for v2.8. Rather than shipping all 6, we used the skill itself to review its own roadmap — a 4-reviewer panel (Feasibility Analyst, Stakeholder Advocate, Risk Assessor, Devil's Advocate) + Supreme Judge.
+
+### Panel Process
+
+- **19-source research document** compiled at `references/research-v28.md`
+- **4 parallel reviewers** evaluated feasibility, user impact, failure modes, and the case against each proposal
+- **Supreme Judge** synthesized and arbitrated disagreements
+
+### Key Findings
+
+| Reviewer | Score | Key Position |
+|----------|-------|-------------|
+| Feasibility Analyst | 7/10 | Most proposals feasible; token compounding is binding constraint |
+| Stakeholder Advocate | 6/10 | Ship 3 not 6; over-engineered for two user complaints |
+| Risk Assessor | 4/10 | **Systematic false-negative blindness** — all changes push downward |
+| Devil's Advocate | 3/10 | Complexity ratchet; try prompt-only first |
+| **Supreme Judge** | **5/10** | Ship 3 + 1 new mechanism; defer 3 |
+
+**Critical finding:** The Risk Assessor (lowest score) surfaced the most important insight — every single proposed change suppressed findings with zero upward pressure. This would create invisible false negatives where the panel looks cleaner but misses more real issues. The coverage check mechanism was added to counterbalance this.
+
+### Decision
+
+**Ship (v2.8):**
+1. Severity-dampening judge prompt (zero-cost prompt edit)
+2. Coverage check (NEW — panel-surfaced, counterbalances suppression)
+3. Verify-before-claim in advisory mode (grep/read for P0/P1, annotate don't gate)
+4. Auto-detected Precise/Exhaustive mode (from input type)
+
+**Defer (v2.9):**
+- Three-tier classification (double-suppression risk)
+- Confidence scores 0-100 (poorly calibrated, all reviewers opposed)
+- Defend/retract step (high token cost, commitment bias)
+
+Full report: `docs/archive/review_panel_report.md`
+
+### Lessons
+
+18. **Use the skill to review the skill's own roadmap.** The panel caught a systemic bias (false-negative blindness) that informal review missed. The most valuable insight came from the lowest-scoring reviewer — this validates the adversarial design philosophy.
+
+19. **Every downward-pressure mechanism needs a corresponding upward-pressure mechanism.** Severity dampening, verification gates, and tier caps all suppress findings. Without a coverage check, the system optimizes for the measurable metric (false positive rate) at the expense of the unmeasurable one (missed critical findings).
+
+20. **Ship fewer changes, measure, then decide.** The panel recommended 3 of 6 proposals. This follows the A/B testing lesson (#17) — bundling 6 interacting changes makes it impossible to attribute improvement or regression to any single change.
+
+21. **Prompt-only changes should ship before structural changes.** The Devil's Advocate was right that severity dampening (#5) is a prompt edit that could ship same-day, while verify-before-claim (#1) requires orchestration work. Ship the cheap win first.
+
+---
+
+## Step 14: Schliff v2.8 Optimization + Panel Self-Review (2026-03-26)
+
+### Motivation
+
+v2.8 added 4 features (severity dampening, coverage check, verify-before-claim, precise/exhaustive mode), growing SKILL.md from 340 to 457 lines. Schliff analysis scored 84/100 with edges (72) and efficiency (68) as weakest dimensions.
+
+### Changes
+
+1. **Condensed Phase 4.55** from 20 to 6 lines — same annotation labels, advisory principle, and skip condition in fewer tokens
+2. **Condensed Phase 5 judge steps** from 12 to 10 lines — compact indexed listing that preserves step ordering
+3. **Added Edge Cases section** — 6 documented scenarios: empty input, large files, binary files, tiny files, no P0/P1, unanimous agreement
+
+### Panel Self-Review
+
+Ran the skill on its own PR diff (2 reviewers: Completeness Checker + Quality Reviewer). The panel caught that the initial condensation was too aggressive:
+
+- **Lost the Precise-mode P2 severity cap** — "In Precise mode, findings without code citations cannot exceed P2" is a hard behavioral constraint, not descriptive prose. Trimming it would have let the judge allow uncited P0s in code reviews — the exact failure mode v2.8's mode detection was designed to prevent.
+- **"10-step judge prompt" was wrong** — actual count is 14 steps (0, 0.5a-d, 1-9). Fixed to "full judge prompt."
+
+Both fixed in follow-up commit. Estimated schliff score: 84 → 90.
+
+### Lessons
+
+22. **Hard behavioral constraints must not be trimmed for efficiency.** When condensing, distinguish between descriptive prose ("this is how it works") and prescriptive rules ("this must never exceed P2"). Only trim the descriptive. The Precise-mode P2 cap looks like prose but functions as a constraint.
+
+23. **Use the skill on its own PRs.** Running a focused 2-reviewer panel on the schliff diff caught exactly the kind of subtle loss that manual review misses. Cost: ~2 minutes. Value: prevented shipping a broken severity cap.
+
+---
+
+## Step 15: VoltAgent Specialist Agent Integration (v2.9, 2026-03-29)
+
+### Motivation
+
+During a test plan review for a causal impact analysis webapp, we bypassed the full review panel ceremony and instead launched 4 VoltAgent specialist agents directly (`voltagent-qa-sec:qa-expert`, `voltagent-data-ai:data-scientist`, `voltagent-infra:devops-engineer`, `voltagent-qa-sec:code-reviewer`). The result was striking: 38 findings with <10% cross-reviewer overlap. Each specialist caught blind spots the others missed — QA found error path gaps, DataSci found statistical fixture contamination, DevOps found hardcoded paths and state isolation issues, and the code reviewer challenged scope achievability.
+
+The VoltAgent agents have built-in domain expertise via their system prompts, making them genuinely stronger reviewers than generic agents prompted as "you are the Security Auditor." The question was: could we integrate this into the review panel skill while keeping it portable?
+
+### Implementation
+
+Added a "VoltAgent Integration (v2.9)" section to SKILL.md with:
+
+1. **Availability check** — scan system-reminder for `voltagent-*` agents during Phase 1
+2. **3-tier mapping tables:**
+   - Core persona mapping (16 rows) — every built-in persona → VoltAgent primary + alt
+   - Signal-detected specialist mapping (35 rows) — content signals → language/domain agents
+   - Orchestration mapping (4 rows) — completeness audit, claim/severity verification
+3. **Smart installation prompts** — suggest only relevant families, once per session, non-blocking
+4. **Graceful fallback** — everything works without VoltAgent; it's a transparent upgrade
+
+Full catalog sourced from [VoltAgent/awesome-claude-code-subagents](https://github.com/VoltAgent/awesome-claude-code-subagents) (127+ agents across 10 families).
+
+### Key Design Decisions
+
+- **Devil's Advocate stays generic** — the contrarian role benefits from having no domain bias
+- **Supreme Judge stays generic** — must be domain-neutral to arbitrate
+- **Persona prompts still included** — VoltAgent agents get the review-specific context (agreement intensity, reasoning strategy, evaluation criteria) that their built-in system prompts don't cover
+- **Installation suggestion is non-blocking** — "Continue without them? They're optional"
+
+### Lessons
+
+24. **Domain-specific system prompts beat persona prompts for specialist reviews.** A `voltagent-qa-sec:code-reviewer` has built-in code review heuristics that a generic agent prompted as "Correctness Hawk" cannot match. The difference is most visible in edge case detection and error path coverage.
+
+25. **VoltAgent integration must be a transparent upgrade, not a requirement.** The skill has users who don't have VoltAgent installed. Making it required would break portability. The graceful-fallback + smart-suggestion pattern preserves the skill's universality while rewarding users who have specialist agents available.
+
+---
+
 ## File Inventory
 
 ```
-skills/agent-review-panel/
-├── SKILL.md                           # The skill itself (v2.6, ~340 lines)
+├── SKILL.md                           # The skill itself (v2.9, ~460 lines)
+├── skills/agent-review-panel/
+│   └── SKILL.md                       # Plugin copy (synced with root)
 ├── references/
 │   ├── signals-and-checklists.md      # 9 signal groups + domain checklists
 │   ├── prompt-templates.md            # All phase prompt templates
-│   └── changelog.md                   # Version history (v2–v2.6)
-├── SKILL.v2.1.md                      # Archived v2.1
-├── SKILL.v2.md                        # Archived v2
-
-docs/
-├── demo-flow.png                      # Architecture diagram
-└── v25-vs-v26-comparison.md           # A/B test results
-
-Root:
+│   ├── changelog.md                   # Version history (v2–v2.9)
+│   └── research-v28.md               # 19-source v2.8 research compilation
+├── docs/
+│   ├── demo-flow.png                  # Architecture diagram (referenced by README)
+│   └── archive/                       # Historical artifacts
+│       ├── SKILL.v2.md, SKILL.v2.1.md # Old skill versions
+│       ├── review_panel_report.md     # v2.8 roadmap panel review
+│       └── v25-vs-v26-comparison.md   # A/B test results
+├── .claude-plugin/
+│   ├── plugin.json                    # Plugin metadata
+│   └── marketplace.json               # Marketplace listing
 ├── README.md                          # User-facing documentation
 ├── HOW_WE_BUILT_THIS.md               # This file
-├── ROADMAP.md                         # Research roadmap (11 papers, 14 projects)
-├── TRUST_ROADMAP.md                   # Trust & verification layer roadmap
+├── ROADMAP.md                         # Unified research + trust roadmap (17+ papers, 14 projects)
 ├── eval-suite.json                    # Schliff eval suite (triggers + assertions)
 └── LICENSE                            # MIT
 ```

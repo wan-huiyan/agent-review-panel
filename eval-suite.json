@@ -1,7 +1,8 @@
 {
   "skill_name": "agent-review-panel",
-  "version": "2.0.0",
+  "version": "2.9.0",
   "created_by": "manual",
+  "updated": "2026-03-29",
   "triggers": [
     {
       "id": "pos-1",
@@ -296,6 +297,55 @@
       "should_trigger": false,
       "category": "edge",
       "notes": "'Peer review' typically means single-reviewer feedback, not a panel"
+    },
+    {
+      "id": "v29-pos-1",
+      "prompt": "Review panel this test plan — use voltagent specialist agents if available for deeper domain coverage",
+      "should_trigger": true,
+      "category": "positive-v29",
+      "notes": "v2.9: Explicit request for VoltAgent specialist agents in review panel"
+    },
+    {
+      "id": "v29-pos-2",
+      "prompt": "Run a panel review on this Terraform config with infrastructure specialists",
+      "should_trigger": true,
+      "category": "positive-v29",
+      "notes": "v2.9: Infrastructure signal should map to voltagent-infra:terraform-engineer"
+    },
+    {
+      "id": "v29-pos-3",
+      "prompt": "I want a review panel on this ML pipeline — make sure the data science reviewers really know their stuff",
+      "should_trigger": true,
+      "category": "positive-v29",
+      "notes": "v2.9: ML signal should map to voltagent-data-ai:data-scientist"
+    },
+    {
+      "id": "v29-neg-1",
+      "prompt": "Install voltagent-qa-sec for me",
+      "should_trigger": false,
+      "category": "negative-v29",
+      "notes": "v2.9: Installation request is not a review — VoltAgent keyword is a red herring"
+    },
+    {
+      "id": "v29-neg-2",
+      "prompt": "Use the voltagent-data-ai:data-scientist agent to analyze my dataset",
+      "should_trigger": false,
+      "category": "negative-v29",
+      "notes": "v2.9: Direct agent invocation, not a review panel request"
+    },
+    {
+      "id": "v29-edge-1",
+      "prompt": "Can I get QA, data science, and DevOps perspectives on this deployment plan?",
+      "should_trigger": true,
+      "category": "edge-v29",
+      "notes": "v2.9: Requesting 3 domain perspectives without saying 'panel' — should trigger and use VoltAgent mapping"
+    },
+    {
+      "id": "v29-edge-2",
+      "prompt": "Review this with specialist subagents — I want real domain expertise, not generic personas",
+      "should_trigger": true,
+      "category": "edge-v29",
+      "notes": "v2.9: Explicit preference for specialist agents over generic personas"
     }
   ],
   "test_cases": [
@@ -457,6 +507,77 @@
           "description": "Creates panel despite specific focus"
         }
       ]
+    },
+    {
+      "id": "tc-v29-1",
+      "prompt": "Review panel this Flask webapp test plan — I have voltagent-qa-sec and voltagent-data-ai installed. Use specialist agents.",
+      "input_files": [],
+      "assertions": [
+        {
+          "type": "pattern",
+          "value": "(?i)(voltagent|specialist|subagent_type|domain.specific)",
+          "description": "v2.9: Acknowledges VoltAgent availability and uses specialist agents"
+        },
+        {
+          "type": "pattern",
+          "value": "(?i)(qa.expert|code.reviewer|data.scientist|security)",
+          "description": "v2.9: Maps personas to specific VoltAgent agent types"
+        },
+        {
+          "type": "pattern",
+          "value": "(?i)(reviewer|persona|panelist|agent)",
+          "description": "v2.9: Still creates a proper review panel (not just standalone agents)"
+        },
+        {
+          "type": "pattern",
+          "value": "(?i)(verdict|judge|consensus|disagree)",
+          "description": "v2.9: Full panel ceremony still runs (debate, judge, report)"
+        }
+      ]
+    },
+    {
+      "id": "tc-v29-2",
+      "prompt": "Do a panel review on this Terraform module. Note: I don't have any voltagent agents installed.",
+      "input_files": [],
+      "assertions": [
+        {
+          "type": "pattern",
+          "value": "(?i)(install|voltagent|specialist|recommend|benefit)",
+          "description": "v2.9: Suggests installing VoltAgent agents when they would help"
+        },
+        {
+          "type": "pattern",
+          "value": "(?i)(optional|continue|without|fallback)",
+          "description": "v2.9: Makes clear VoltAgent is optional, not required"
+        },
+        {
+          "type": "pattern",
+          "value": "(?i)(reviewer|persona|panelist|agent)",
+          "description": "v2.9: Proceeds with generic agents (graceful fallback)"
+        }
+      ]
+    },
+    {
+      "id": "tc-v29-3",
+      "prompt": "Review this Python data science code. Use VoltAgent specialist agents — I want a data scientist reviewer, a code quality reviewer, and a DevOps reviewer.",
+      "input_files": [],
+      "assertions": [
+        {
+          "type": "pattern",
+          "value": "(?i)(voltagent-data-ai|data.scientist)",
+          "description": "v2.9: Maps data scientist to voltagent-data-ai:data-scientist"
+        },
+        {
+          "type": "pattern",
+          "value": "(?i)(voltagent-qa-sec|code.reviewer)",
+          "description": "v2.9: Maps code quality to voltagent-qa-sec:code-reviewer"
+        },
+        {
+          "type": "pattern",
+          "value": "(?i)(voltagent-infra|devops)",
+          "description": "v2.9: Maps DevOps to voltagent-infra:devops-engineer"
+        }
+      ]
     }
   ],
   "edge_cases": [
@@ -561,6 +682,60 @@
           "type": "pattern",
           "value": "(?i)(review|panel|fresh|new|independent)",
           "description": "Creates new independent panel"
+        }
+      ]
+    },
+    {
+      "id": "ec-v29-1",
+      "prompt": "Review panel this — only use VoltAgent agents, don't use any generic personas",
+      "category": "v29_voltagent_only",
+      "expected_behavior": "Use VoltAgent agents where available but explain Devil's Advocate stays generic intentionally",
+      "assertions": [
+        {
+          "type": "pattern",
+          "value": "(?i)(devil|advocate|generic|intentional|contrarian)",
+          "description": "v2.9: Explains Devil's Advocate stays generic by design"
+        },
+        {
+          "type": "pattern",
+          "value": "(?i)(voltagent|specialist)",
+          "description": "v2.9: Uses VoltAgent for other personas"
+        }
+      ]
+    },
+    {
+      "id": "ec-v29-2",
+      "prompt": "Review panel this React component — I have voltagent-lang installed but not voltagent-qa-sec",
+      "category": "v29_partial_install",
+      "expected_behavior": "Use voltagent-lang:react-specialist for signal-detected reviewer, suggest installing voltagent-qa-sec for core personas, graceful fallback for unavailable agents",
+      "assertions": [
+        {
+          "type": "pattern",
+          "value": "(?i)(react|frontend|voltagent-lang)",
+          "description": "v2.9: Uses available language specialist"
+        },
+        {
+          "type": "pattern",
+          "value": "(?i)(install|voltagent-qa-sec|suggest|recommend)",
+          "description": "v2.9: Suggests missing family that would help"
+        }
+      ]
+    },
+    {
+      "id": "ec-v29-3",
+      "prompt": "Do a review panel with VoltAgent agents on this Go microservice that uses gRPC and PostgreSQL",
+      "category": "v29_multi_signal",
+      "expected_behavior": "Maps multiple signals: Go → voltagent-lang:golang-pro, PostgreSQL → voltagent-data-ai:postgres-pro, microservices → voltagent-core-dev:microservices-architect",
+      "assertions": [
+        {
+          "type": "pattern",
+          "value": "(?i)(go|golang|voltagent-lang)",
+          "description": "v2.9: Detects Go signal and maps to language specialist"
+        },
+        {
+          "type": "pattern",
+          "value": "(?i)(postgres|database|voltagent-data-ai)",
+          "description": "v2.9: Detects PostgreSQL signal and maps to data specialist"
         }
       ]
     }
