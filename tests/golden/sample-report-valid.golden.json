@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "sections": [
+    "Executive Summary",
+    "Scope & Limitations",
+    "Score Summary",
+    "Consensus Points",
+    "Disagreement Points (with judge rulings)",
+    "Completeness Audit Findings",
+    "Coverage Gaps (if any)",
+    "Action Items (with severity AND epistemic labels)",
+    "Detailed Reviews (collapsible sections)"
+  ],
+  "headerFields": [
+    "Work reviewed",
+    "Date",
+    "Panel",
+    "Verdict",
+    "Confidence",
+    "Auto-detected signals",
+    "Review mode"
+  ],
+  "metrics": {
+    "reviewerCount": 4,
+    "actionItemCount": 4,
+    "debateRoundCount": 2,
+    "epistemicLabelsUsed": [
+      "VERIFIED",
+      "CONSENSUS",
+      "SINGLE-SOURCE",
+      "UNVERIFIED",
+      "DISPUTED"
+    ],
+    "hasCollapsibleSections": true,
+    "hasScoreTable": true,
+    "hasClaimVerification": true,
+    "hasSeverityVerification": true,
+    "hasCorrelationNotice": false,
+    "hasHumanReviewWarning": false
+  }
+}
