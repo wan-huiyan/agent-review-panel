@@ -1,0 +1,358 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 520" width="900" height="520" style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
+  <defs>
+    <!-- Background gradient -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0d1117;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0d1117;stop-opacity:1" />
+    </linearGradient>
+    <!-- Card glow filter -->
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <!-- Blue accent glow -->
+    <filter id="blueGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <!-- Arrow marker -->
+    <marker id="arrowGray" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#8b949e"/>
+    </marker>
+    <marker id="arrowBlue" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#388bfd"/>
+    </marker>
+    <!-- Subtle radial highlights behind key nodes -->
+    <radialGradient id="cardSheen" cx="50%" cy="30%" r="70%">
+      <stop offset="0%" style="stop-color:#21262d;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#161b22;stop-opacity:1"/>
+    </radialGradient>
+    <radialGradient id="judgeSheen" cx="50%" cy="30%" r="70%">
+      <stop offset="0%" style="stop-color:#1c2030;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#161b22;stop-opacity:1"/>
+    </radialGradient>
+  </defs>
+
+  <!-- ═══ BACKGROUND ═══ -->
+  <rect width="900" height="520" fill="#0d1117"/>
+
+  <!-- Subtle top-center glow blob -->
+  <ellipse cx="450" cy="10" rx="380" ry="60" fill="#1c2a3a" opacity="0.5"/>
+
+  <!-- ═══ TITLE ROW ═══ -->
+  <text x="450" y="30" text-anchor="middle" fill="#e6edf3" font-size="15" font-weight="700" letter-spacing="0.5">Agent Review Panel</text>
+  <text x="450" y="47" text-anchor="middle" fill="#8b949e" font-size="10.5" letter-spacing="0.3">Multi-Agent Adversarial Code Review — 10-Phase Pipeline</text>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       LEFT: INPUT BLOCK
+  ════════════════════════════════════════════════════════════════ -->
+  <!-- Input card -->
+  <rect x="14" y="64" width="108" height="112" rx="8" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+  <!-- File icon -->
+  <rect x="38" y="80" width="44" height="54" rx="3" fill="#21262d" stroke="#388bfd" stroke-width="1.2"/>
+  <!-- Dog-ear fold -->
+  <polygon points="70,80 82,80 82,92" fill="#0d1117"/>
+  <line x1="70" y1="80" x2="70" y2="92" stroke="#388bfd" stroke-width="1"/>
+  <line x1="70" y1="92" x2="82" y2="92" stroke="#388bfd" stroke-width="1"/>
+  <!-- Code lines on file -->
+  <line x1="44" y1="100" x2="72" y2="100" stroke="#388bfd" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="44" y1="107" x2="68" y2="107" stroke="#8b949e" stroke-width="1" stroke-linecap="round"/>
+  <line x1="44" y1="114" x2="74" y2="114" stroke="#8b949e" stroke-width="1" stroke-linecap="round"/>
+  <line x1="44" y1="121" x2="64" y2="121" stroke="#8b949e" stroke-width="1" stroke-linecap="round"/>
+  <!-- Label -->
+  <text x="68" y="148" text-anchor="middle" fill="#e6edf3" font-size="9.5" font-weight="600">Your Code</text>
+  <text x="68" y="160" text-anchor="middle" fill="#e6edf3" font-size="9.5" font-weight="600">/ Plan</text>
+  <text x="68" y="172" text-anchor="middle" fill="#8b949e" font-size="8.5">Input</text>
+
+  <!-- Arrow: input → phase 1 -->
+  <line x1="122" y1="120" x2="152" y2="120" stroke="#388bfd" stroke-width="1.5" marker-end="url(#arrowBlue)"/>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       PHASES — 6 cards arranged in 2 rows × 3 cols in center block
+       Row 1: Phase 1, Phase 2, Phase 3   (y=64)
+       Row 2: Phase 4, Phase 4.5, Phase 5  (y=220 — gap for debate arrows)
+       Then arrow out to output on right
+  ════════════════════════════════════════════════════════════════ -->
+
+  <!-- ─── PHASE 1: Context & Setup ─── -->
+  <!-- Card -->
+  <rect x="156" y="64" width="136" height="122" rx="8" fill="url(#cardSheen)" stroke="#30363d" stroke-width="1"/>
+  <!-- Top accent line -->
+  <rect x="156" y="64" width="136" height="3" rx="2" fill="#388bfd"/>
+  <!-- Icon: magnifying glass -->
+  <circle cx="196" cy="103" r="14" fill="none" stroke="#388bfd" stroke-width="2"/>
+  <line x1="206" y1="113" x2="216" y2="123" stroke="#388bfd" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Inner scan lines -->
+  <line x1="188" y1="100" x2="204" y2="100" stroke="#388bfd" stroke-width="1" opacity="0.5"/>
+  <line x1="188" y1="104" x2="204" y2="104" stroke="#388bfd" stroke-width="1" opacity="0.5"/>
+  <line x1="188" y1="108" x2="201" y2="108" stroke="#388bfd" stroke-width="1" opacity="0.5"/>
+  <!-- Phase label -->
+  <text x="224" y="95" fill="#58a6ff" font-size="9" font-weight="700" letter-spacing="0.5">GATHER</text>
+  <text x="224" y="108" fill="#e6edf3" font-size="10.5" font-weight="600">Context &amp;</text>
+  <text x="224" y="121" fill="#e6edf3" font-size="10.5" font-weight="600">Setup</text>
+  <!-- Sub-text -->
+  <text x="166" y="148" fill="#8b949e" font-size="8">Signal detection,</text>
+  <text x="166" y="159" fill="#8b949e" font-size="8">persona selection,</text>
+  <text x="166" y="170" fill="#8b949e" font-size="8">knowledge mining</text>
+
+  <!-- Arrow: phase 1 → phase 2 -->
+  <line x1="292" y1="125" x2="308" y2="125" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arrowGray)"/>
+
+  <!-- ─── PHASE 2: Independent Review ─── -->
+  <rect x="312" y="64" width="148" height="122" rx="8" fill="url(#cardSheen)" stroke="#30363d" stroke-width="1"/>
+  <rect x="312" y="64" width="148" height="3" rx="2" fill="#388bfd"/>
+  <!-- Phase label -->
+  <text x="322" y="83" fill="#58a6ff" font-size="9" font-weight="700" letter-spacing="0.5">REVIEW</text>
+  <text x="322" y="96" fill="#e6edf3" font-size="10.5" font-weight="600">Independent Review</text>
+  <!-- Reviewer avatars — 6 circles in 2 rows -->
+  <!-- Row 1: Risk, Feasibility, Code -->
+  <circle cx="337" cy="118" r="10" fill="#1c2030" stroke="#58a6ff" stroke-width="1.5"/>
+  <text x="337" y="122" text-anchor="middle" fill="#58a6ff" font-size="6.5" font-weight="700">RISK</text>
+  <circle cx="362" cy="118" r="10" fill="#1c2030" stroke="#d29922" stroke-width="1.5"/>
+  <text x="362" y="122" text-anchor="middle" fill="#d29922" font-size="5.5" font-weight="700">FEAS</text>
+  <circle cx="387" cy="118" r="10" fill="#1c2030" stroke="#3fb950" stroke-width="1.5"/>
+  <text x="387" y="122" text-anchor="middle" fill="#3fb950" font-size="5" font-weight="700">CODE</text>
+  <!-- Row 2: ML, SQL, Security -->
+  <circle cx="412" cy="118" r="10" fill="#1c2030" stroke="#bc8cff" stroke-width="1.5"/>
+  <text x="412" y="122" text-anchor="middle" fill="#bc8cff" font-size="5.5" font-weight="700">ML</text>
+  <circle cx="337" cy="143" r="10" fill="#1c2030" stroke="#f0883e" stroke-width="1.5"/>
+  <text x="337" y="147" text-anchor="middle" fill="#f0883e" font-size="5" font-weight="700">SQL</text>
+  <circle cx="362" cy="143" r="10" fill="#1c2030" stroke="#f85149" stroke-width="1.5"/>
+  <text x="362" y="147" text-anchor="middle" fill="#f85149" font-size="5" font-weight="700">SEC</text>
+  <!-- Sub-text -->
+  <text x="380" y="140" fill="#8b949e" font-size="7.5">4–6 reviewers</text>
+  <text x="380" y="151" fill="#8b949e" font-size="7.5">in parallel,</text>
+  <text x="380" y="162" fill="#8b949e" font-size="7.5">no cross-talk</text>
+
+  <!-- Arrow: phase 2 → phase 3 -->
+  <line x1="460" y1="125" x2="476" y2="125" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arrowGray)"/>
+
+  <!-- ─── PHASE 3: Adversarial Debate ─── -->
+  <rect x="480" y="64" width="130" height="122" rx="8" fill="url(#cardSheen)" stroke="#30363d" stroke-width="1"/>
+  <rect x="480" y="64" width="130" height="3" rx="2" fill="#d29922"/>
+  <text x="490" y="83" fill="#d29922" font-size="9" font-weight="700" letter-spacing="0.5">DEBATE</text>
+  <text x="490" y="96" fill="#e6edf3" font-size="10.5" font-weight="600">Adversarial</text>
+  <text x="490" y="109" fill="#e6edf3" font-size="10.5" font-weight="600">Debate</text>
+  <!-- Speech bubble icon pair -->
+  <!-- Bubble A (left) -->
+  <rect x="492" y="118" width="34" height="22" rx="5" fill="#21262d" stroke="#d29922" stroke-width="1.2"/>
+  <polygon points="498,140 492,148 506,140" fill="#21262d" stroke="#d29922" stroke-width="1"/>
+  <line x1="497" y1="125" x2="520" y2="125" stroke="#d29922" stroke-width="1" opacity="0.6"/>
+  <line x1="497" y1="130" x2="518" y2="130" stroke="#d29922" stroke-width="1" opacity="0.6"/>
+  <!-- Bubble B (right, offset) -->
+  <rect x="534" y="126" width="34" height="22" rx="5" fill="#21262d" stroke="#f85149" stroke-width="1.2"/>
+  <polygon points="556,126 568,118 562,126" fill="#21262d" stroke="#f85149" stroke-width="1"/>
+  <line x1="539" y1="133" x2="562" y2="133" stroke="#f85149" stroke-width="1" opacity="0.6"/>
+  <line x1="539" y1="138" x2="560" y2="138" stroke="#f85149" stroke-width="1" opacity="0.6"/>
+  <!-- Cross-arrows between bubbles -->
+  <line x1="526" y1="123" x2="534" y2="130" stroke="#8b949e" stroke-width="1" marker-end="url(#arrowGray)"/>
+  <line x1="534" y1="138" x2="526" y2="144" stroke="#8b949e" stroke-width="1" marker-end="url(#arrowGray)"/>
+  <!-- Sub-text -->
+  <text x="490" y="163" fill="#8b949e" font-size="7.5">1–3 rounds,</text>
+  <text x="490" y="174" fill="#8b949e" font-size="7.5">source-grounded</text>
+
+  <!-- ──── DOWN ARROW: row 1 → row 2 (right side of phase 3 down to phase 4) ────
+       We route: center of row1 phases (y=125) → down to row2 (y=285)
+       via a vertical connector on the right edge of the center block -->
+  <!-- Elbow: Phase 3 bottom → down → Phase 5 (Supreme Judge) bottom row right -->
+  <!-- Actually: straight down from Phase 3 center bottom, then left to Phase 4 center -->
+
+  <!-- Connector: Phase3 bottom center → down → Phase4 top center  -->
+  <!-- Phase3 center x = 480+65=545, bottom y=186 -->
+  <!-- Phase4 center x = 156+68=224, top y=228 -->
+  <!-- Route: go down from 545,186 → 545,210 → 224,210 → 224,228 -->
+  <path d="M545,186 L545,210 L224,210 L224,228" fill="none" stroke="#8b949e" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrowGray)"/>
+
+  <!-- ─── PHASE 4: Blind Finals ─── -->
+  <rect x="156" y="232" width="136" height="118" rx="8" fill="url(#cardSheen)" stroke="#30363d" stroke-width="1"/>
+  <rect x="156" y="232" width="136" height="3" rx="2" fill="#bc8cff"/>
+  <!-- Phase label -->
+  <text x="166" y="251" fill="#bc8cff" font-size="9" font-weight="700" letter-spacing="0.5">DEBATE</text>
+  <text x="166" y="264" fill="#e6edf3" font-size="10.5" font-weight="600">Blind Finals</text>
+  <!-- Blindfold / hidden eye icon -->
+  <!-- Eye outline -->
+  <ellipse cx="224" cy="290" rx="18" ry="11" fill="none" stroke="#bc8cff" stroke-width="1.5"/>
+  <!-- Strikethrough / blindfold bar -->
+  <line x1="206" y1="280" x2="242" y2="300" stroke="#bc8cff" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Pupil (dimmed) -->
+  <circle cx="224" cy="290" r="5" fill="none" stroke="#bc8cff" stroke-width="1" opacity="0.4"/>
+  <!-- Sub-text -->
+  <text x="166" y="320" fill="#8b949e" font-size="8">Anti-groupthink</text>
+  <text x="166" y="331" fill="#8b949e" font-size="8">scoring — reviewers</text>
+  <text x="166" y="342" fill="#8b949e" font-size="8">score independently</text>
+
+  <!-- Arrow: phase 4 → phase 4.5 -->
+  <line x1="292" y1="291" x2="308" y2="291" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arrowGray)"/>
+
+  <!-- ─── PHASE 4.5–4.6: Audit & Verify ─── -->
+  <rect x="312" y="232" width="148" height="118" rx="8" fill="url(#cardSheen)" stroke="#30363d" stroke-width="1"/>
+  <rect x="312" y="232" width="148" height="3" rx="2" fill="#3fb950"/>
+  <text x="322" y="251" fill="#3fb950" font-size="9" font-weight="700" letter-spacing="0.5">VERIFY</text>
+  <text x="322" y="264" fill="#e6edf3" font-size="10.5" font-weight="600">Audit &amp; Verify</text>
+  <!-- Shield + checkmark icon -->
+  <path d="M390,274 L390,274 L376,274 L376,295 Q376,305 386,310 Q396,305 396,295 L396,274 Z" fill="none" stroke="#3fb950" stroke-width="1.8"/>
+  <!-- Check inside shield -->
+  <polyline points="380,292 384,297 393,283" fill="none" stroke="#3fb950" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Sub-text -->
+  <text x="322" y="296" fill="#8b949e" font-size="7.5">Completeness</text>
+  <text x="322" y="307" fill="#8b949e" font-size="7.5">audit + claim</text>
+  <text x="322" y="318" fill="#8b949e" font-size="7.5">verification</text>
+  <!-- Verified badge -->
+  <rect x="322" y="326" width="52" height="14" rx="3" fill="#1a3128" stroke="#3fb950" stroke-width="1"/>
+  <text x="348" y="336" text-anchor="middle" fill="#3fb950" font-size="7.5" font-weight="700">VERIFIED</text>
+  <!-- Critical badge -->
+  <rect x="380" y="326" width="46" height="14" rx="3" fill="#2d1a1f" stroke="#f85149" stroke-width="1"/>
+  <text x="403" y="336" text-anchor="middle" fill="#f85149" font-size="7.5" font-weight="700">CRITICAL</text>
+
+  <!-- Arrow: phase 4.5 → phase 5 -->
+  <line x1="460" y1="291" x2="476" y2="291" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arrowGray)"/>
+
+  <!-- ─── PHASE 5: Supreme Judge ─── -->
+  <rect x="480" y="232" width="130" height="118" rx="8" fill="url(#judgeSheen)" stroke="#388bfd" stroke-width="1.5" filter="url(#glow)"/>
+  <rect x="480" y="232" width="130" height="3" rx="2" fill="#388bfd"/>
+  <text x="490" y="251" fill="#58a6ff" font-size="9" font-weight="700" letter-spacing="0.5">ADJUDICATE</text>
+  <text x="490" y="264" fill="#e6edf3" font-size="10.5" font-weight="600">Supreme Judge</text>
+  <!-- Gavel icon -->
+  <!-- Handle -->
+  <line x1="534" y1="308" x2="555" y2="295" stroke="#58a6ff" stroke-width="3" stroke-linecap="round"/>
+  <!-- Head of gavel -->
+  <rect x="512" y="270" width="30" height="18" rx="4" fill="none" stroke="#58a6ff" stroke-width="2" transform="rotate(-35,527,279)"/>
+  <!-- Strike line -->
+  <line x1="517" y1="299" x2="527" y2="293" stroke="#58a6ff" stroke-width="1.5" opacity="0.5"/>
+  <!-- Sub-text -->
+  <text x="490" y="310" fill="#8b949e" font-size="7.5">Opus arbitrates</text>
+  <text x="490" y="321" fill="#8b949e" font-size="7.5">with epistemic</text>
+  <text x="490" y="332" fill="#8b949e" font-size="7.5">labels</text>
+  <!-- Epistemic label chips -->
+  <rect x="490" y="338" width="40" height="12" rx="2" fill="#161b22" stroke="#d29922" stroke-width="0.8"/>
+  <text x="510" y="347" text-anchor="middle" fill="#d29922" font-size="6.5" font-weight="700">DISPUTED</text>
+  <rect x="535" y="338" width="36" height="12" rx="2" fill="#161b22" stroke="#3fb950" stroke-width="0.8"/>
+  <text x="553" y="347" text-anchor="middle" fill="#3fb950" font-size="6.5" font-weight="700">AGREED</text>
+
+  <!-- Arrow: Phase 5 → Output -->
+  <line x1="610" y1="291" x2="638" y2="291" stroke="#388bfd" stroke-width="1.8" marker-end="url(#arrowBlue)"/>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       RIGHT: OUTPUT REPORT
+  ════════════════════════════════════════════════════════════════ -->
+  <!-- Output card -->
+  <rect x="642" y="64" width="146" height="390" rx="8" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+  <!-- Top accent -->
+  <rect x="642" y="64" width="146" height="3" rx="2" fill="#3fb950"/>
+  <!-- Report header -->
+  <!-- Document icon lines at top -->
+  <rect x="658" y="75" width="30" height="36" rx="2" fill="#21262d" stroke="#30363d" stroke-width="1"/>
+  <line x1="663" y1="85" x2="682" y2="85" stroke="#8b949e" stroke-width="1"/>
+  <line x1="663" y1="90" x2="684" y2="90" stroke="#8b949e" stroke-width="1"/>
+  <line x1="663" y1="95" x2="680" y2="95" stroke="#8b949e" stroke-width="1"/>
+  <line x1="663" y1="100" x2="683" y2="100" stroke="#8b949e" stroke-width="1"/>
+  <text x="696" y="87" fill="#e6edf3" font-size="10" font-weight="700">Review</text>
+  <text x="696" y="100" fill="#e6edf3" font-size="10" font-weight="700">Report</text>
+  <text x="696" y="112" fill="#3fb950" font-size="8.5" font-weight="600">Output</text>
+
+  <!-- Divider -->
+  <line x1="652" y1="122" x2="778" y2="122" stroke="#30363d" stroke-width="1"/>
+
+  <!-- Section 1: Executive Summary -->
+  <rect x="652" y="130" width="126" height="48" rx="4" fill="#0d1117" stroke="#21262d" stroke-width="1"/>
+  <text x="659" y="143" fill="#58a6ff" font-size="8" font-weight="700">Executive Summary</text>
+  <line x1="659" y1="148" x2="750" y2="148" stroke="#30363d" stroke-width="0.8"/>
+  <text x="659" y="159" fill="#8b949e" font-size="7.5">Overall verdict with</text>
+  <text x="659" y="169" fill="#8b949e" font-size="7.5">confidence level</text>
+
+  <!-- Section 2: Consensus / Disagreements -->
+  <rect x="652" y="186" width="126" height="60" rx="4" fill="#0d1117" stroke="#21262d" stroke-width="1"/>
+  <text x="659" y="199" fill="#58a6ff" font-size="8" font-weight="700">Consensus</text>
+  <!-- Green dot consensus -->
+  <circle cx="659" cy="210" r="3" fill="#3fb950"/>
+  <text x="666" y="213" fill="#8b949e" font-size="7">3 reviewers agreed</text>
+  <!-- Yellow dot disputed -->
+  <circle cx="659" cy="222" r="3" fill="#d29922"/>
+  <text x="666" y="225" fill="#8b949e" font-size="7">2 disputed approach</text>
+  <!-- Red dot critical -->
+  <circle cx="659" cy="234" r="3" fill="#f85149"/>
+  <text x="666" y="237" fill="#8b949e" font-size="7">1 critical finding</text>
+
+  <!-- Section 3: Action Items -->
+  <rect x="652" y="254" width="126" height="76" rx="4" fill="#0d1117" stroke="#21262d" stroke-width="1"/>
+  <text x="659" y="267" fill="#58a6ff" font-size="8" font-weight="700">Action Items</text>
+  <!-- Verified badge -->
+  <rect x="659" y="272" width="42" height="11" rx="2" fill="#1a3128" stroke="#3fb950" stroke-width="0.8"/>
+  <text x="680" y="280" text-anchor="middle" fill="#3fb950" font-size="6.5" font-weight="700">VERIFIED</text>
+  <!-- Critical badge -->
+  <rect x="706" y="272" width="38" height="11" rx="2" fill="#2d1a1f" stroke="#f85149" stroke-width="0.8"/>
+  <text x="725" y="280" text-anchor="middle" fill="#f85149" font-size="6.5" font-weight="700">CRITICAL</text>
+  <line x1="659" y1="286" x2="770" y2="286" stroke="#21262d" stroke-width="0.8"/>
+  <!-- Action item rows -->
+  <rect x="659" y="290" width="4" height="4" rx="1" fill="#3fb950"/>
+  <text x="667" y="295" fill="#8b949e" font-size="7">Fix auth token leak</text>
+  <rect x="659" y="301" width="4" height="4" rx="1" fill="#f85149"/>
+  <text x="667" y="306" fill="#8b949e" font-size="7">Add input validation</text>
+  <rect x="659" y="312" width="4" height="4" rx="1" fill="#d29922"/>
+  <text x="667" y="317" fill="#8b949e" font-size="7">Consider caching layer</text>
+
+  <!-- Section 4: Scope & Limitations -->
+  <rect x="652" y="338" width="126" height="50" rx="4" fill="#0d1117" stroke="#21262d" stroke-width="1"/>
+  <text x="659" y="351" fill="#58a6ff" font-size="8" font-weight="700">Scope &amp; Limitations</text>
+  <line x1="659" y1="356" x2="750" y2="356" stroke="#30363d" stroke-width="0.8"/>
+  <text x="659" y="367" fill="#8b949e" font-size="7.5">Coverage gaps noted,</text>
+  <text x="659" y="378" fill="#8b949e" font-size="7.5">confidence per claim</text>
+
+  <!-- Section 5: Legend small -->
+  <line x1="652" y1="394" x2="778" y2="394" stroke="#30363d" stroke-width="0.8"/>
+  <circle cx="660" cy="406" r="3" fill="#3fb950"/>
+  <text x="666" y="409" fill="#8b949e" font-size="7">Verified</text>
+  <circle cx="700" cy="406" r="3" fill="#f85149"/>
+  <text x="706" y="409" fill="#8b949e" font-size="7">Critical</text>
+  <circle cx="740" cy="406" r="3" fill="#d29922"/>
+  <text x="746" y="409" fill="#8b949e" font-size="7">Disputed</text>
+  <!-- Bottom label -->
+  <text x="715" y="448" text-anchor="middle" fill="#8b949e" font-size="7.5">Final Arbitrated Report</text>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       PHASE LABELS BELOW BOTTOM ROW (breadcrumb flow line)
+  ════════════════════════════════════════════════════════════════ -->
+  <!-- Bottom breadcrumb connector (phases 4, 4.5, 5 to output) -->
+  <!-- Arrow from Phase 5 right edge at y=291 already drawn above -->
+
+  <!-- ══════════════════════════════════════════════════════════════
+       BOTTOM LEGEND / FOOTNOTE
+  ════════════════════════════════════════════════════════════════ -->
+  <line x1="30" y1="462" x2="870" y2="462" stroke="#21262d" stroke-width="1"/>
+  <!-- Flow step pills at bottom -->
+  <!-- Stage: Gather -->
+  <rect x="30" y="472" width="88" height="18" rx="9" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+  <text x="74" y="484" text-anchor="middle" fill="#58a6ff" font-size="7.5" font-weight="600">Gather (1–2)</text>
+  <line x1="118" y1="481" x2="128" y2="481" stroke="#8b949e" stroke-width="1" marker-end="url(#arrowGray)"/>
+  <!-- Stage: Review -->
+  <rect x="132" y="472" width="98" height="18" rx="9" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+  <text x="181" y="484" text-anchor="middle" fill="#58a6ff" font-size="7.5" font-weight="600">Review (3–4)</text>
+  <line x1="230" y1="481" x2="240" y2="481" stroke="#8b949e" stroke-width="1" marker-end="url(#arrowGray)"/>
+  <!-- Stage: Debate -->
+  <rect x="244" y="472" width="120" height="18" rx="9" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+  <text x="304" y="484" text-anchor="middle" fill="#d29922" font-size="7.5" font-weight="600">Debate (5–7)</text>
+  <line x1="364" y1="481" x2="374" y2="481" stroke="#8b949e" stroke-width="1" marker-end="url(#arrowGray)"/>
+  <!-- Stage: Verify -->
+  <rect x="378" y="472" width="120" height="18" rx="9" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+  <text x="438" y="484" text-anchor="middle" fill="#3fb950" font-size="7.5" font-weight="600">Verify (8–9)</text>
+  <line x1="498" y1="481" x2="508" y2="481" stroke="#8b949e" stroke-width="1" marker-end="url(#arrowGray)"/>
+  <!-- Stage: Adjudicate -->
+  <rect x="512" y="472" width="130" height="18" rx="9" fill="#161b22" stroke="#388bfd" stroke-width="1.2"/>
+  <text x="577" y="484" text-anchor="middle" fill="#58a6ff" font-size="7.5" font-weight="700">Adjudicate (10–11)</text>
+  <line x1="642" y1="481" x2="652" y2="481" stroke="#388bfd" stroke-width="1.2" marker-end="url(#arrowBlue)"/>
+  <!-- Output pill -->
+  <rect x="656" y="472" width="84" height="18" rx="9" fill="#1a2b1a" stroke="#3fb950" stroke-width="1.2"/>
+  <text x="698" y="484" text-anchor="middle" fill="#3fb950" font-size="7.5" font-weight="700">Report Output</text>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       DECORATIVE: subtle corner watermark text
+  ════════════════════════════════════════════════════════════════ -->
+  <text x="870" y="514" text-anchor="end" fill="#21262d" font-size="8">agent-review-panel</text>
+
+</svg>

@@ -2,8 +2,19 @@
 
 A Claude Code skill that orchestrates multi-agent adversarial review panels. Multiple AI reviewers with distinct personas independently evaluate your work, debate each other's findings, then a supreme judge renders the final verdict — all compiled into a structured report for human review.
 
-![Agent Review Panel — debate flow](docs/demo-flow.png)
-*Example: 4-6 reviewers independently review an ML pipeline, debate each other's findings, then a completeness auditor and supreme judge weigh in.*
+[![Agent Review Panel — pipeline architecture](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/hero-flow.svg?v=1)](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/hero-flow.svg?v=1)
+
+[![Agent Review Panel demo](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/demo.gif?v=1)](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/demo.gif?v=1)
+
+<details>
+<summary>See full terminal screenshot (click to expand)</summary>
+
+![Agent Review Panel — terminal demo](docs/demo-flow.png)
+*4-6 reviewers independently review an ML pipeline, debate each other's findings, then a completeness auditor and supreme judge weigh in.*
+
+> To re-record the GIF demo: `./docs/record-demo.sh` (requires [VHS](https://github.com/charmbracelet/vhs) or asciinema)
+
+</details>
 
 ## Why This Exists
 
@@ -20,21 +31,21 @@ A Claude Code skill that orchestrates multi-agent adversarial review panels. Mul
 | Cross-reviewer debate & engagement | Reviewers respond to each other's specific points across 1-3 rounds |
 | Anti-groupthink blind assessment | Final scores given without seeing others' finals — prevents conformity |
 | Post-debate completeness audit | Dedicated agent re-reads source line-by-line after debate to catch what everyone missed |
-| Claim verification (Phase 4.6) | Verifies all reviewer line-number citations against actual source — catches hallucinated findings |
+| Claim verification (Phase 9) | Verifies all reviewer line-number citations against actual source — catches hallucinated findings |
 | Epistemic labels on findings | Every finding tagged [VERIFIED], [CONSENSUS], [SINGLE-SOURCE], [UNVERIFIED], or [DISPUTED] |
 | Scope & limitations disclosure | Every report states what the panel cannot evaluate — prevents over-trust |
 | Correlated-bias warning | When all reviewers agree (spread < 2pts), flags that unanimity may reflect shared model bias |
 | Code-level detail catching | Line-by-line audit of constants, sets, SQL, config values in every review |
 | Auto-persona from content signals | Keyword detection adds domain specialists (ML, SQL, Security, etc.) up to 6 reviewers |
 | Source-grounded debate | Disputed points include inline source code snippets — keeps debate anchored to reality |
-| Context gathering (Phase 1) | Auto-scans sibling directories for docs, traces imports/references, discovers safety mechanisms, asks user about gaps |
+| Context gathering (Phase 1-2) | Auto-scans sibling directories for docs, traces imports/references, discovers safety mechanisms, asks user about gaps |
 | Absent-safeguard check (judge) | Judge verifies [CRITICAL] recommendations account for existing safety mechanisms before endorsing |
 | Reviewer suggestion qualifier | Reviewers must state what safeguard would need to be absent; flag unverified assumptions |
 | Diverse reasoning strategies | Each reviewer uses a different reasoning approach (systematic enumeration, adversarial simulation, backward reasoning, etc.) |
 | Anti-rhetoric guard | Judge flags position changes driven by eloquence rather than evidence |
 | Dynamic sycophancy intervention | Detects and intervenes when >50% of position changes lack new evidence |
 | Judge confidence gating | Low-confidence verdicts get "HUMAN REVIEW RECOMMENDED" flag instead of forcing a call |
-| Knowledge mining (Phase 1) | Mines feedback memories, lessons, skills, and CLAUDE.md for domain-specific pitfalls before review |
+| Knowledge mining (Phase 1-2) | Mines feedback memories, lessons, skills, and CLAUDE.md for domain-specific pitfalls before review |
 | Built-in domain checklists | 9 signal groups get pre-built review checklists (ML, SQL, Pipeline, Cost, etc.) — zero-latency domain expertise |
 | Deep research mode | Opt-in web research for domain best practices; triggered by "deep review" or offered when strong signals detected |
 
@@ -42,18 +53,19 @@ The skill doesn't just find *more* issues — it **structures** them. You get co
 
 ## How It Works
 
-```
-Phase 1    Context & Setup     Scan sibling dirs, trace references, discover safeguards, select personas
-Phase 2    Independent Review  4-6 reviewers evaluate in parallel (no cross-talk)
-Phase 2.5  Private Reflection  Each reviewer re-reads and rates own confidence
-Phase 3    Debate (1-3 rounds) Reviewers engage with each other + find new issues
-Phase 3.5  Summarize           Distill resolved/unresolved points between rounds
-Phase 4    Blind Final         Each reviewer gives final score independently
-Phase 4.5  Completeness Audit  Dedicated agent scans for what the panel missed
-Phase 4.6  Claim Verification  Verify all line-number citations against source
-Phase 5    Supreme Judge       Opus arbitrates everything including audit findings
-Phase 6    Document            Structured markdown report for human review
-```
+| Stage          | Phase | Action                                                          |
+|----------------|-------|-----------------------------------------------------------------|
+| **Gather**     | 1.    | Context & Setup — scan sibling dirs, trace references, discover safeguards |
+|                | 2.    | Detect Specialists — signal detection, persona selection, knowledge mining |
+| **Review**     | 3.    | Independent Review — 4-6 reviewers evaluate in parallel (no cross-talk) |
+|                | 4.    | Private Reflection — each reviewer re-reads and rates own confidence |
+| **Debate**     | 5.    | Adversarial Debate (1-3 rounds) — reviewers engage + find new issues |
+|                | 6.    | Summarize — distill resolved/unresolved points between rounds |
+|                | 7.    | Blind Final — each reviewer gives final score independently |
+| **Verify**     | 8.    | Completeness Audit — dedicated agent scans for what the panel missed |
+|                | 9.    | Claim Verification — verify all line-number citations against source |
+| **Adjudicate** | 10.   | Supreme Judge — Opus arbitrates everything including audit findings |
+|                | 11.   | Document — structured markdown report for human review |
 
 ## What Makes This Different from "Just Asking Claude to Review"
 
@@ -82,10 +94,10 @@ v2 fixes this with:
 
 v2.1 goes further:
 - **Auto-persona from content signals** — keyword-based detection automatically adds domain-specific reviewers (e.g., Statistical Rigor Reviewer for ML code, Data Quality Auditor for SQL) up to 6 total
-- **Source-grounded debate** — Phase 3.5 summaries include inline code snippets for disputed points, keeping debate anchored to the actual source rather than drifting into abstraction
+- **Source-grounded debate** — debate summaries (Phase 6) include inline code snippets for disputed points, keeping debate anchored to the actual source rather than drifting into abstraction
 
 v2.2 adds context awareness, reasoning diversity, and debate quality safeguards:
-- **Context gathering** (Phase 1) — auto-scans sibling directories for docs, traces imports/references, discovers existing safety mechanisms, and confirms gaps with the user before review begins. This addresses the "correct symptom, wrong prescription" problem where reviewers flag real issues but recommend fixes that conflict with existing safeguards they didn't know about.
+- **Context gathering** (Gather stage) — auto-scans sibling directories for docs, traces imports/references, discovers existing safety mechanisms, and confirms gaps with the user before review begins. This addresses the "correct symptom, wrong prescription" problem where reviewers flag real issues but recommend fixes that conflict with existing safeguards they didn't know about.
 - **Reviewer suggestion qualifier** — reviewers must state what safeguard would need to be absent for their recommendation to apply, and flag unverified assumptions
 - **Absent-safeguard check** — the judge verifies [CRITICAL] recommendations account for existing safety mechanisms before endorsing them
 - **Diverse reasoning strategies** (DMAD) — each persona uses a different reasoning approach (systematic enumeration, backward reasoning, adversarial simulation, etc.) so reviewers think differently, not just look at different things
@@ -102,7 +114,7 @@ v2.4 adds portability detection:
 - Motivated by real case: reviewing a dbt skill where 3 Databricks-specific patterns were labeled "universal conventions."
 
 v2.5 adds a trust & verification layer (from applying the [AI Trust Evaluation Framework](https://github.com/wan-huiyan/ai-trust-evaluation) to the panel itself):
-- **Phase 4.6: Claim Verification** — a dedicated agent verifies every reviewer line-number citation against the actual source material. Classifies each as [VERIFIED], [INACCURATE], [MISATTRIBUTED], [HALLUCINATED], or [UNVERIFIABLE]. Catches hallucinated findings before the judge sees them.
+- **Claim Verification (Phase 9)** — a dedicated agent verifies every reviewer line-number citation against the actual source material. Classifies each as [VERIFIED], [INACCURATE], [MISATTRIBUTED], [HALLUCINATED], or [UNVERIFIABLE]. Catches hallucinated findings before the judge sees them.
 - **Epistemic labels** — the judge classifies every finding as [VERIFIED], [CONSENSUS], [SINGLE-SOURCE], [UNVERIFIED], or [DISPUTED]. Users instantly know which findings to act on vs. investigate.
 - **Scope & Limitations section** — every report explicitly states what the panel cannot evaluate (runtime behavior, production data, shared model biases). Prevents over-trust.
 - **Correlated-bias disclaimer** — when all reviewers converge (score spread < 2 points), the report warns that unanimity may reflect shared model biases rather than genuine quality. Key insight: the most dangerous failure mode for a multi-agent panel is unanimous agreement on something wrong.
@@ -131,12 +143,12 @@ The output isn't a wall of text. It's a scannable report:
 
 ```markdown
 ## Executive Summary          ← Read this in 30 seconds
-## Scope & Limitations        ← What the panel can't evaluate (new in v2.5)
+## Scope & Limitations        ← What the panel can't evaluate
 ## Score Summary Table        ← Initial → Final scores per reviewer
 ## Consensus Points           ← What everyone agreed on
 ## Disagreement Points        ← Each side's argument + judge's ruling
 ## Completeness Audit         ← What the whole panel missed
-## Claim Verification         ← Which reviewer citations checked out (new in v2.5)
+## Claim Verification         ← Which reviewer citations checked out
 ## Action Items               ← [CRITICAL] [VERIFIED] / [IMPORTANT] [CONSENSUS] / etc.
 ## Full Transcript            ← Collapsible details for deep dives
 ```
@@ -223,7 +235,7 @@ git clone https://github.com/wan-huiyan/agent-review-panel.git ~/.cursor/skills/
 
 > **Cursor adaptation note:** This skill was written for Claude Code’s **Agent tool** (6+ subagent calls with parallel spawn, model selection, etc.). Cursor has its own subagent/task mechanism (e.g. `mcp_task`), but the full panel flow isn’t guaranteed without adaptation — differences in parallel spawning, prompt shape, and model selection (e.g. `model: "opus"`) may affect behavior.
 >
-> **Adapting for Cursor:** The core pattern is straightforward — one subagent/task per reviewer in Phase 2, collect results, then one per reviewer in Phase 3 (debate), then single agents for the completeness audit and judge. If you adapt it, PRs are welcome!
+> **Adapting for Cursor:** The core pattern is straightforward — one subagent/task per reviewer in the Review stage (Phases 3-4), collect results, then one per reviewer in the Debate stage (Phases 5-7), then single agents for the Verify and Adjudicate stages. If you adapt it, PRs are welcome!
 
 ---
 
