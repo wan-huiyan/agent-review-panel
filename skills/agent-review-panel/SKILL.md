@@ -24,7 +24,7 @@ description: >
   launching reviewers.
 ---
 
-# Agent Review Panel v2.8
+# Agent Review Panel v2.9
 
 A multi-agent adversarial review system based on nine research foundations:
 ChatEval (ICLR 2024), AutoGen, Du et al. (ICML 2024), MachineSoM (ACL 2024),
@@ -59,6 +59,10 @@ This skill depends on the Agent tool to launch parallel subagent reviewers and
 requires bash for context gathering (grep, file reads). All agents use
 `model: "opus"`. Knowledge mining reads from memory paths if they exist; if
 not available, it degrades gracefully — no hard dependency.
+
+**Optional enhancement:** When VoltAgent specialist agents are installed, the
+panel can use them instead of generic persona-prompted agents for stronger
+domain-specific reviews. See "VoltAgent Integration" section below.
 
 This skill is scoped to multi-perspective adversarial review. For skill
 improvement requests, use schliff instead. For post-review plan updates,
@@ -247,11 +251,134 @@ Code Quality Auditor — the #1 cause of missed details in v1.**
 
 Correctness, Completeness, Quality, Edge Cases (override if user specifies).
 
+### VoltAgent Integration (v2.9)
+
+VoltAgent specialist agents (127+ across 10 families) have built-in domain
+expertise via their system prompts, making them stronger reviewers than generic
+persona-prompted agents. When available, the panel should **upgrade** personas
+to VoltAgent agents. Full catalog: github.com/VoltAgent/awesome-claude-code-subagents
+
+**Step 1: Check availability.** During Phase 1 setup, check whether VoltAgent
+agents are available by scanning the system-reminder agent list for any
+`voltagent-*` prefixed agents. Note which families are installed.
+
+**Step 2: Map personas to specialists.** Use this mapping table:
+
+#### Core Persona Mapping (review panel built-in personas)
+
+| Persona | Primary VoltAgent | Alt VoltAgent | Fallback |
+|---|---|---|---|
+| Correctness Hawk | `voltagent-qa-sec:code-reviewer` | `voltagent-qa-sec:debugger` | Generic + prompt |
+| Architecture Critic | `voltagent-qa-sec:architect-reviewer` | `voltagent-infra:cloud-architect` | Generic + prompt |
+| Security Auditor | `voltagent-qa-sec:security-auditor` | `voltagent-qa-sec:penetration-tester` | Generic + prompt |
+| Code Quality Auditor | `voltagent-qa-sec:code-reviewer` | | Generic + prompt |
+| Feasibility Analyst | `voltagent-data-ai:data-scientist` | `voltagent-biz:business-analyst` | Generic + prompt |
+| Risk Assessor | `voltagent-qa-sec:chaos-engineer` | `voltagent-biz:risk-manager` | Generic + prompt |
+| Performance Specialist | `voltagent-qa-sec:performance-engineer` | `voltagent-infra:sre-engineer` | Generic + prompt |
+| Stakeholder Advocate | `voltagent-biz:product-manager` | `voltagent-biz:business-analyst` | Generic + prompt |
+| Devil's Advocate | Generic + prompt | | (intentionally generic) |
+| Data Quality Auditor | `voltagent-data-ai:data-analyst` | `voltagent-data-ai:data-engineer` | Generic + prompt |
+| Reliability/SRE | `voltagent-infra:sre-engineer` | `voltagent-infra:devops-incident-responder` | Generic + prompt |
+| DevOps/Infra | `voltagent-infra:devops-engineer` | `voltagent-infra:platform-engineer` | Generic + prompt |
+| Database Specialist | `voltagent-data-ai:database-optimizer` | `voltagent-data-ai:postgres-pro` | Generic + prompt |
+| Clarity Editor | `voltagent-dev-exp:documentation-engineer` | `voltagent-biz:technical-writer` | Generic + prompt |
+| Technical Accuracy | `voltagent-qa-sec:code-reviewer` | | Generic + prompt |
+| Completeness Checker | `voltagent-qa-sec:qa-expert` | | Generic + prompt |
+
+#### Signal-Detected Specialist Mapping (auto-added by content signals)
+
+When content signals trigger auto-addition of specialist reviewers, use these
+VoltAgent agents instead of generic personas:
+
+| Content Signal | Auto-Add Persona | VoltAgent `subagent_type` |
+|---|---|---|
+| SQL / database queries | Data Quality Auditor | `voltagent-data-ai:database-optimizer` |
+| Terraform / IaC | Infrastructure Reviewer | `voltagent-infra:terraform-engineer` |
+| Terragrunt | Infrastructure Reviewer | `voltagent-infra:terragrunt-expert` |
+| Docker / containers | Container Reviewer | `voltagent-infra:docker-expert` |
+| Kubernetes / k8s | K8s Reviewer | `voltagent-infra:kubernetes-specialist` |
+| CI/CD / pipelines | Pipeline Reviewer | `voltagent-infra:deployment-engineer` |
+| ML / model training | ML Reviewer | `voltagent-data-ai:ml-engineer` |
+| LLM / prompts | LLM Reviewer | `voltagent-data-ai:llm-architect` |
+| NLP / text processing | NLP Reviewer | `voltagent-data-ai:nlp-engineer` |
+| React / frontend | Frontend Reviewer | `voltagent-lang:react-specialist` |
+| TypeScript | TS Reviewer | `voltagent-lang:typescript-pro` |
+| Python | Python Reviewer | `voltagent-lang:python-pro` |
+| Go / Golang | Go Reviewer | `voltagent-lang:golang-pro` |
+| Rust | Rust Reviewer | `voltagent-lang:rust-engineer` |
+| Java / Spring | Java Reviewer | `voltagent-lang:java-architect` |
+| .NET / C# | .NET Reviewer | `voltagent-lang:csharp-developer` |
+| Ruby / Rails | Rails Reviewer | `voltagent-lang:rails-expert` |
+| PHP / Laravel | PHP Reviewer | `voltagent-lang:laravel-specialist` |
+| Swift / iOS | iOS Reviewer | `voltagent-lang:swift-expert` |
+| Flutter / Dart | Flutter Reviewer | `voltagent-lang:flutter-expert` |
+| GraphQL | GraphQL Reviewer | `voltagent-core-dev:graphql-architect` |
+| WebSocket / real-time | Real-time Reviewer | `voltagent-core-dev:websocket-engineer` |
+| Microservices | Architecture Reviewer | `voltagent-core-dev:microservices-architect` |
+| API design | API Reviewer | `voltagent-core-dev:api-designer` |
+| Network / DNS / routing | Network Reviewer | `voltagent-infra:network-engineer` |
+| Azure | Azure Reviewer | `voltagent-infra:azure-infra-engineer` |
+| Active Directory | AD Security Reviewer | `voltagent-qa-sec:ad-security-reviewer` |
+| PowerShell | PowerShell Reviewer | `voltagent-qa-sec:powershell-security-hardening` |
+| Compliance / GDPR / SOC2 | Compliance Reviewer | `voltagent-qa-sec:compliance-auditor` |
+| Accessibility / a11y | Accessibility Reviewer | `voltagent-qa-sec:accessibility-tester` |
+| Error handling / logging | Error Reviewer | `voltagent-qa-sec:error-detective` |
+| Test automation | Test Reviewer | `voltagent-qa-sec:test-automator` |
+| Blockchain / Web3 | Blockchain Reviewer | `voltagent-domains:blockchain-developer` |
+| Payment / fintech | Fintech Reviewer | `voltagent-domains:fintech-engineer` |
+| IoT / embedded | Embedded Reviewer | `voltagent-domains:embedded-systems` |
+| SEO | SEO Reviewer | `voltagent-domains:seo-specialist` |
+| Quant / financial models | Quant Reviewer | `voltagent-domains:quant-analyst` |
+
+#### Multi-Agent Orchestration Mapping (for completeness audit & judge)
+
+| Review Phase | VoltAgent `subagent_type` | Use When |
+|---|---|---|
+| Completeness Audit (4.5) | `voltagent-meta:knowledge-synthesizer` | Synthesize what the panel missed |
+| Claim Verification (4.6) | `voltagent-qa-sec:code-reviewer` | Verify line-number citations |
+| Severity Verification (4.7) | `voltagent-qa-sec:debugger` | Read actual code for P0/P1 findings |
+| Supreme Judge (5) | Generic + opus | (judge must be domain-neutral) |
+
+**Step 3: Suggest installation when beneficial.** If a selected persona would
+benefit from a VoltAgent agent but the agent family is not available, suggest
+installation to the user:
+
+> "This review would benefit from VoltAgent specialist agents for deeper
+> domain-specific analysis. You can install the relevant families with:
+>
+> **Quick install (CLI):**
+> `claude plugin install voltagent-qa-sec`  — security, code review, testing
+> `claude plugin install voltagent-data-ai` — data science, ML, databases
+> `claude plugin install voltagent-infra`   — DevOps, cloud, Terraform
+> `claude plugin install voltagent-lang`    — language specialists (TS, Python, Go, Rust)
+> `claude plugin install voltagent-biz`     — product, business analysis
+> `claude plugin install voltagent-domains` — fintech, blockchain, IoT
+>
+> **Or browse via marketplace:**
+> `/plugin marketplace add VoltAgent/awesome-claude-code-subagents`
+> then `/plugin install <name>@voltagent-subagents`
+>
+> Continue without them? They're optional — the review will still work
+> with generic persona-prompted agents."
+
+Only suggest installation **once per session**. List only the families relevant
+to the detected content signals, not all 10. If the user declines or the agents
+aren't available, proceed with the generic fallback silently.
+
+**Step 4: Launch with `subagent_type`.** When launching Phase 2 agents, use:
+- `subagent_type: "voltagent-qa-sec:code-reviewer"` (when available)
+- Omit `subagent_type` (generic agent with persona prompt as fallback)
+
+The persona prompt is STILL included even when using VoltAgent agents — it
+provides the review-panel-specific context (agreement intensity, reasoning
+strategy, evaluation criteria) that the VoltAgent agent doesn't have natively.
+
 ---
 
 ## Phase 2: Independent Review (Round 0)
 
 Launch ALL reviewer agents **in parallel** using Agent tool with `model: "opus"`.
+When VoltAgent integration is active, use `subagent_type` from the mapping table.
 Each gets the structured prompt from `references/prompt-templates.md` (Phase 2
 template) with their persona, agreement intensity, reasoning strategy, context
 brief, and the full work content inside injection boundaries.
