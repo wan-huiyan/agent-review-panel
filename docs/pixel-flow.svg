@@ -1,0 +1,574 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 780" width="960" height="780" style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
+  <defs>
+    <filter id="panelShadow" x="-2%" y="-2%" width="104%" height="108%">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#00000012"/>
+    </filter>
+    <!-- Arrow markers -->
+    <marker id="arr" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M0,0 L0,8 L8,4 z" fill="#B8B0A4"/>
+    </marker>
+    <marker id="arrBlue" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M0,0 L0,8 L8,4 z" fill="#4A90D9"/>
+    </marker>
+    <marker id="arrOrange" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M0,0 L0,8 L8,4 z" fill="#E67E22"/>
+    </marker>
+  </defs>
+
+  <!-- ═══════════════════════════════════════════════════
+       BACKGROUND
+  ═══════════════════════════════════════════════════ -->
+  <rect width="960" height="780" rx="0" fill="#FAF8F4"/>
+
+  <!-- ═══════════════════════════════════════════════════
+       PANEL 1: Setup & Independent Review
+  ═══════════════════════════════════════════════════ -->
+  <g transform="translate(30, 20)">
+    <rect width="900" height="230" rx="14" fill="#FFFFFF" stroke="#E8E4DE" stroke-width="1.5" filter="url(#panelShadow)"/>
+
+    <!-- ── Claude Code character (orchestrator) ── -->
+    <g transform="translate(42, 28) scale(1.15)">
+      <!-- Hair (brown) -->
+      <rect x="6" y="0" width="20" height="6" rx="0" fill="#6B4226"/>
+      <rect x="2" y="4" width="28" height="8" rx="0" fill="#6B4226"/>
+      <!-- Face -->
+      <rect x="4" y="10" width="24" height="18" rx="0" fill="#FFDBB8"/>
+      <!-- Hair sides -->
+      <rect x="2" y="6" width="4" height="10" fill="#6B4226"/>
+      <rect x="26" y="6" width="4" height="10" fill="#6B4226"/>
+      <!-- Eyes -->
+      <rect x="8" y="16" width="5" height="5" rx="0" fill="#333"/>
+      <rect x="19" y="16" width="5" height="5" rx="0" fill="#333"/>
+      <!-- Eye shine -->
+      <rect x="9" y="17" width="2" height="2" fill="#FFF"/>
+      <rect x="20" y="17" width="2" height="2" fill="#FFF"/>
+      <!-- Mouth -->
+      <rect x="11" y="24" width="10" height="3" rx="0" fill="#D4845A"/>
+      <!-- Body (blue shirt) -->
+      <rect x="4" y="30" width="24" height="18" rx="0" fill="#4A90D9"/>
+      <!-- Arms -->
+      <rect x="-4" y="32" width="8" height="14" rx="0" fill="#4A90D9"/>
+      <rect x="28" y="32" width="8" height="14" rx="0" fill="#4A90D9"/>
+      <!-- Hands -->
+      <rect x="-4" y="44" width="6" height="4" fill="#FFDBB8"/>
+      <rect x="30" y="44" width="6" height="4" fill="#FFDBB8"/>
+      <!-- Pants -->
+      <rect x="6" y="48" width="8" height="14" rx="0" fill="#34495E"/>
+      <rect x="18" y="48" width="8" height="14" rx="0" fill="#34495E"/>
+      <!-- Shoes -->
+      <rect x="4" y="60" width="10" height="5" rx="0" fill="#2C3E50"/>
+      <rect x="18" y="60" width="10" height="5" rx="0" fill="#2C3E50"/>
+    </g>
+    <!-- Label -->
+    <text x="66" y="118" text-anchor="middle" fill="#2C3E50" font-size="10" font-weight="700">Claude Code</text>
+    <text x="66" y="130" text-anchor="middle" fill="#7F8C8D" font-size="9">(Orchestrator)</text>
+
+    <!-- Speech bubble 1: scanning -->
+    <g transform="translate(110, 38)">
+      <rect width="185" height="38" rx="10" fill="#FFF" stroke="#4A90D9" stroke-width="1.8"/>
+      <polygon points="0,15 -8,20 0,25" fill="#FFF" stroke="#4A90D9" stroke-width="1.8"/>
+      <rect x="-1" y="16" width="3" height="8" fill="#FFF"/>
+      <text x="14" y="18" fill="#4A90D9" font-size="10" font-weight="700">GATHER</text>
+      <text x="14" y="30" fill="#2C3E50" font-size="9.5">Scanning pipeline... 1,200 lines</text>
+    </g>
+
+    <!-- Speech bubble 2: personas selected -->
+    <g transform="translate(110, 86)">
+      <rect width="165" height="38" rx="10" fill="#FFF" stroke="#4A90D9" stroke-width="1.8"/>
+      <polygon points="0,15 -8,20 0,25" fill="#FFF" stroke="#4A90D9" stroke-width="1.8"/>
+      <rect x="-1" y="16" width="3" height="8" fill="#FFF"/>
+      <text x="14" y="24" fill="#2C3E50" font-size="9.5">6 reviewers selected</text>
+    </g>
+
+    <!-- Arrow: setup → reviewers -->
+    <line x1="310" y1="85" x2="365" y2="85" stroke="#B8B0A4" stroke-width="2" marker-end="url(#arr)" stroke-dasharray="6,4"/>
+
+    <!-- ── 6 Reviewer characters ── -->
+    <!-- Row 1: Security, Statistical Rigor, Performance -->
+    <!-- Security Reviewer (red) -->
+    <g transform="translate(380, 28) scale(0.7)">
+      <rect x="6" y="0" width="20" height="6" fill="#2C3E50"/>
+      <rect x="2" y="4" width="28" height="8" fill="#2C3E50"/>
+      <rect x="4" y="10" width="24" height="18" fill="#FFDBB8"/>
+      <rect x="2" y="6" width="4" height="10" fill="#2C3E50"/>
+      <rect x="26" y="6" width="4" height="10" fill="#2C3E50"/>
+      <rect x="8" y="16" width="5" height="5" fill="#333"/>
+      <rect x="19" y="16" width="5" height="5" fill="#333"/>
+      <rect x="9" y="17" width="2" height="2" fill="#FFF"/>
+      <rect x="20" y="17" width="2" height="2" fill="#FFF"/>
+      <rect x="11" y="24" width="10" height="3" fill="#D4845A"/>
+      <rect x="4" y="30" width="24" height="18" fill="#E74C3C"/>
+      <rect x="-4" y="32" width="8" height="14" fill="#E74C3C"/>
+      <rect x="28" y="32" width="8" height="14" fill="#E74C3C"/>
+      <rect x="-4" y="44" width="6" height="4" fill="#FFDBB8"/>
+      <rect x="30" y="44" width="6" height="4" fill="#FFDBB8"/>
+      <rect x="6" y="48" width="8" height="14" fill="#34495E"/>
+      <rect x="18" y="48" width="8" height="14" fill="#34495E"/>
+      <rect x="4" y="60" width="10" height="5" fill="#2C3E50"/>
+      <rect x="18" y="60" width="10" height="5" fill="#2C3E50"/>
+      <!-- Shield icon on shirt -->
+      <rect x="12" y="34" width="8" height="10" rx="0" fill="#C0392B"/>
+      <rect x="14" y="36" width="4" height="4" fill="#FFF" opacity="0.4"/>
+    </g>
+    <text x="390" y="82" fill="#E74C3C" font-size="8" font-weight="700">SEC</text>
+
+    <!-- Statistical Rigor (purple) -->
+    <g transform="translate(440, 28) scale(0.7)">
+      <rect x="6" y="0" width="20" height="6" fill="#8E44AD"/>
+      <rect x="2" y="4" width="28" height="8" fill="#8E44AD"/>
+      <rect x="4" y="10" width="24" height="18" fill="#FFDBB8"/>
+      <rect x="2" y="6" width="4" height="10" fill="#8E44AD"/>
+      <rect x="26" y="6" width="4" height="10" fill="#8E44AD"/>
+      <rect x="8" y="16" width="5" height="5" fill="#333"/>
+      <rect x="19" y="16" width="5" height="5" fill="#333"/>
+      <rect x="9" y="17" width="2" height="2" fill="#FFF"/>
+      <rect x="20" y="17" width="2" height="2" fill="#FFF"/>
+      <!-- Glasses -->
+      <rect x="6" y="14" width="9" height="7" rx="0" fill="none" stroke="#333" stroke-width="1.5"/>
+      <rect x="17" y="14" width="9" height="7" rx="0" fill="none" stroke="#333" stroke-width="1.5"/>
+      <line x1="15" y1="17" x2="17" y2="17" stroke="#333" stroke-width="1.5"/>
+      <rect x="11" y="24" width="10" height="3" fill="#D4845A"/>
+      <rect x="4" y="30" width="24" height="18" fill="#8E44AD"/>
+      <rect x="-4" y="32" width="8" height="14" fill="#8E44AD"/>
+      <rect x="28" y="32" width="8" height="14" fill="#8E44AD"/>
+      <rect x="-4" y="44" width="6" height="4" fill="#FFDBB8"/>
+      <rect x="30" y="44" width="6" height="4" fill="#FFDBB8"/>
+      <rect x="6" y="48" width="8" height="14" fill="#34495E"/>
+      <rect x="18" y="48" width="8" height="14" fill="#34495E"/>
+      <rect x="4" y="60" width="10" height="5" fill="#2C3E50"/>
+      <rect x="18" y="60" width="10" height="5" fill="#2C3E50"/>
+    </g>
+    <text x="453" y="82" fill="#8E44AD" font-size="8" font-weight="700">STAT</text>
+
+    <!-- Performance (green) -->
+    <g transform="translate(500, 28) scale(0.7)">
+      <rect x="6" y="0" width="20" height="6" fill="#F5A623"/>
+      <rect x="2" y="4" width="28" height="8" fill="#F5A623"/>
+      <rect x="4" y="10" width="24" height="18" fill="#FFDBB8"/>
+      <rect x="2" y="6" width="4" height="10" fill="#F5A623"/>
+      <rect x="26" y="6" width="4" height="10" fill="#F5A623"/>
+      <rect x="8" y="16" width="5" height="5" fill="#333"/>
+      <rect x="19" y="16" width="5" height="5" fill="#333"/>
+      <rect x="9" y="17" width="2" height="2" fill="#FFF"/>
+      <rect x="20" y="17" width="2" height="2" fill="#FFF"/>
+      <rect x="11" y="24" width="10" height="3" fill="#D4845A"/>
+      <rect x="4" y="30" width="24" height="18" fill="#27AE60"/>
+      <rect x="-4" y="32" width="8" height="14" fill="#27AE60"/>
+      <rect x="28" y="32" width="8" height="14" fill="#27AE60"/>
+      <rect x="-4" y="44" width="6" height="4" fill="#FFDBB8"/>
+      <rect x="30" y="44" width="6" height="4" fill="#FFDBB8"/>
+      <rect x="6" y="48" width="8" height="14" fill="#34495E"/>
+      <rect x="18" y="48" width="8" height="14" fill="#34495E"/>
+      <rect x="4" y="60" width="10" height="5" fill="#2C3E50"/>
+      <rect x="18" y="60" width="10" height="5" fill="#2C3E50"/>
+    </g>
+    <text x="512" y="82" fill="#27AE60" font-size="8" font-weight="700">PERF</text>
+
+    <!-- Row 2: Data Quality, Pipeline Safety, Maintainability -->
+    <!-- Data Quality (orange) -->
+    <g transform="translate(380, 94) scale(0.7)">
+      <rect x="6" y="0" width="20" height="6" fill="#D35400"/>
+      <rect x="2" y="4" width="28" height="8" fill="#D35400"/>
+      <rect x="4" y="10" width="24" height="18" fill="#FFDBB8"/>
+      <rect x="2" y="6" width="4" height="10" fill="#D35400"/>
+      <rect x="26" y="6" width="4" height="10" fill="#D35400"/>
+      <rect x="8" y="16" width="5" height="5" fill="#333"/>
+      <rect x="19" y="16" width="5" height="5" fill="#333"/>
+      <rect x="9" y="17" width="2" height="2" fill="#FFF"/>
+      <rect x="20" y="17" width="2" height="2" fill="#FFF"/>
+      <rect x="11" y="24" width="10" height="3" fill="#D4845A"/>
+      <rect x="4" y="30" width="24" height="18" fill="#E67E22"/>
+      <rect x="-4" y="32" width="8" height="14" fill="#E67E22"/>
+      <rect x="28" y="32" width="8" height="14" fill="#E67E22"/>
+      <rect x="-4" y="44" width="6" height="4" fill="#FFDBB8"/>
+      <rect x="30" y="44" width="6" height="4" fill="#FFDBB8"/>
+      <rect x="6" y="48" width="8" height="14" fill="#34495E"/>
+      <rect x="18" y="48" width="8" height="14" fill="#34495E"/>
+      <rect x="4" y="60" width="10" height="5" fill="#2C3E50"/>
+      <rect x="18" y="60" width="10" height="5" fill="#2C3E50"/>
+    </g>
+    <text x="390" y="148" fill="#E67E22" font-size="8" font-weight="700">DATA</text>
+
+    <!-- Pipeline Safety (teal) -->
+    <g transform="translate(440, 94) scale(0.7)">
+      <rect x="6" y="0" width="20" height="6" fill="#16A085"/>
+      <rect x="2" y="4" width="28" height="8" fill="#16A085"/>
+      <rect x="4" y="10" width="24" height="18" fill="#FFDBB8"/>
+      <rect x="2" y="6" width="4" height="10" fill="#16A085"/>
+      <rect x="26" y="6" width="4" height="10" fill="#16A085"/>
+      <rect x="8" y="16" width="5" height="5" fill="#333"/>
+      <rect x="19" y="16" width="5" height="5" fill="#333"/>
+      <rect x="9" y="17" width="2" height="2" fill="#FFF"/>
+      <rect x="20" y="17" width="2" height="2" fill="#FFF"/>
+      <rect x="11" y="24" width="10" height="3" fill="#D4845A"/>
+      <rect x="4" y="30" width="24" height="18" fill="#1ABC9C"/>
+      <rect x="-4" y="32" width="8" height="14" fill="#1ABC9C"/>
+      <rect x="28" y="32" width="8" height="14" fill="#1ABC9C"/>
+      <rect x="-4" y="44" width="6" height="4" fill="#FFDBB8"/>
+      <rect x="30" y="44" width="6" height="4" fill="#FFDBB8"/>
+      <rect x="6" y="48" width="8" height="14" fill="#34495E"/>
+      <rect x="18" y="48" width="8" height="14" fill="#34495E"/>
+      <rect x="4" y="60" width="10" height="5" fill="#2C3E50"/>
+      <rect x="18" y="60" width="10" height="5" fill="#2C3E50"/>
+    </g>
+    <text x="453" y="148" fill="#1ABC9C" font-size="8" font-weight="700">PIPE</text>
+
+    <!-- Maintainability (blue-gray) -->
+    <g transform="translate(500, 94) scale(0.7)">
+      <rect x="6" y="0" width="20" height="6" fill="#5D6D7E"/>
+      <rect x="2" y="4" width="28" height="8" fill="#5D6D7E"/>
+      <rect x="4" y="10" width="24" height="18" fill="#FFDBB8"/>
+      <rect x="2" y="6" width="4" height="10" fill="#5D6D7E"/>
+      <rect x="26" y="6" width="4" height="10" fill="#5D6D7E"/>
+      <rect x="8" y="16" width="5" height="5" fill="#333"/>
+      <rect x="19" y="16" width="5" height="5" fill="#333"/>
+      <rect x="9" y="17" width="2" height="2" fill="#FFF"/>
+      <rect x="20" y="17" width="2" height="2" fill="#FFF"/>
+      <rect x="11" y="24" width="10" height="3" fill="#D4845A"/>
+      <rect x="4" y="30" width="24" height="18" fill="#5D6D7E"/>
+      <rect x="-4" y="32" width="8" height="14" fill="#5D6D7E"/>
+      <rect x="28" y="32" width="8" height="14" fill="#5D6D7E"/>
+      <rect x="-4" y="44" width="6" height="4" fill="#FFDBB8"/>
+      <rect x="30" y="44" width="6" height="4" fill="#FFDBB8"/>
+      <rect x="6" y="48" width="8" height="14" fill="#34495E"/>
+      <rect x="18" y="48" width="8" height="14" fill="#34495E"/>
+      <rect x="4" y="60" width="10" height="5" fill="#2C3E50"/>
+      <rect x="18" y="60" width="10" height="5" fill="#2C3E50"/>
+    </g>
+    <text x="513" y="148" fill="#5D6D7E" font-size="8" font-weight="700">MAINT</text>
+
+    <!-- Reviewer result bubbles -->
+    <g transform="translate(560, 30)">
+      <rect width="310" height="130" rx="10" fill="#FAFAFA" stroke="#E8E4DE" stroke-width="1"/>
+      <text x="15" y="20" fill="#2C3E50" font-size="10" font-weight="700">Independent Review Results</text>
+      <line x1="15" y1="28" x2="295" y2="28" stroke="#E8E4DE" stroke-width="1"/>
+      <!-- Results -->
+      <circle cx="22" cy="43" r="4" fill="#E74C3C"/><text x="32" y="46" fill="#2C3E50" font-size="9">Security: 2 issues (1 high)</text>
+      <circle cx="22" cy="59" r="4" fill="#8E44AD"/><text x="32" y="62" fill="#2C3E50" font-size="9">Stat Rigor: 3 issues (2 high)</text>
+      <circle cx="22" cy="75" r="4" fill="#27AE60"/><text x="32" y="78" fill="#2C3E50" font-size="9">Performance: 1 issue (0 high)</text>
+      <circle cx="22" cy="91" r="4" fill="#E67E22"/><text x="32" y="94" fill="#2C3E50" font-size="9">Data Quality: 4 issues (1 high)</text>
+      <circle cx="22" cy="107" r="4" fill="#1ABC9C"/><text x="32" y="110" fill="#2C3E50" font-size="9">Pipeline: 2 issues (1 high)</text>
+      <circle cx="22" cy="123" r="4" fill="#5D6D7E"/><text x="32" y="126" fill="#2C3E50" font-size="9">Maintain: 1 issue (0 high)</text>
+    </g>
+
+    <!-- No cross-talk badge -->
+    <rect x="560" y="170" width="120" height="22" rx="11" fill="#FFF3E0" stroke="#F39C12" stroke-width="1"/>
+    <text x="620" y="185" text-anchor="middle" fill="#E67E22" font-size="9" font-weight="600">No cross-talk</text>
+
+    <!-- Parallel badge -->
+    <rect x="690" y="170" width="120" height="22" rx="11" fill="#E8F5E9" stroke="#27AE60" stroke-width="1"/>
+    <text x="750" y="185" text-anchor="middle" fill="#27AE60" font-size="9" font-weight="600">All in parallel</text>
+
+    <!-- Panel caption -->
+    <text x="450" y="215" text-anchor="middle" fill="#B8B0A4" font-size="11" font-style="italic">Phase 1–2: Context Scan, Persona Selection &amp; Independent Review</text>
+  </g>
+
+  <!-- ═══════════════════════════════════════════════════
+       PANEL 2: Adversarial Debate
+  ═══════════════════════════════════════════════════ -->
+  <g transform="translate(30, 270)">
+    <rect width="900" height="250" rx="14" fill="#FFFFFF" stroke="#E8E4DE" stroke-width="1.5" filter="url(#panelShadow)"/>
+
+    <!-- Statistical Rigor character (left side) -->
+    <g transform="translate(50, 30)">
+      <!-- Hair (purple) -->
+      <rect x="6" y="0" width="20" height="6" fill="#8E44AD"/>
+      <rect x="2" y="4" width="28" height="8" fill="#8E44AD"/>
+      <rect x="4" y="10" width="24" height="18" fill="#FFDBB8"/>
+      <rect x="2" y="6" width="4" height="10" fill="#8E44AD"/>
+      <rect x="26" y="6" width="4" height="10" fill="#8E44AD"/>
+      <!-- Glasses -->
+      <rect x="6" y="14" width="9" height="7" fill="none" stroke="#333" stroke-width="1.5"/>
+      <rect x="17" y="14" width="9" height="7" fill="none" stroke="#333" stroke-width="1.5"/>
+      <line x1="15" y1="17" x2="17" y2="17" stroke="#333" stroke-width="1.5"/>
+      <rect x="8" y="16" width="5" height="5" fill="#333"/>
+      <rect x="19" y="16" width="5" height="5" fill="#333"/>
+      <rect x="9" y="17" width="2" height="2" fill="#FFF"/>
+      <rect x="20" y="17" width="2" height="2" fill="#FFF"/>
+      <rect x="11" y="24" width="10" height="3" fill="#D4845A"/>
+      <rect x="4" y="30" width="24" height="18" fill="#8E44AD"/>
+      <rect x="-4" y="32" width="8" height="14" fill="#8E44AD"/>
+      <rect x="28" y="32" width="8" height="14" fill="#8E44AD"/>
+      <rect x="-4" y="44" width="6" height="4" fill="#FFDBB8"/>
+      <rect x="30" y="44" width="6" height="4" fill="#FFDBB8"/>
+      <rect x="6" y="48" width="8" height="14" fill="#34495E"/>
+      <rect x="18" y="48" width="8" height="14" fill="#34495E"/>
+      <rect x="4" y="60" width="10" height="5" fill="#2C3E50"/>
+      <rect x="18" y="60" width="10" height="5" fill="#2C3E50"/>
+    </g>
+    <text x="66" y="106" text-anchor="middle" fill="#8E44AD" font-size="10" font-weight="700">Statistical</text>
+    <text x="66" y="118" text-anchor="middle" fill="#8E44AD" font-size="10" font-weight="700">Rigor</text>
+
+    <!-- Pipeline Safety character (right side) -->
+    <g transform="translate(800, 30)">
+      <rect x="6" y="0" width="20" height="6" fill="#16A085"/>
+      <rect x="2" y="4" width="28" height="8" fill="#16A085"/>
+      <rect x="4" y="10" width="24" height="18" fill="#FFDBB8"/>
+      <rect x="2" y="6" width="4" height="10" fill="#16A085"/>
+      <rect x="26" y="6" width="4" height="10" fill="#16A085"/>
+      <rect x="8" y="16" width="5" height="5" fill="#333"/>
+      <rect x="19" y="16" width="5" height="5" fill="#333"/>
+      <rect x="9" y="17" width="2" height="2" fill="#FFF"/>
+      <rect x="20" y="17" width="2" height="2" fill="#FFF"/>
+      <rect x="11" y="24" width="10" height="3" fill="#D4845A"/>
+      <rect x="4" y="30" width="24" height="18" fill="#1ABC9C"/>
+      <rect x="-4" y="32" width="8" height="14" fill="#1ABC9C"/>
+      <rect x="28" y="32" width="8" height="14" fill="#1ABC9C"/>
+      <rect x="-4" y="44" width="6" height="4" fill="#FFDBB8"/>
+      <rect x="30" y="44" width="6" height="4" fill="#FFDBB8"/>
+      <rect x="6" y="48" width="8" height="14" fill="#34495E"/>
+      <rect x="18" y="48" width="8" height="14" fill="#34495E"/>
+      <rect x="4" y="60" width="10" height="5" fill="#2C3E50"/>
+      <rect x="18" y="60" width="10" height="5" fill="#2C3E50"/>
+    </g>
+    <text x="816" y="106" text-anchor="middle" fill="#1ABC9C" font-size="10" font-weight="700">Pipeline</text>
+    <text x="816" y="118" text-anchor="middle" fill="#1ABC9C" font-size="10" font-weight="700">Safety</text>
+
+    <!-- Debate exchange: speech bubbles going back and forth -->
+
+    <!-- Bubble 1: Stat Rigor → (right-pointing) -->
+    <g transform="translate(110, 25)">
+      <rect width="300" height="42" rx="10" fill="#FFF" stroke="#8E44AD" stroke-width="1.8"/>
+      <polygon points="0,16 -8,21 0,26" fill="#FFF" stroke="#8E44AD" stroke-width="1.8"/>
+      <rect x="-1" y="17" width="3" height="8" fill="#FFF"/>
+      <rect x="8" y="6" width="42" height="16" rx="4" fill="#E74C3C"/>
+      <text x="29" y="18" text-anchor="middle" fill="#FFF" font-size="8" font-weight="700">HIGH</text>
+      <text x="56" y="17" fill="#2C3E50" font-size="9.5">train_test_split without stratification</text>
+      <text x="14" y="33" fill="#7F8C8D" font-size="9">will leak class imbalance into validation.</text>
+    </g>
+
+    <!-- Bubble 2: Pipeline Safety ← (left-pointing) -->
+    <g transform="translate(430, 80)">
+      <rect width="340" height="42" rx="10" fill="#FFF" stroke="#1ABC9C" stroke-width="1.8"/>
+      <polygon points="340,16 348,21 340,26" fill="#FFF" stroke="#1ABC9C" stroke-width="1.8"/>
+      <rect x="338" y="17" width="3" height="8" fill="#FFF"/>
+      <rect x="10" y="6" width="72" height="16" rx="4" fill="#F39C12"/>
+      <text x="46" y="18" text-anchor="middle" fill="#FFF" font-size="8" font-weight="700">DISAGREE</text>
+      <text x="88" y="17" fill="#2C3E50" font-size="9.5">upstream sampling already</text>
+      <text x="14" y="33" fill="#7F8C8D" font-size="9">balances classes before this stage.</text>
+    </g>
+
+    <!-- Bubble 3: Stat Rigor pushes back → -->
+    <g transform="translate(110, 135)">
+      <rect width="340" height="42" rx="10" fill="#FFF" stroke="#8E44AD" stroke-width="1.8"/>
+      <polygon points="0,16 -8,21 0,26" fill="#FFF" stroke="#8E44AD" stroke-width="1.8"/>
+      <rect x="-1" y="17" width="3" height="8" fill="#FFF"/>
+      <text x="14" y="17" fill="#2C3E50" font-size="9.5" font-weight="600">Show me the evidence.</text>
+      <text x="180" y="17" fill="#7F8C8D" font-size="9.5">Line 42 reads raw CSV</text>
+      <text x="14" y="33" fill="#7F8C8D" font-size="9">with no prior balancing step.</text>
+    </g>
+
+    <!-- Bubble 4: Pipeline Safety concedes ← -->
+    <g transform="translate(430, 188)">
+      <rect width="340" height="42" rx="10" fill="#FFF" stroke="#1ABC9C" stroke-width="1.8"/>
+      <polygon points="340,16 348,21 340,26" fill="#FFF" stroke="#1ABC9C" stroke-width="1.8"/>
+      <rect x="338" y="17" width="3" height="8" fill="#FFF"/>
+      <rect x="10" y="6" width="66" height="16" rx="4" fill="#8E44AD"/>
+      <text x="43" y="18" text-anchor="middle" fill="#FFF" font-size="8" font-weight="700">CONCEDE</text>
+      <text x="82" y="17" fill="#2C3E50" font-size="9.5">the raw ingest path is unprotected.</text>
+      <text x="14" y="33" fill="#E74C3C" font-size="9" font-weight="600">Upgrading to HIGH.</text>
+    </g>
+
+    <!-- Flow arrows between debate bubbles -->
+    <!-- Arrow: bubble 1 → bubble 2 -->
+    <path d="M410,70 L410,75 Q410,80 415,80 L430,80" fill="none" stroke="#D5CFC6" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+    <!-- Arrow: bubble 2 → bubble 3 -->
+    <path d="M430,125 L430,130 Q430,135 425,135 L110,135" fill="none" stroke="#D5CFC6" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+    <!-- Arrow: bubble 3 → bubble 4 -->
+    <path d="M450,180 L450,185 Q450,190 455,190 L430,190" fill="none" stroke="#D5CFC6" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+
+    <!-- Round indicator -->
+    <rect x="200" y="100" width="56" height="18" rx="9" fill="#FEF9E7" stroke="#F39C12" stroke-width="1"/>
+    <text x="228" y="112" text-anchor="middle" fill="#F39C12" font-size="8" font-weight="600">Round 1</text>
+
+    <!-- Panel caption -->
+    <text x="450" y="242" text-anchor="middle" fill="#B8B0A4" font-size="11" font-style="italic">Phase 3–4: Adversarial Debate — reviewers challenge each other with source evidence</text>
+  </g>
+
+  <!-- ═══════════════════════════════════════════════════
+       PANEL 3: Blind Finals → Audit → Judge → Report
+  ═══════════════════════════════════════════════════ -->
+  <g transform="translate(30, 540)">
+    <rect width="900" height="210" rx="14" fill="#FFFFFF" stroke="#E8E4DE" stroke-width="1.5" filter="url(#panelShadow)"/>
+
+    <!-- ── Blind scoring section ── -->
+    <g transform="translate(20, 18)">
+      <!-- Blindfold icon -->
+      <rect x="10" y="8" width="36" height="24" rx="4" fill="#F3E5F5" stroke="#8E44AD" stroke-width="1.2"/>
+      <!-- Eye with slash -->
+      <ellipse cx="28" cy="20" rx="10" ry="6" fill="none" stroke="#8E44AD" stroke-width="1.5"/>
+      <line x1="18" y1="14" x2="38" y2="26" stroke="#8E44AD" stroke-width="2"/>
+      <text x="28" y="48" text-anchor="middle" fill="#8E44AD" font-size="9" font-weight="700">Blind Finals</text>
+
+      <!-- Score boxes -->
+      <g transform="translate(60, 0)">
+        <rect width="130" height="56" rx="6" fill="#FAFAFA" stroke="#E8E4DE" stroke-width="1"/>
+        <text x="8" y="14" fill="#7F8C8D" font-size="8">Blind scores:</text>
+        <text x="8" y="28" fill="#E74C3C" font-size="9">SEC <tspan font-weight="700">6</tspan></text>
+        <text x="40" y="28" fill="#8E44AD" font-size="9">STAT <tspan font-weight="700">4</tspan></text>
+        <text x="80" y="28" fill="#27AE60" font-size="9">PERF <tspan font-weight="700">8</tspan></text>
+        <text x="8" y="44" fill="#E67E22" font-size="9">DATA <tspan font-weight="700">5</tspan></text>
+        <text x="44" y="44" fill="#1ABC9C" font-size="9">PIPE <tspan font-weight="700">5</tspan></text>
+        <text x="82" y="44" fill="#5D6D7E" font-size="9">MAINT <tspan font-weight="700">7</tspan></text>
+      </g>
+    </g>
+
+    <!-- Arrow -->
+    <line x1="220" y1="50" x2="250" y2="50" stroke="#B8B0A4" stroke-width="2" marker-end="url(#arr)"/>
+
+    <!-- ── Audit & Verify section ── -->
+    <g transform="translate(260, 14)">
+      <!-- Auditor character (small, orange) -->
+      <g transform="translate(0, 0) scale(0.6)">
+        <rect x="6" y="0" width="20" height="6" fill="#D35400"/>
+        <rect x="2" y="4" width="28" height="8" fill="#D35400"/>
+        <rect x="4" y="10" width="24" height="18" fill="#FFDBB8"/>
+        <rect x="2" y="6" width="4" height="10" fill="#D35400"/>
+        <rect x="26" y="6" width="4" height="10" fill="#D35400"/>
+        <rect x="8" y="16" width="5" height="5" fill="#333"/>
+        <rect x="19" y="16" width="5" height="5" fill="#333"/>
+        <rect x="9" y="17" width="2" height="2" fill="#FFF"/>
+        <rect x="20" y="17" width="2" height="2" fill="#FFF"/>
+        <rect x="11" y="24" width="10" height="3" fill="#D4845A"/>
+        <rect x="4" y="30" width="24" height="18" fill="#E67E22"/>
+        <rect x="-4" y="32" width="8" height="14" fill="#E67E22"/>
+        <rect x="28" y="32" width="8" height="14" fill="#E67E22"/>
+        <rect x="-4" y="44" width="6" height="4" fill="#FFDBB8"/>
+        <rect x="30" y="44" width="6" height="4" fill="#FFDBB8"/>
+        <rect x="6" y="48" width="8" height="14" fill="#34495E"/>
+        <rect x="18" y="48" width="8" height="14" fill="#34495E"/>
+        <rect x="4" y="60" width="10" height="5" fill="#2C3E50"/>
+        <rect x="18" y="60" width="10" height="5" fill="#2C3E50"/>
+        <!-- Clipboard in hand -->
+        <rect x="30" y="34" width="14" height="18" rx="1" fill="#FFF" stroke="#D35400" stroke-width="1.5"/>
+        <rect x="33" y="31" width="8" height="4" rx="1" fill="#D35400"/>
+        <line x1="33" y1="40" x2="41" y2="40" stroke="#CCC" stroke-width="1"/>
+        <line x1="33" y1="44" x2="41" y2="44" stroke="#CCC" stroke-width="1"/>
+        <line x1="33" y1="48" x2="39" y2="48" stroke="#CCC" stroke-width="1"/>
+      </g>
+
+      <!-- Audit bubble -->
+      <g transform="translate(30, 4)">
+        <rect width="176" height="56" rx="8" fill="#FFF" stroke="#E67E22" stroke-width="1.5"/>
+        <polygon points="0,22 -6,26 0,30" fill="#FFF" stroke="#E67E22" stroke-width="1.5"/>
+        <rect x="-1" y="23" width="3" height="6" fill="#FFF"/>
+        <text x="12" y="18" fill="#E67E22" font-size="9" font-weight="700">Completeness Audit</text>
+        <text x="12" y="32" fill="#2C3E50" font-size="9">12/14 citations VERIFIED</text>
+        <text x="12" y="46" fill="#7F8C8D" font-size="8.5">1 inaccurate, 1 unverifiable</text>
+      </g>
+    </g>
+
+    <!-- Arrow -->
+    <line x1="478" y1="50" x2="508" y2="50" stroke="#B8B0A4" stroke-width="2" marker-end="url(#arr)"/>
+
+    <!-- ── Supreme Judge ── -->
+    <g transform="translate(500, 12)">
+      <!-- Judge character -->
+      <g transform="translate(0, 0) scale(0.85)">
+        <!-- Hair (distinguished gray) -->
+        <rect x="6" y="0" width="20" height="6" fill="#7F8C8D"/>
+        <rect x="2" y="4" width="28" height="8" fill="#7F8C8D"/>
+        <rect x="4" y="10" width="24" height="18" fill="#FFDBB8"/>
+        <rect x="2" y="6" width="4" height="10" fill="#7F8C8D"/>
+        <rect x="26" y="6" width="4" height="10" fill="#7F8C8D"/>
+        <rect x="8" y="16" width="5" height="5" fill="#333"/>
+        <rect x="19" y="16" width="5" height="5" fill="#333"/>
+        <rect x="9" y="17" width="2" height="2" fill="#FFF"/>
+        <rect x="20" y="17" width="2" height="2" fill="#FFF"/>
+        <rect x="11" y="24" width="10" height="3" fill="#D4845A"/>
+        <!-- Robe (dark blue) -->
+        <rect x="2" y="30" width="28" height="20" fill="#2C3E50"/>
+        <rect x="-4" y="32" width="8" height="14" fill="#2C3E50"/>
+        <rect x="28" y="32" width="8" height="14" fill="#2C3E50"/>
+        <rect x="-4" y="44" width="6" height="4" fill="#FFDBB8"/>
+        <rect x="30" y="44" width="6" height="4" fill="#FFDBB8"/>
+        <!-- Gavel in hand -->
+        <rect x="32" y="36" width="12" height="4" fill="#8B6914"/>
+        <rect x="42" y="32" width="6" height="12" rx="1" fill="#A0782C"/>
+        <rect x="6" y="50" width="8" height="14" fill="#1A252F"/>
+        <rect x="18" y="50" width="8" height="14" fill="#1A252F"/>
+        <rect x="4" y="62" width="10" height="5" fill="#1A252F"/>
+        <rect x="18" y="62" width="10" height="5" fill="#1A252F"/>
+      </g>
+      <text x="14" y="70" fill="#2C3E50" font-size="8.5" font-weight="700">Supreme</text>
+      <text x="14" y="80" fill="#2C3E50" font-size="8.5" font-weight="700">Judge</text>
+    </g>
+
+    <!-- Judge verdict bubble -->
+    <g transform="translate(550, 16)">
+      <rect width="200" height="64" rx="10" fill="#FFF" stroke="#2C3E50" stroke-width="2"/>
+      <polygon points="0,26 -8,30 0,34" fill="#FFF" stroke="#2C3E50" stroke-width="2"/>
+      <rect x="-1" y="27" width="3" height="6" fill="#FFF"/>
+      <!-- Verdict badge -->
+      <rect x="10" y="8" width="64" height="18" rx="4" fill="#E74C3C"/>
+      <text x="42" y="21" text-anchor="middle" fill="#FFF" font-size="9" font-weight="700">REVISE</text>
+      <text x="80" y="20" fill="#2C3E50" font-size="9.5">3 blocking issues</text>
+      <text x="14" y="38" fill="#2C3E50" font-size="10">Consensus: <tspan font-weight="700" fill="#E74C3C">5.8</tspan>/10</text>
+      <text x="14" y="54" fill="#7F8C8D" font-size="9">stratified split + input validation</text>
+    </g>
+
+    <!-- Arrow to report -->
+    <line x1="780" y1="50" x2="800" y2="50" stroke="#4A90D9" stroke-width="2" marker-end="url(#arrBlue)"/>
+
+    <!-- ── Report output ── -->
+    <g transform="translate(808, 10)">
+      <!-- Document icon -->
+      <rect width="70" height="88" rx="4" fill="#FFF" stroke="#4A90D9" stroke-width="1.5"/>
+      <!-- Dog ear -->
+      <polygon points="52,0 70,0 70,18" fill="#EBF5FB"/>
+      <line x1="52" y1="0" x2="52" y2="18" stroke="#4A90D9" stroke-width="1"/>
+      <line x1="52" y1="18" x2="70" y2="18" stroke="#4A90D9" stroke-width="1"/>
+      <!-- Content lines -->
+      <rect x="8" y="10" width="36" height="3" rx="1" fill="#4A90D9"/>
+      <rect x="8" y="18" width="30" height="2" rx="1" fill="#DDD"/>
+      <rect x="8" y="24" width="42" height="2" rx="1" fill="#DDD"/>
+      <!-- Sections -->
+      <rect x="8" y="32" width="52" height="2" rx="1" fill="#27AE60"/>
+      <rect x="8" y="38" width="48" height="2" rx="1" fill="#DDD"/>
+      <rect x="8" y="44" width="40" height="2" rx="1" fill="#DDD"/>
+      <rect x="8" y="52" width="52" height="2" rx="1" fill="#E74C3C"/>
+      <rect x="8" y="58" width="46" height="2" rx="1" fill="#DDD"/>
+      <rect x="8" y="64" width="38" height="2" rx="1" fill="#DDD"/>
+      <rect x="8" y="72" width="52" height="2" rx="1" fill="#F39C12"/>
+      <rect x="8" y="78" width="44" height="2" rx="1" fill="#DDD"/>
+      <!-- Labels -->
+      <text x="35" y="108" text-anchor="middle" fill="#4A90D9" font-size="9" font-weight="700">Report</text>
+    </g>
+
+    <!-- Epistemic label badges at bottom -->
+    <g transform="translate(30, 130)">
+      <rect x="0" y="0" width="66" height="18" rx="4" fill="#E8F5E9" stroke="#27AE60" stroke-width="1"/>
+      <text x="33" y="13" text-anchor="middle" fill="#27AE60" font-size="8" font-weight="700">VERIFIED</text>
+
+      <rect x="74" y="0" width="80" height="18" rx="4" fill="#E3F2FD" stroke="#4A90D9" stroke-width="1"/>
+      <text x="114" y="13" text-anchor="middle" fill="#4A90D9" font-size="8" font-weight="700">CONSENSUS</text>
+
+      <rect x="162" y="0" width="96" height="18" rx="4" fill="#FFF3E0" stroke="#F39C12" stroke-width="1"/>
+      <text x="210" y="13" text-anchor="middle" fill="#F39C12" font-size="8" font-weight="700">SINGLE-SOURCE</text>
+
+      <rect x="266" y="0" width="72" height="18" rx="4" fill="#FCE4EC" stroke="#E74C3C" stroke-width="1"/>
+      <text x="302" y="13" text-anchor="middle" fill="#E74C3C" font-size="8" font-weight="700">DISPUTED</text>
+
+      <rect x="346" y="0" width="82" height="18" rx="4" fill="#F3E5F5" stroke="#8E44AD" stroke-width="1"/>
+      <text x="387" y="13" text-anchor="middle" fill="#8E44AD" font-size="8" font-weight="700">UNVERIFIED</text>
+
+      <text x="460" y="13" fill="#B8B0A4" font-size="9" font-style="italic">every finding gets an epistemic label</text>
+    </g>
+
+    <!-- zzZ sleep indicator -->
+    <g transform="translate(750, 150)">
+      <text fill="#B8B0A4" font-size="12" font-weight="700" opacity="0.3">z</text>
+      <text x="10" y="-6" fill="#B8B0A4" font-size="15" font-weight="700" opacity="0.4">Z</text>
+      <text x="22" y="-14" fill="#B8B0A4" font-size="18" font-weight="700" opacity="0.5">Z</text>
+    </g>
+
+    <!-- Panel caption -->
+    <text x="450" y="200" text-anchor="middle" fill="#B8B0A4" font-size="11" font-style="italic">Phase 5–6: Blind Scoring, Audit, Supreme Judge Verdict &amp; Structured Report — all while you sleep</text>
+  </g>
+
+  <!-- ═══════════════════════════════════════════════════
+       FOOTER
+  ═══════════════════════════════════════════════════ -->
+  <text x="480" y="770" text-anchor="middle" fill="#CCC5B9" font-size="10">agent-review-panel — multi-agent adversarial review for Claude Code</text>
+
+</svg>

@@ -1,0 +1,565 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 780" width="960" height="780" style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
+  <defs>
+    <filter id="panelShadow" x="-2%" y="-2%" width="104%" height="108%">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#00000012"/>
+    </filter>
+    <marker id="arr" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M0,0 L0,8 L8,4 z" fill="#B8B0A4"/>
+    </marker>
+    <marker id="arrBlue" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M0,0 L0,8 L8,4 z" fill="#4A90D9"/>
+    </marker>
+  </defs>
+
+  <style>
+    /* ── Animation keyframes (opacity-only to avoid SVG transform conflicts) ── */
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes zzz {
+      0%, 100% { opacity: 0.2; }
+      50% { opacity: 0.6; }
+    }
+
+    /* All animated elements start hidden */
+    .anim { opacity: 0; }
+
+    /* Panel 1: Setup */
+    .p1-panel   { animation: fadeIn 0.5s ease-out 0.2s forwards; }
+    .p1-claude  { animation: fadeIn 0.4s ease-out 0.6s forwards; }
+    .p1-bubble1 { animation: fadeIn 0.4s ease-out 1.1s forwards; }
+    .p1-bubble2 { animation: fadeIn 0.4s ease-out 1.6s forwards; }
+    .p1-arrow   { animation: fadeIn 0.3s ease-out 2.0s forwards; }
+    .p1-rev1    { animation: fadeIn 0.3s ease-out 2.3s forwards; }
+    .p1-rev2    { animation: fadeIn 0.3s ease-out 2.5s forwards; }
+    .p1-rev3    { animation: fadeIn 0.3s ease-out 2.7s forwards; }
+    .p1-rev4    { animation: fadeIn 0.3s ease-out 2.9s forwards; }
+    .p1-rev5    { animation: fadeIn 0.3s ease-out 3.1s forwards; }
+    .p1-rev6    { animation: fadeIn 0.3s ease-out 3.3s forwards; }
+    .p1-results { animation: fadeIn 0.5s ease-out 3.6s forwards; }
+    .p1-badges  { animation: fadeIn 0.4s ease-out 4.0s forwards; }
+
+    /* Panel 2: Adversarial Debate */
+    .p2-panel   { animation: fadeIn 0.5s ease-out 4.5s forwards; }
+    .p2-stat    { animation: fadeIn 0.4s ease-out 4.9s forwards; }
+    .p2-pipe    { animation: fadeIn 0.4s ease-out 5.1s forwards; }
+    .p2-b1      { animation: fadeIn 0.5s ease-out 5.5s forwards; }
+    .p2-b2      { animation: fadeIn 0.5s ease-out 6.3s forwards; }
+    .p2-round   { animation: fadeIn 0.3s ease-out 6.1s forwards; }
+    .p2-b3      { animation: fadeIn 0.5s ease-out 7.1s forwards; }
+    .p2-b4      { animation: fadeIn 0.5s ease-out 7.9s forwards; }
+    .p2-arrows  { animation: fadeIn 0.4s ease-out 6.7s forwards; }
+
+    /* Panel 3: Verdict */
+    .p3-panel   { animation: fadeIn 0.5s ease-out 8.6s forwards; }
+    .p3-blind   { animation: fadeIn 0.4s ease-out 9.0s forwards; }
+    .p3-arrows  { animation: fadeIn 0.3s ease-out 9.4s forwards; }
+    .p3-audit   { animation: fadeIn 0.4s ease-out 9.6s forwards; }
+    .p3-judge   { animation: fadeIn 0.4s ease-out 10.2s forwards; }
+    .p3-verdict { animation: fadeIn 0.5s ease-out 10.8s forwards; }
+    .p3-report  { animation: fadeIn 0.4s ease-out 11.4s forwards; }
+    .p3-labels  { animation: fadeIn 0.5s ease-out 11.8s forwards; }
+    .p3-zzz     { animation: zzz 2s ease-in-out 12.2s infinite; }
+  </style>
+
+  <!-- Background (always visible) -->
+  <rect width="960" height="780" fill="#FAF8F4"/>
+
+  <!-- ═══════════════════════════════════════════════════
+       PANEL 1: Setup & Independent Review
+  ═══════════════════════════════════════════════════ -->
+  <g class="anim p1-panel">
+    <rect x="30" y="20" width="900" height="230" rx="14" fill="#FFFFFF" stroke="#E8E4DE" stroke-width="1.5" filter="url(#panelShadow)"/>
+    <text x="480" y="237" text-anchor="middle" fill="#B8B0A4" font-size="11" font-style="italic">Phase 1–2: Context Scan, Persona Selection &amp; Independent Review</text>
+  </g>
+
+  <!-- Claude Code character -->
+  <g class="anim p1-claude" transform="translate(72, 48)">
+    <g transform="scale(1.15)">
+      <rect x="6" y="0" width="20" height="6" fill="#6B4226"/>
+      <rect x="2" y="4" width="28" height="8" fill="#6B4226"/>
+      <rect x="4" y="10" width="24" height="18" fill="#FFDBB8"/>
+      <rect x="2" y="6" width="4" height="10" fill="#6B4226"/>
+      <rect x="26" y="6" width="4" height="10" fill="#6B4226"/>
+      <rect x="8" y="16" width="5" height="5" fill="#333"/>
+      <rect x="19" y="16" width="5" height="5" fill="#333"/>
+      <rect x="9" y="17" width="2" height="2" fill="#FFF"/>
+      <rect x="20" y="17" width="2" height="2" fill="#FFF"/>
+      <rect x="11" y="24" width="10" height="3" fill="#D4845A"/>
+      <rect x="4" y="30" width="24" height="18" fill="#4A90D9"/>
+      <rect x="-4" y="32" width="8" height="14" fill="#4A90D9"/>
+      <rect x="28" y="32" width="8" height="14" fill="#4A90D9"/>
+      <rect x="-4" y="44" width="6" height="4" fill="#FFDBB8"/>
+      <rect x="30" y="44" width="6" height="4" fill="#FFDBB8"/>
+      <rect x="6" y="48" width="8" height="14" fill="#34495E"/>
+      <rect x="18" y="48" width="8" height="14" fill="#34495E"/>
+      <rect x="4" y="60" width="10" height="5" fill="#2C3E50"/>
+      <rect x="18" y="60" width="10" height="5" fill="#2C3E50"/>
+    </g>
+    <text x="16" y="88" text-anchor="middle" fill="#2C3E50" font-size="10" font-weight="700">Claude Code</text>
+    <text x="16" y="100" text-anchor="middle" fill="#7F8C8D" font-size="9">(Orchestrator)</text>
+  </g>
+
+  <!-- Bubble 1: GATHER -->
+  <g class="anim p1-bubble1" transform="translate(140, 58)">
+    <rect width="185" height="38" rx="10" fill="#FFF" stroke="#4A90D9" stroke-width="1.8"/>
+    <polygon points="0,15 -8,20 0,25" fill="#FFF" stroke="#4A90D9" stroke-width="1.8"/>
+    <rect x="-1" y="16" width="3" height="8" fill="#FFF"/>
+    <text x="14" y="18" fill="#4A90D9" font-size="10" font-weight="700">GATHER</text>
+    <text x="14" y="30" fill="#2C3E50" font-size="9.5">Scanning pipeline... 1,200 lines</text>
+  </g>
+
+  <!-- Bubble 2: personas -->
+  <g class="anim p1-bubble2" transform="translate(140, 106)">
+    <rect width="165" height="38" rx="10" fill="#FFF" stroke="#4A90D9" stroke-width="1.8"/>
+    <polygon points="0,15 -8,20 0,25" fill="#FFF" stroke="#4A90D9" stroke-width="1.8"/>
+    <rect x="-1" y="16" width="3" height="8" fill="#FFF"/>
+    <text x="14" y="24" fill="#2C3E50" font-size="9.5">6 reviewers selected</text>
+  </g>
+
+  <!-- Arrow: setup → reviewers -->
+  <g class="anim p1-arrow">
+    <line x1="340" y1="105" x2="395" y2="105" stroke="#B8B0A4" stroke-width="2" marker-end="url(#arr)" stroke-dasharray="6,4"/>
+  </g>
+
+  <!-- 6 Reviewer characters (staggered animation) -->
+  <!-- SEC -->
+  <g class="anim p1-rev1" transform="translate(410, 48) scale(0.7)">
+    <rect x="6" y="0" width="20" height="6" fill="#2C3E50"/>
+    <rect x="2" y="4" width="28" height="8" fill="#2C3E50"/>
+    <rect x="4" y="10" width="24" height="18" fill="#FFDBB8"/>
+    <rect x="2" y="6" width="4" height="10" fill="#2C3E50"/>
+    <rect x="26" y="6" width="4" height="10" fill="#2C3E50"/>
+    <rect x="8" y="16" width="5" height="5" fill="#333"/>
+    <rect x="19" y="16" width="5" height="5" fill="#333"/>
+    <rect x="9" y="17" width="2" height="2" fill="#FFF"/>
+    <rect x="20" y="17" width="2" height="2" fill="#FFF"/>
+    <rect x="11" y="24" width="10" height="3" fill="#D4845A"/>
+    <rect x="4" y="30" width="24" height="18" fill="#E74C3C"/>
+    <rect x="-4" y="32" width="8" height="14" fill="#E74C3C"/>
+    <rect x="28" y="32" width="8" height="14" fill="#E74C3C"/>
+    <rect x="-4" y="44" width="6" height="4" fill="#FFDBB8"/>
+    <rect x="30" y="44" width="6" height="4" fill="#FFDBB8"/>
+    <rect x="6" y="48" width="8" height="14" fill="#34495E"/>
+    <rect x="18" y="48" width="8" height="14" fill="#34495E"/>
+    <rect x="4" y="60" width="10" height="5" fill="#2C3E50"/>
+    <rect x="18" y="60" width="10" height="5" fill="#2C3E50"/>
+    <rect x="12" y="34" width="8" height="10" fill="#C0392B"/>
+    <rect x="14" y="36" width="4" height="4" fill="#FFF" opacity="0.4"/>
+    <text x="16" y="76" text-anchor="middle" fill="#E74C3C" font-size="11" font-weight="700">SEC</text>
+  </g>
+  <!-- STAT -->
+  <g class="anim p1-rev2" transform="translate(470, 48) scale(0.7)">
+    <rect x="6" y="0" width="20" height="6" fill="#8E44AD"/>
+    <rect x="2" y="4" width="28" height="8" fill="#8E44AD"/>
+    <rect x="4" y="10" width="24" height="18" fill="#FFDBB8"/>
+    <rect x="2" y="6" width="4" height="10" fill="#8E44AD"/>
+    <rect x="26" y="6" width="4" height="10" fill="#8E44AD"/>
+    <rect x="8" y="16" width="5" height="5" fill="#333"/>
+    <rect x="19" y="16" width="5" height="5" fill="#333"/>
+    <rect x="9" y="17" width="2" height="2" fill="#FFF"/>
+    <rect x="20" y="17" width="2" height="2" fill="#FFF"/>
+    <rect x="6" y="14" width="9" height="7" fill="none" stroke="#333" stroke-width="1.5"/>
+    <rect x="17" y="14" width="9" height="7" fill="none" stroke="#333" stroke-width="1.5"/>
+    <line x1="15" y1="17" x2="17" y2="17" stroke="#333" stroke-width="1.5"/>
+    <rect x="11" y="24" width="10" height="3" fill="#D4845A"/>
+    <rect x="4" y="30" width="24" height="18" fill="#8E44AD"/>
+    <rect x="-4" y="32" width="8" height="14" fill="#8E44AD"/>
+    <rect x="28" y="32" width="8" height="14" fill="#8E44AD"/>
+    <rect x="-4" y="44" width="6" height="4" fill="#FFDBB8"/>
+    <rect x="30" y="44" width="6" height="4" fill="#FFDBB8"/>
+    <rect x="6" y="48" width="8" height="14" fill="#34495E"/>
+    <rect x="18" y="48" width="8" height="14" fill="#34495E"/>
+    <rect x="4" y="60" width="10" height="5" fill="#2C3E50"/>
+    <rect x="18" y="60" width="10" height="5" fill="#2C3E50"/>
+    <text x="16" y="76" text-anchor="middle" fill="#8E44AD" font-size="11" font-weight="700">STAT</text>
+  </g>
+  <!-- PERF -->
+  <g class="anim p1-rev3" transform="translate(530, 48) scale(0.7)">
+    <rect x="6" y="0" width="20" height="6" fill="#F5A623"/>
+    <rect x="2" y="4" width="28" height="8" fill="#F5A623"/>
+    <rect x="4" y="10" width="24" height="18" fill="#FFDBB8"/>
+    <rect x="2" y="6" width="4" height="10" fill="#F5A623"/>
+    <rect x="26" y="6" width="4" height="10" fill="#F5A623"/>
+    <rect x="8" y="16" width="5" height="5" fill="#333"/>
+    <rect x="19" y="16" width="5" height="5" fill="#333"/>
+    <rect x="9" y="17" width="2" height="2" fill="#FFF"/>
+    <rect x="20" y="17" width="2" height="2" fill="#FFF"/>
+    <rect x="11" y="24" width="10" height="3" fill="#D4845A"/>
+    <rect x="4" y="30" width="24" height="18" fill="#27AE60"/>
+    <rect x="-4" y="32" width="8" height="14" fill="#27AE60"/>
+    <rect x="28" y="32" width="8" height="14" fill="#27AE60"/>
+    <rect x="-4" y="44" width="6" height="4" fill="#FFDBB8"/>
+    <rect x="30" y="44" width="6" height="4" fill="#FFDBB8"/>
+    <rect x="6" y="48" width="8" height="14" fill="#34495E"/>
+    <rect x="18" y="48" width="8" height="14" fill="#34495E"/>
+    <rect x="4" y="60" width="10" height="5" fill="#2C3E50"/>
+    <rect x="18" y="60" width="10" height="5" fill="#2C3E50"/>
+    <text x="16" y="76" text-anchor="middle" fill="#27AE60" font-size="11" font-weight="700">PERF</text>
+  </g>
+  <!-- DATA -->
+  <g class="anim p1-rev4" transform="translate(410, 114) scale(0.7)">
+    <rect x="6" y="0" width="20" height="6" fill="#D35400"/>
+    <rect x="2" y="4" width="28" height="8" fill="#D35400"/>
+    <rect x="4" y="10" width="24" height="18" fill="#FFDBB8"/>
+    <rect x="2" y="6" width="4" height="10" fill="#D35400"/>
+    <rect x="26" y="6" width="4" height="10" fill="#D35400"/>
+    <rect x="8" y="16" width="5" height="5" fill="#333"/>
+    <rect x="19" y="16" width="5" height="5" fill="#333"/>
+    <rect x="9" y="17" width="2" height="2" fill="#FFF"/>
+    <rect x="20" y="17" width="2" height="2" fill="#FFF"/>
+    <rect x="11" y="24" width="10" height="3" fill="#D4845A"/>
+    <rect x="4" y="30" width="24" height="18" fill="#E67E22"/>
+    <rect x="-4" y="32" width="8" height="14" fill="#E67E22"/>
+    <rect x="28" y="32" width="8" height="14" fill="#E67E22"/>
+    <rect x="-4" y="44" width="6" height="4" fill="#FFDBB8"/>
+    <rect x="30" y="44" width="6" height="4" fill="#FFDBB8"/>
+    <rect x="6" y="48" width="8" height="14" fill="#34495E"/>
+    <rect x="18" y="48" width="8" height="14" fill="#34495E"/>
+    <rect x="4" y="60" width="10" height="5" fill="#2C3E50"/>
+    <rect x="18" y="60" width="10" height="5" fill="#2C3E50"/>
+    <text x="16" y="76" text-anchor="middle" fill="#E67E22" font-size="11" font-weight="700">DATA</text>
+  </g>
+  <!-- PIPE -->
+  <g class="anim p1-rev5" transform="translate(470, 114) scale(0.7)">
+    <rect x="6" y="0" width="20" height="6" fill="#16A085"/>
+    <rect x="2" y="4" width="28" height="8" fill="#16A085"/>
+    <rect x="4" y="10" width="24" height="18" fill="#FFDBB8"/>
+    <rect x="2" y="6" width="4" height="10" fill="#16A085"/>
+    <rect x="26" y="6" width="4" height="10" fill="#16A085"/>
+    <rect x="8" y="16" width="5" height="5" fill="#333"/>
+    <rect x="19" y="16" width="5" height="5" fill="#333"/>
+    <rect x="9" y="17" width="2" height="2" fill="#FFF"/>
+    <rect x="20" y="17" width="2" height="2" fill="#FFF"/>
+    <rect x="11" y="24" width="10" height="3" fill="#D4845A"/>
+    <rect x="4" y="30" width="24" height="18" fill="#1ABC9C"/>
+    <rect x="-4" y="32" width="8" height="14" fill="#1ABC9C"/>
+    <rect x="28" y="32" width="8" height="14" fill="#1ABC9C"/>
+    <rect x="-4" y="44" width="6" height="4" fill="#FFDBB8"/>
+    <rect x="30" y="44" width="6" height="4" fill="#FFDBB8"/>
+    <rect x="6" y="48" width="8" height="14" fill="#34495E"/>
+    <rect x="18" y="48" width="8" height="14" fill="#34495E"/>
+    <rect x="4" y="60" width="10" height="5" fill="#2C3E50"/>
+    <rect x="18" y="60" width="10" height="5" fill="#2C3E50"/>
+    <text x="16" y="76" text-anchor="middle" fill="#1ABC9C" font-size="11" font-weight="700">PIPE</text>
+  </g>
+  <!-- MAINT -->
+  <g class="anim p1-rev6" transform="translate(530, 114) scale(0.7)">
+    <rect x="6" y="0" width="20" height="6" fill="#5D6D7E"/>
+    <rect x="2" y="4" width="28" height="8" fill="#5D6D7E"/>
+    <rect x="4" y="10" width="24" height="18" fill="#FFDBB8"/>
+    <rect x="2" y="6" width="4" height="10" fill="#5D6D7E"/>
+    <rect x="26" y="6" width="4" height="10" fill="#5D6D7E"/>
+    <rect x="8" y="16" width="5" height="5" fill="#333"/>
+    <rect x="19" y="16" width="5" height="5" fill="#333"/>
+    <rect x="9" y="17" width="2" height="2" fill="#FFF"/>
+    <rect x="20" y="17" width="2" height="2" fill="#FFF"/>
+    <rect x="11" y="24" width="10" height="3" fill="#D4845A"/>
+    <rect x="4" y="30" width="24" height="18" fill="#5D6D7E"/>
+    <rect x="-4" y="32" width="8" height="14" fill="#5D6D7E"/>
+    <rect x="28" y="32" width="8" height="14" fill="#5D6D7E"/>
+    <rect x="-4" y="44" width="6" height="4" fill="#FFDBB8"/>
+    <rect x="30" y="44" width="6" height="4" fill="#FFDBB8"/>
+    <rect x="6" y="48" width="8" height="14" fill="#34495E"/>
+    <rect x="18" y="48" width="8" height="14" fill="#34495E"/>
+    <rect x="4" y="60" width="10" height="5" fill="#2C3E50"/>
+    <rect x="18" y="60" width="10" height="5" fill="#2C3E50"/>
+    <text x="16" y="76" text-anchor="middle" fill="#5D6D7E" font-size="11" font-weight="700">MAINT</text>
+  </g>
+
+  <!-- Results box -->
+  <g class="anim p1-results" transform="translate(590, 50)">
+    <rect width="310" height="130" rx="10" fill="#FAFAFA" stroke="#E8E4DE" stroke-width="1"/>
+    <text x="15" y="20" fill="#2C3E50" font-size="10" font-weight="700">Independent Review Results</text>
+    <line x1="15" y1="28" x2="295" y2="28" stroke="#E8E4DE" stroke-width="1"/>
+    <circle cx="22" cy="43" r="4" fill="#E74C3C"/><text x="32" y="46" fill="#2C3E50" font-size="9">Security: 2 issues (1 high)</text>
+    <circle cx="22" cy="59" r="4" fill="#8E44AD"/><text x="32" y="62" fill="#2C3E50" font-size="9">Stat Rigor: 3 issues (2 high)</text>
+    <circle cx="22" cy="75" r="4" fill="#27AE60"/><text x="32" y="78" fill="#2C3E50" font-size="9">Performance: 1 issue (0 high)</text>
+    <circle cx="22" cy="91" r="4" fill="#E67E22"/><text x="32" y="94" fill="#2C3E50" font-size="9">Data Quality: 4 issues (1 high)</text>
+    <circle cx="22" cy="107" r="4" fill="#1ABC9C"/><text x="32" y="110" fill="#2C3E50" font-size="9">Pipeline: 2 issues (1 high)</text>
+    <circle cx="22" cy="123" r="4" fill="#5D6D7E"/><text x="32" y="126" fill="#2C3E50" font-size="9">Maintain: 1 issue (0 high)</text>
+  </g>
+
+  <!-- Badges -->
+  <g class="anim p1-badges">
+    <rect x="590" y="190" width="120" height="22" rx="11" fill="#FFF3E0" stroke="#F39C12" stroke-width="1"/>
+    <text x="650" y="205" text-anchor="middle" fill="#E67E22" font-size="9" font-weight="600">No cross-talk</text>
+    <rect x="720" y="190" width="120" height="22" rx="11" fill="#E8F5E9" stroke="#27AE60" stroke-width="1"/>
+    <text x="780" y="205" text-anchor="middle" fill="#27AE60" font-size="9" font-weight="600">All in parallel</text>
+  </g>
+
+  <!-- ═══════════════════════════════════════════════════
+       PANEL 2: Adversarial Debate
+  ═══════════════════════════════════════════════════ -->
+  <g class="anim p2-panel">
+    <rect x="30" y="270" width="900" height="250" rx="14" fill="#FFFFFF" stroke="#E8E4DE" stroke-width="1.5" filter="url(#panelShadow)"/>
+    <text x="480" y="512" text-anchor="middle" fill="#B8B0A4" font-size="11" font-style="italic">Phase 3–4: Adversarial Debate — reviewers challenge each other with source evidence</text>
+  </g>
+
+  <!-- Stat Rigor character (left) -->
+  <g class="anim p2-stat" transform="translate(80, 300)">
+    <rect x="6" y="0" width="20" height="6" fill="#8E44AD"/>
+    <rect x="2" y="4" width="28" height="8" fill="#8E44AD"/>
+    <rect x="4" y="10" width="24" height="18" fill="#FFDBB8"/>
+    <rect x="2" y="6" width="4" height="10" fill="#8E44AD"/>
+    <rect x="26" y="6" width="4" height="10" fill="#8E44AD"/>
+    <rect x="6" y="14" width="9" height="7" fill="none" stroke="#333" stroke-width="1.5"/>
+    <rect x="17" y="14" width="9" height="7" fill="none" stroke="#333" stroke-width="1.5"/>
+    <line x1="15" y1="17" x2="17" y2="17" stroke="#333" stroke-width="1.5"/>
+    <rect x="8" y="16" width="5" height="5" fill="#333"/>
+    <rect x="19" y="16" width="5" height="5" fill="#333"/>
+    <rect x="9" y="17" width="2" height="2" fill="#FFF"/>
+    <rect x="20" y="17" width="2" height="2" fill="#FFF"/>
+    <rect x="11" y="24" width="10" height="3" fill="#D4845A"/>
+    <rect x="4" y="30" width="24" height="18" fill="#8E44AD"/>
+    <rect x="-4" y="32" width="8" height="14" fill="#8E44AD"/>
+    <rect x="28" y="32" width="8" height="14" fill="#8E44AD"/>
+    <rect x="-4" y="44" width="6" height="4" fill="#FFDBB8"/>
+    <rect x="30" y="44" width="6" height="4" fill="#FFDBB8"/>
+    <rect x="6" y="48" width="8" height="14" fill="#34495E"/>
+    <rect x="18" y="48" width="8" height="14" fill="#34495E"/>
+    <rect x="4" y="60" width="10" height="5" fill="#2C3E50"/>
+    <rect x="18" y="60" width="10" height="5" fill="#2C3E50"/>
+    <text x="16" y="76" text-anchor="middle" fill="#8E44AD" font-size="10" font-weight="700">Statistical</text>
+    <text x="16" y="88" text-anchor="middle" fill="#8E44AD" font-size="10" font-weight="700">Rigor</text>
+  </g>
+
+  <!-- Pipeline Safety character (right) -->
+  <g class="anim p2-pipe" transform="translate(830, 300)">
+    <rect x="6" y="0" width="20" height="6" fill="#16A085"/>
+    <rect x="2" y="4" width="28" height="8" fill="#16A085"/>
+    <rect x="4" y="10" width="24" height="18" fill="#FFDBB8"/>
+    <rect x="2" y="6" width="4" height="10" fill="#16A085"/>
+    <rect x="26" y="6" width="4" height="10" fill="#16A085"/>
+    <rect x="8" y="16" width="5" height="5" fill="#333"/>
+    <rect x="19" y="16" width="5" height="5" fill="#333"/>
+    <rect x="9" y="17" width="2" height="2" fill="#FFF"/>
+    <rect x="20" y="17" width="2" height="2" fill="#FFF"/>
+    <rect x="11" y="24" width="10" height="3" fill="#D4845A"/>
+    <rect x="4" y="30" width="24" height="18" fill="#1ABC9C"/>
+    <rect x="-4" y="32" width="8" height="14" fill="#1ABC9C"/>
+    <rect x="28" y="32" width="8" height="14" fill="#1ABC9C"/>
+    <rect x="-4" y="44" width="6" height="4" fill="#FFDBB8"/>
+    <rect x="30" y="44" width="6" height="4" fill="#FFDBB8"/>
+    <rect x="6" y="48" width="8" height="14" fill="#34495E"/>
+    <rect x="18" y="48" width="8" height="14" fill="#34495E"/>
+    <rect x="4" y="60" width="10" height="5" fill="#2C3E50"/>
+    <rect x="18" y="60" width="10" height="5" fill="#2C3E50"/>
+    <text x="16" y="76" text-anchor="middle" fill="#1ABC9C" font-size="10" font-weight="700">Pipeline</text>
+    <text x="16" y="88" text-anchor="middle" fill="#1ABC9C" font-size="10" font-weight="700">Safety</text>
+  </g>
+
+  <!-- Debate bubble 1: HIGH finding → -->
+  <g class="anim p2-b1" transform="translate(140, 295)">
+    <rect width="300" height="42" rx="10" fill="#FFF" stroke="#8E44AD" stroke-width="1.8"/>
+    <polygon points="0,16 -8,21 0,26" fill="#FFF" stroke="#8E44AD" stroke-width="1.8"/>
+    <rect x="-1" y="17" width="3" height="8" fill="#FFF"/>
+    <rect x="8" y="6" width="42" height="16" rx="4" fill="#E74C3C"/>
+    <text x="29" y="18" text-anchor="middle" fill="#FFF" font-size="8" font-weight="700">HIGH</text>
+    <text x="56" y="17" fill="#2C3E50" font-size="9.5">train_test_split without stratification</text>
+    <text x="14" y="33" fill="#7F8C8D" font-size="9">will leak class imbalance into validation.</text>
+  </g>
+
+  <!-- Debate bubble 2: DISAGREE ← -->
+  <g class="anim p2-b2" transform="translate(460, 350)">
+    <rect width="340" height="42" rx="10" fill="#FFF" stroke="#1ABC9C" stroke-width="1.8"/>
+    <polygon points="340,16 348,21 340,26" fill="#FFF" stroke="#1ABC9C" stroke-width="1.8"/>
+    <rect x="338" y="17" width="3" height="8" fill="#FFF"/>
+    <rect x="10" y="6" width="72" height="16" rx="4" fill="#F39C12"/>
+    <text x="46" y="18" text-anchor="middle" fill="#FFF" font-size="8" font-weight="700">DISAGREE</text>
+    <text x="88" y="17" fill="#2C3E50" font-size="9.5">upstream sampling already</text>
+    <text x="14" y="33" fill="#7F8C8D" font-size="9">balances classes before this stage.</text>
+  </g>
+
+  <!-- Round 1 badge -->
+  <g class="anim p2-round">
+    <rect x="230" y="370" width="56" height="18" rx="9" fill="#FEF9E7" stroke="#F39C12" stroke-width="1"/>
+    <text x="258" y="382" text-anchor="middle" fill="#F39C12" font-size="8" font-weight="600">Round 1</text>
+  </g>
+
+  <!-- Flow arrows between bubbles -->
+  <g class="anim p2-arrows">
+    <path d="M440,340 L440,345 Q440,350 445,350 L460,350" fill="none" stroke="#D5CFC6" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+    <path d="M460,395 L460,400 Q460,405 455,405 L140,405" fill="none" stroke="#D5CFC6" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+    <path d="M450,450 L450,455 Q450,460 455,460 L460,460" fill="none" stroke="#D5CFC6" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+  </g>
+
+  <!-- Debate bubble 3: Evidence → -->
+  <g class="anim p2-b3" transform="translate(140, 405)">
+    <rect width="340" height="42" rx="10" fill="#FFF" stroke="#8E44AD" stroke-width="1.8"/>
+    <polygon points="0,16 -8,21 0,26" fill="#FFF" stroke="#8E44AD" stroke-width="1.8"/>
+    <rect x="-1" y="17" width="3" height="8" fill="#FFF"/>
+    <text x="14" y="17" fill="#2C3E50" font-size="9.5" font-weight="600">Show me the evidence.</text>
+    <text x="180" y="17" fill="#7F8C8D" font-size="9.5">Line 42 reads raw CSV</text>
+    <text x="14" y="33" fill="#7F8C8D" font-size="9">with no prior balancing step.</text>
+  </g>
+
+  <!-- Debate bubble 4: CONCEDE ← -->
+  <g class="anim p2-b4" transform="translate(460, 458)">
+    <rect width="340" height="42" rx="10" fill="#FFF" stroke="#1ABC9C" stroke-width="1.8"/>
+    <polygon points="340,16 348,21 340,26" fill="#FFF" stroke="#1ABC9C" stroke-width="1.8"/>
+    <rect x="338" y="17" width="3" height="8" fill="#FFF"/>
+    <rect x="10" y="6" width="66" height="16" rx="4" fill="#8E44AD"/>
+    <text x="43" y="18" text-anchor="middle" fill="#FFF" font-size="8" font-weight="700">CONCEDE</text>
+    <text x="82" y="17" fill="#2C3E50" font-size="9.5">the raw ingest path is unprotected.</text>
+    <text x="14" y="33" fill="#E74C3C" font-size="9" font-weight="600">Upgrading to HIGH.</text>
+  </g>
+
+  <!-- ═══════════════════════════════════════════════════
+       PANEL 3: Blind Finals → Audit → Judge → Report
+  ═══════════════════════════════════════════════════ -->
+  <g class="anim p3-panel">
+    <rect x="30" y="540" width="900" height="210" rx="14" fill="#FFFFFF" stroke="#E8E4DE" stroke-width="1.5" filter="url(#panelShadow)"/>
+    <text x="480" y="740" text-anchor="middle" fill="#B8B0A4" font-size="11" font-style="italic">Phase 5–6: Blind Scoring, Audit, Supreme Judge Verdict &amp; Structured Report — all while you sleep</text>
+  </g>
+
+  <!-- Blind Finals section -->
+  <g class="anim p3-blind" transform="translate(50, 558)">
+    <rect x="10" y="8" width="36" height="24" rx="4" fill="#F3E5F5" stroke="#8E44AD" stroke-width="1.2"/>
+    <ellipse cx="28" cy="20" rx="10" ry="6" fill="none" stroke="#8E44AD" stroke-width="1.5"/>
+    <line x1="18" y1="14" x2="38" y2="26" stroke="#8E44AD" stroke-width="2"/>
+    <text x="28" y="48" text-anchor="middle" fill="#8E44AD" font-size="9" font-weight="700">Blind Finals</text>
+    <g transform="translate(60, 0)">
+      <rect width="130" height="56" rx="6" fill="#FAFAFA" stroke="#E8E4DE" stroke-width="1"/>
+      <text x="8" y="14" fill="#7F8C8D" font-size="8">Blind scores:</text>
+      <text x="8" y="28" fill="#E74C3C" font-size="9">SEC <tspan font-weight="700">6</tspan></text>
+      <text x="40" y="28" fill="#8E44AD" font-size="9">STAT <tspan font-weight="700">4</tspan></text>
+      <text x="80" y="28" fill="#27AE60" font-size="9">PERF <tspan font-weight="700">8</tspan></text>
+      <text x="8" y="44" fill="#E67E22" font-size="9">DATA <tspan font-weight="700">5</tspan></text>
+      <text x="44" y="44" fill="#1ABC9C" font-size="9">PIPE <tspan font-weight="700">5</tspan></text>
+      <text x="82" y="44" fill="#5D6D7E" font-size="9">MAINT <tspan font-weight="700">7</tspan></text>
+    </g>
+  </g>
+
+  <!-- Arrow -->
+  <g class="anim p3-arrows">
+    <line x1="250" y1="590" x2="280" y2="590" stroke="#B8B0A4" stroke-width="2" marker-end="url(#arr)"/>
+    <line x1="508" y1="590" x2="538" y2="590" stroke="#B8B0A4" stroke-width="2" marker-end="url(#arr)"/>
+    <line x1="760" y1="590" x2="830" y2="590" stroke="#4A90D9" stroke-width="2" marker-end="url(#arrBlue)"/>
+  </g>
+
+  <!-- Audit section -->
+  <g class="anim p3-audit" transform="translate(290, 554)">
+    <g transform="scale(0.6)">
+      <rect x="6" y="0" width="20" height="6" fill="#D35400"/>
+      <rect x="2" y="4" width="28" height="8" fill="#D35400"/>
+      <rect x="4" y="10" width="24" height="18" fill="#FFDBB8"/>
+      <rect x="2" y="6" width="4" height="10" fill="#D35400"/>
+      <rect x="26" y="6" width="4" height="10" fill="#D35400"/>
+      <rect x="8" y="16" width="5" height="5" fill="#333"/>
+      <rect x="19" y="16" width="5" height="5" fill="#333"/>
+      <rect x="9" y="17" width="2" height="2" fill="#FFF"/>
+      <rect x="20" y="17" width="2" height="2" fill="#FFF"/>
+      <rect x="11" y="24" width="10" height="3" fill="#D4845A"/>
+      <rect x="4" y="30" width="24" height="18" fill="#E67E22"/>
+      <rect x="-4" y="32" width="8" height="14" fill="#E67E22"/>
+      <rect x="28" y="32" width="8" height="14" fill="#E67E22"/>
+      <rect x="-4" y="44" width="6" height="4" fill="#FFDBB8"/>
+      <rect x="30" y="44" width="6" height="4" fill="#FFDBB8"/>
+      <rect x="6" y="48" width="8" height="14" fill="#34495E"/>
+      <rect x="18" y="48" width="8" height="14" fill="#34495E"/>
+      <rect x="4" y="60" width="10" height="5" fill="#2C3E50"/>
+      <rect x="18" y="60" width="10" height="5" fill="#2C3E50"/>
+      <rect x="30" y="34" width="14" height="18" rx="1" fill="#FFF" stroke="#D35400" stroke-width="1.5"/>
+      <rect x="33" y="31" width="8" height="4" rx="1" fill="#D35400"/>
+      <line x1="33" y1="40" x2="41" y2="40" stroke="#CCC" stroke-width="1"/>
+      <line x1="33" y1="44" x2="41" y2="44" stroke="#CCC" stroke-width="1"/>
+    </g>
+    <g transform="translate(30, 4)">
+      <rect width="176" height="56" rx="8" fill="#FFF" stroke="#E67E22" stroke-width="1.5"/>
+      <polygon points="0,22 -6,26 0,30" fill="#FFF" stroke="#E67E22" stroke-width="1.5"/>
+      <rect x="-1" y="23" width="3" height="6" fill="#FFF"/>
+      <text x="12" y="18" fill="#E67E22" font-size="9" font-weight="700">Completeness Audit</text>
+      <text x="12" y="32" fill="#2C3E50" font-size="9">12/14 citations VERIFIED</text>
+      <text x="12" y="46" fill="#7F8C8D" font-size="8.5">1 inaccurate, 1 unverifiable</text>
+    </g>
+  </g>
+
+  <!-- Supreme Judge -->
+  <g class="anim p3-judge" transform="translate(550, 552)">
+    <g transform="scale(0.85)">
+      <rect x="6" y="0" width="20" height="6" fill="#7F8C8D"/>
+      <rect x="2" y="4" width="28" height="8" fill="#7F8C8D"/>
+      <rect x="4" y="10" width="24" height="18" fill="#FFDBB8"/>
+      <rect x="2" y="6" width="4" height="10" fill="#7F8C8D"/>
+      <rect x="26" y="6" width="4" height="10" fill="#7F8C8D"/>
+      <rect x="8" y="16" width="5" height="5" fill="#333"/>
+      <rect x="19" y="16" width="5" height="5" fill="#333"/>
+      <rect x="9" y="17" width="2" height="2" fill="#FFF"/>
+      <rect x="20" y="17" width="2" height="2" fill="#FFF"/>
+      <rect x="11" y="24" width="10" height="3" fill="#D4845A"/>
+      <rect x="2" y="30" width="28" height="20" fill="#2C3E50"/>
+      <rect x="-4" y="32" width="8" height="14" fill="#2C3E50"/>
+      <rect x="28" y="32" width="8" height="14" fill="#2C3E50"/>
+      <rect x="-4" y="44" width="6" height="4" fill="#FFDBB8"/>
+      <rect x="30" y="44" width="6" height="4" fill="#FFDBB8"/>
+      <rect x="32" y="36" width="12" height="4" fill="#8B6914"/>
+      <rect x="42" y="32" width="6" height="12" rx="1" fill="#A0782C"/>
+      <rect x="6" y="50" width="8" height="14" fill="#1A252F"/>
+      <rect x="18" y="50" width="8" height="14" fill="#1A252F"/>
+      <rect x="4" y="62" width="10" height="5" fill="#1A252F"/>
+      <rect x="18" y="62" width="10" height="5" fill="#1A252F"/>
+    </g>
+    <text x="14" y="70" fill="#2C3E50" font-size="8.5" font-weight="700">Supreme</text>
+    <text x="14" y="80" fill="#2C3E50" font-size="8.5" font-weight="700">Judge</text>
+  </g>
+
+  <!-- Judge verdict bubble -->
+  <g class="anim p3-verdict" transform="translate(600, 556)">
+    <rect width="200" height="64" rx="10" fill="#FFF" stroke="#2C3E50" stroke-width="2"/>
+    <polygon points="0,26 -8,30 0,34" fill="#FFF" stroke="#2C3E50" stroke-width="2"/>
+    <rect x="-1" y="27" width="3" height="6" fill="#FFF"/>
+    <rect x="10" y="8" width="64" height="18" rx="4" fill="#E74C3C"/>
+    <text x="42" y="21" text-anchor="middle" fill="#FFF" font-size="9" font-weight="700">REVISE</text>
+    <text x="80" y="20" fill="#2C3E50" font-size="9.5">3 blocking issues</text>
+    <text x="14" y="38" fill="#2C3E50" font-size="10">Consensus: <tspan font-weight="700" fill="#E74C3C">5.8</tspan>/10</text>
+    <text x="14" y="54" fill="#7F8C8D" font-size="9">stratified split + input validation</text>
+  </g>
+
+  <!-- Report output -->
+  <g class="anim p3-report" transform="translate(838, 550)">
+    <rect width="70" height="88" rx="4" fill="#FFF" stroke="#4A90D9" stroke-width="1.5"/>
+    <polygon points="52,0 70,0 70,18" fill="#EBF5FB"/>
+    <line x1="52" y1="0" x2="52" y2="18" stroke="#4A90D9" stroke-width="1"/>
+    <line x1="52" y1="18" x2="70" y2="18" stroke="#4A90D9" stroke-width="1"/>
+    <rect x="8" y="10" width="36" height="3" rx="1" fill="#4A90D9"/>
+    <rect x="8" y="18" width="30" height="2" rx="1" fill="#DDD"/>
+    <rect x="8" y="24" width="42" height="2" rx="1" fill="#DDD"/>
+    <rect x="8" y="32" width="52" height="2" rx="1" fill="#27AE60"/>
+    <rect x="8" y="38" width="48" height="2" rx="1" fill="#DDD"/>
+    <rect x="8" y="44" width="40" height="2" rx="1" fill="#DDD"/>
+    <rect x="8" y="52" width="52" height="2" rx="1" fill="#E74C3C"/>
+    <rect x="8" y="58" width="46" height="2" rx="1" fill="#DDD"/>
+    <rect x="8" y="64" width="38" height="2" rx="1" fill="#DDD"/>
+    <rect x="8" y="72" width="52" height="2" rx="1" fill="#F39C12"/>
+    <rect x="8" y="78" width="44" height="2" rx="1" fill="#DDD"/>
+    <text x="35" y="108" text-anchor="middle" fill="#4A90D9" font-size="9" font-weight="700">Report</text>
+  </g>
+
+  <!-- Epistemic labels -->
+  <g class="anim p3-labels" transform="translate(60, 670)">
+    <rect x="0" y="0" width="66" height="18" rx="4" fill="#E8F5E9" stroke="#27AE60" stroke-width="1"/>
+    <text x="33" y="13" text-anchor="middle" fill="#27AE60" font-size="8" font-weight="700">VERIFIED</text>
+    <rect x="74" y="0" width="80" height="18" rx="4" fill="#E3F2FD" stroke="#4A90D9" stroke-width="1"/>
+    <text x="114" y="13" text-anchor="middle" fill="#4A90D9" font-size="8" font-weight="700">CONSENSUS</text>
+    <rect x="162" y="0" width="96" height="18" rx="4" fill="#FFF3E0" stroke="#F39C12" stroke-width="1"/>
+    <text x="210" y="13" text-anchor="middle" fill="#F39C12" font-size="8" font-weight="700">SINGLE-SOURCE</text>
+    <rect x="266" y="0" width="72" height="18" rx="4" fill="#FCE4EC" stroke="#E74C3C" stroke-width="1"/>
+    <text x="302" y="13" text-anchor="middle" fill="#E74C3C" font-size="8" font-weight="700">DISPUTED</text>
+    <rect x="346" y="0" width="82" height="18" rx="4" fill="#F3E5F5" stroke="#8E44AD" stroke-width="1"/>
+    <text x="387" y="13" text-anchor="middle" fill="#8E44AD" font-size="8" font-weight="700">UNVERIFIED</text>
+    <text x="460" y="13" fill="#B8B0A4" font-size="9" font-style="italic">every finding gets an epistemic label</text>
+  </g>
+
+  <!-- zzZ -->
+  <g class="anim p3-zzz" transform="translate(780, 690)">
+    <text fill="#B8B0A4" font-size="12" font-weight="700">z</text>
+    <text x="10" y="-6" fill="#B8B0A4" font-size="15" font-weight="700">Z</text>
+    <text x="22" y="-14" fill="#B8B0A4" font-size="18" font-weight="700">Z</text>
+  </g>
+
+  <!-- Footer -->
+  <text x="480" y="770" text-anchor="middle" fill="#CCC5B9" font-size="10">agent-review-panel — multi-agent adversarial review for Claude Code</text>
+
+</svg>
