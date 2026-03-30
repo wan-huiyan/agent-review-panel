@@ -6,6 +6,11 @@ A Claude Code skill that orchestrates multi-agent adversarial review panels. Mul
 
 [![Agent Review Panel — pipeline architecture](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/hero-flow.svg?v=1)](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/hero-flow.svg?v=1)
 
+[![Agent Review Panel — pixel art flow](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/pixel-flow.svg?v=1)](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/pixel-flow.svg?v=1)
+*Cute version: Claude Code orchestrates 6 persona-based reviewers through adversarial debate to a final verdict.*
+
+[![Agent Review Panel — animated flow](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/pixel-flow.gif?v=1)](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/pixel-flow.gif?v=1)
+
 [![Agent Review Panel demo](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/demo.gif?v=1)](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/demo.gif?v=1)
 
 ## Why This Exists
