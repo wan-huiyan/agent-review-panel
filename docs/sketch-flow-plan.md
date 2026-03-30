@@ -198,6 +198,22 @@ node docs/capture-gif.cjs
 vhs docs/demo.tape
 ```
 
+## Recommended Tools for Visual Design Work
+
+These were found via research and could help future sessions with SVG visual review:
+
+| Tool | Stars | Use Case |
+|---|---|---|
+| [garrytan/gstack](https://github.com/garrytan/gstack) | 57.7k | `/design-review` rates layouts 0-10, implements fixes with before/after screenshots. `/design-shotgun` generates variants. Most complete design review suite. |
+| [nextlevelbuilder/ui-ux-pro-max-skill](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) | 55.1k | Design-intelligence skill: 161 industry rules, pre-delivery anti-pattern checklists |
+| [DebugBase/glance](https://github.com/DebugBase/glance) | 82 | MCP server with `visual_baseline` + `visual_compare` for pixel-level screenshot regression testing |
+| [OneRedOak/claude-code-workflows](https://github.com/OneRedOak/claude-code-workflows) | 3.3k | `design-review/` workflow orchestrates multi-agent UI/UX review via Playwright MCP |
+| [microsoft/playwright-mcp](https://github.com/microsoft/playwright-mcp) | 30k | Official Playwright MCP. Structural testing via accessibility trees — the foundation most visual workflows build on |
+| [brxs/claude_svg_skills](https://github.com/brxs/claude_svg_skills) | 1 | 35+ CLI commands for SVG: shapes, gradients, filters, transforms, plotter export. Only SVG-specific skill found. |
+| [hemangjoshi37a/claude-code-frontend-dev](https://github.com/hemangjoshi37a/claude-code-frontend-dev) | 21 | Multimodal visual testing: uses Claude vision to analyze screenshots, detect layout issues, verify contrast |
+
+**Recommendation for this project:** `gstack`'s `/design-review` would be most useful — it can rate each scene's layout and suggest spacing fixes with screenshots. For automated regression between edits, `DebugBase/glance` with its `visual_compare` tool would catch spacing regressions.
+
 ## Verification Checklist
 
 After making edits, verify each scene by:
