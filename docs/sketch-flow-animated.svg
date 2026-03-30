@@ -491,9 +491,24 @@
       <text x="480" y="38" text-anchor="middle" fill="#7F8C8D" font-size="16" font-weight="600" letter-spacing="2">PRIVATE REFLECTION</text>
       <text x="480" y="58" text-anchor="middle" fill="#B0A89E" font-size="12" font-style="italic">each reviewer re-reads source, rates confidence</text>
 
-      <!-- Character 1: Statistical Rigor (purple) at x≈130 -->
+      <!-- Character 1: Statistical Rigor (purple) -->
       <g class="hide s35-char1">
-        <g transform="translate(110, 130) scale(0.8)">
+        <!-- Thought bubble (top) -->
+        <rect x="30" y="75" width="260" height="90" rx="14" fill="#FFF" stroke="#8E44AD" stroke-width="1.2" stroke-dasharray="5,3"/>
+        <text x="46" y="100" fill="#2C3E50" font-size="13" font-family="monospace">
+          <tspan x="46" dy="0">[train_test_split]: </tspan><tspan fill="#27AE60" font-weight="700">High</tspan>
+        </text>
+        <text x="46" y="120" fill="#2C3E50" font-size="13" font-family="monospace">
+          <tspan x="46" dy="0">[class weights]: </tspan><tspan fill="#E67E22" font-weight="700">Medium</tspan>
+        </text>
+        <text x="46" y="140" fill="#2C3E50" font-size="13" font-family="monospace">
+          <tspan x="46" dy="0" fill="#3498DB" font-weight="700">NEW: </tspan><tspan fill="#2C3E50">batch norm missing</tspan>
+        </text>
+        <!-- Cloud connector -->
+        <circle cx="145" cy="175" r="4" fill="#EEE" stroke="#BBB" stroke-width="0.8"/>
+        <circle cx="140" cy="190" r="5" fill="#EEE" stroke="#BBB" stroke-width="0.8"/>
+        <!-- Character (bottom) -->
+        <g transform="translate(110, 310) scale(0.9)">
           <path d="M16,0 C24,-1 30,4 32,12 C34,22 30,30 22,32 C14,34 6,28 4,18 C2,6 8,1 16,0Z" fill="#FFDBB8" stroke="#2C3E50" stroke-width="1.8"/>
           <circle cx="13" cy="15" r="6" fill="none" stroke="#2C3E50" stroke-width="1.5"/>
           <circle cx="27" cy="14" r="6" fill="none" stroke="#2C3E50" stroke-width="1.5"/>
@@ -513,27 +528,27 @@
           <ellipse cx="8" cy="84" rx="6" ry="3" fill="#2C3E50"/>
           <ellipse cx="32" cy="84" rx="6" ry="3" fill="#2C3E50"/>
         </g>
-        <text x="130" y="210" text-anchor="middle" fill="#8E44AD" font-size="10" font-weight="700">Stat Rigor</text>
-        <!-- Thought cloud connector -->
-        <circle cx="138" cy="126" r="3" fill="#DDD" stroke="#BBB" stroke-width="0.8"/>
-        <circle cx="148" cy="115" r="4" fill="#DDD" stroke="#BBB" stroke-width="0.8"/>
-        <circle cx="162" cy="103" r="5" fill="#DDD" stroke="#BBB" stroke-width="0.8"/>
-        <!-- Thought bubble -->
-        <rect x="50" y="68" width="210" height="70" rx="12" fill="#FFF" stroke="#BBB" stroke-width="1.2" stroke-dasharray="4,3"/>
-        <text x="60" y="84" fill="#2C3E50" font-size="11" font-family="monospace">
-          <tspan x="60" dy="0">[train_test_split]: </tspan><tspan fill="#27AE60" font-weight="700">High</tspan>
-        </text>
-        <text x="60" y="100" fill="#2C3E50" font-size="11" font-family="monospace">
-          <tspan x="60" dy="0">[class weights]: </tspan><tspan fill="#E67E22" font-weight="700">Medium</tspan>
-        </text>
-        <text x="60" y="116" fill="#2C3E50" font-size="11" font-family="monospace">
-          <tspan x="60" dy="0" fill="#3498DB" font-weight="700">NEW: </tspan><tspan fill="#2C3E50">batch norm missing</tspan>
-        </text>
+        <text x="130" y="405" text-anchor="middle" fill="#8E44AD" font-size="12" font-weight="700">Stat Rigor</text>
       </g>
 
-      <!-- Character 2: Security (red) at x≈480 -->
+      <!-- Character 2: Security (red) -->
       <g class="hide s35-char2">
-        <g transform="translate(460, 130) scale(0.8)">
+        <!-- Thought bubble (top) -->
+        <rect x="350" y="75" width="260" height="90" rx="14" fill="#FFF" stroke="#E74C3C" stroke-width="1.2" stroke-dasharray="5,3"/>
+        <text x="366" y="100" fill="#2C3E50" font-size="13" font-family="monospace">
+          <tspan x="366" dy="0">[SQL injection]: </tspan><tspan fill="#27AE60" font-weight="700">High</tspan>
+        </text>
+        <text x="366" y="120" fill="#2C3E50" font-size="13" font-family="monospace">
+          <tspan x="366" dy="0">[auth bypass]: </tspan><tspan fill="#E74C3C" font-weight="700">Low</tspan><tspan fill="#7F8C8D"> — false pos?</tspan>
+        </text>
+        <text x="366" y="140" fill="#2C3E50" font-size="13" font-family="monospace">
+          <tspan x="366" dy="0">Most defensible: SQL inj.</tspan>
+        </text>
+        <!-- Cloud connector -->
+        <circle cx="480" cy="175" r="4" fill="#EEE" stroke="#BBB" stroke-width="0.8"/>
+        <circle cx="480" cy="190" r="5" fill="#EEE" stroke="#BBB" stroke-width="0.8"/>
+        <!-- Character (bottom) -->
+        <g transform="translate(460, 310) scale(0.9)">
           <path d="M16,0 C24,-1 30,4 32,12 C34,22 30,30 22,32 C14,34 6,28 4,18 C2,6 8,1 16,0Z" fill="#FFDBB8" stroke="#2C3E50" stroke-width="1.8"/>
           <path d="M10,10 L16,12" fill="none" stroke="#2C3E50" stroke-width="2" stroke-linecap="round"/>
           <path d="M30,10 L24,12" fill="none" stroke="#2C3E50" stroke-width="2" stroke-linecap="round"/>
@@ -552,27 +567,27 @@
           <ellipse cx="8" cy="84" rx="6" ry="3" fill="#2C3E50"/>
           <ellipse cx="32" cy="84" rx="6" ry="3" fill="#2C3E50"/>
         </g>
-        <text x="480" y="210" text-anchor="middle" fill="#E74C3C" font-size="10" font-weight="700">Security</text>
-        <!-- Thought cloud connector -->
-        <circle cx="488" cy="126" r="3" fill="#DDD" stroke="#BBB" stroke-width="0.8"/>
-        <circle cx="498" cy="115" r="4" fill="#DDD" stroke="#BBB" stroke-width="0.8"/>
-        <circle cx="512" cy="103" r="5" fill="#DDD" stroke="#BBB" stroke-width="0.8"/>
-        <!-- Thought bubble -->
-        <rect x="390" y="68" width="230" height="70" rx="12" fill="#FFF" stroke="#BBB" stroke-width="1.2" stroke-dasharray="4,3"/>
-        <text x="400" y="84" fill="#2C3E50" font-size="11" font-family="monospace">
-          <tspan x="400" dy="0">[SQL injection]: </tspan><tspan fill="#27AE60" font-weight="700">High</tspan>
-        </text>
-        <text x="400" y="100" fill="#2C3E50" font-size="11" font-family="monospace">
-          <tspan x="400" dy="0">[auth bypass]: </tspan><tspan fill="#E74C3C" font-weight="700">Low</tspan><tspan fill="#7F8C8D"> — false pos?</tspan>
-        </text>
-        <text x="400" y="116" fill="#2C3E50" font-size="11" font-family="monospace">
-          <tspan x="400" dy="0">Most defensible: SQL inj.</tspan>
-        </text>
+        <text x="480" y="405" text-anchor="middle" fill="#E74C3C" font-size="12" font-weight="700">Security</text>
       </g>
 
-      <!-- Character 3: Data Quality (orange) at x≈830 -->
+      <!-- Character 3: Data Quality (orange) -->
       <g class="hide s35-char3">
-        <g transform="translate(810, 130) scale(0.8)">
+        <!-- Thought bubble (top) -->
+        <rect x="670" y="75" width="260" height="90" rx="14" fill="#FFF" stroke="#E67E22" stroke-width="1.2" stroke-dasharray="5,3"/>
+        <text x="686" y="100" fill="#2C3E50" font-size="13" font-family="monospace">
+          <tspan x="686" dy="0">[null joins]: </tspan><tspan fill="#27AE60" font-weight="700">High</tspan>
+        </text>
+        <text x="686" y="120" fill="#2C3E50" font-size="13" font-family="monospace">
+          <tspan x="686" dy="0">[schema drift]: </tspan><tspan fill="#E67E22" font-weight="700">Medium</tspan>
+        </text>
+        <text x="686" y="140" fill="#2C3E50" font-size="13" font-family="monospace">
+          <tspan x="686" dy="0">Least certain: drift sev.</tspan>
+        </text>
+        <!-- Cloud connector -->
+        <circle cx="810" cy="175" r="4" fill="#EEE" stroke="#BBB" stroke-width="0.8"/>
+        <circle cx="815" cy="190" r="5" fill="#EEE" stroke="#BBB" stroke-width="0.8"/>
+        <!-- Character (bottom) -->
+        <g transform="translate(810, 310) scale(0.9)">
           <path d="M16,0 C24,-1 30,4 32,12 C34,22 30,30 22,32 C14,34 6,28 4,18 C2,6 8,1 16,0Z" fill="#FFDBB8" stroke="#2C3E50" stroke-width="1.8"/>
           <path d="M6,10 C4,2 12,-2 22,-1 C30,0 34,6 32,10 C30,6 24,3 18,4 C10,5 8,8 6,10Z" fill="#D35400" stroke="#2C3E50" stroke-width="1"/>
           <line x1="32" y1="4" x2="38" y2="-6" stroke="#E74C3C" stroke-width="2" stroke-linecap="round"/>
@@ -589,22 +604,7 @@
           <ellipse cx="8" cy="80" rx="5" ry="3" fill="#2C3E50"/>
           <ellipse cx="32" cy="80" rx="5" ry="3" fill="#2C3E50"/>
         </g>
-        <text x="830" y="210" text-anchor="middle" fill="#E67E22" font-size="10" font-weight="700">Data Quality</text>
-        <!-- Thought cloud connector -->
-        <circle cx="838" cy="126" r="3" fill="#DDD" stroke="#BBB" stroke-width="0.8"/>
-        <circle cx="848" cy="115" r="4" fill="#DDD" stroke="#BBB" stroke-width="0.8"/>
-        <circle cx="862" cy="103" r="5" fill="#DDD" stroke="#BBB" stroke-width="0.8"/>
-        <!-- Thought bubble -->
-        <rect x="730" y="68" width="230" height="70" rx="12" fill="#FFF" stroke="#BBB" stroke-width="1.2" stroke-dasharray="4,3"/>
-        <text x="740" y="84" fill="#2C3E50" font-size="11" font-family="monospace">
-          <tspan x="740" dy="0">[null joins]: </tspan><tspan fill="#27AE60" font-weight="700">High</tspan>
-        </text>
-        <text x="740" y="100" fill="#2C3E50" font-size="11" font-family="monospace">
-          <tspan x="740" dy="0">[schema drift]: </tspan><tspan fill="#E67E22" font-weight="700">Medium</tspan>
-        </text>
-        <text x="740" y="116" fill="#2C3E50" font-size="11" font-family="monospace">
-          <tspan x="740" dy="0">Least certain: drift sev.</tspan>
-        </text>
+        <text x="830" y="405" text-anchor="middle" fill="#E67E22" font-size="12" font-weight="700">Data Quality</text>
       </g>
     </g>
   </g>
@@ -641,7 +641,7 @@
         <ellipse cx="10" cy="84" rx="6" ry="3" fill="#2C3E50"/>
         <ellipse cx="34" cy="84" rx="6" ry="3" fill="#2C3E50"/>
       </g>
-      <text x="82" y="205" text-anchor="middle" fill="#8E44AD" font-size="12" font-weight="700">Stat Rigor</text>
+      <text x="82" y="205" text-anchor="middle" fill="#8E44AD" font-size="13" font-weight="700">Stat Rigor</text>
 
       <!-- Pipeline Safety Reviewer (right) -->
       <g transform="translate(860, 110) scale(1.0)">
@@ -662,7 +662,7 @@
         <ellipse cx="8" cy="84" rx="6" ry="3" fill="#2C3E50"/>
         <ellipse cx="32" cy="84" rx="6" ry="3" fill="#2C3E50"/>
       </g>
-      <text x="882" y="205" text-anchor="middle" fill="#1ABC9C" font-size="12" font-weight="700">Pipeline Safety Reviewer</text>
+      <text x="882" y="205" text-anchor="middle" fill="#1ABC9C" font-size="13" font-weight="700">Pipeline Safety</text>
 
       <!-- Beat 1: HIGH (from Stat Rigor) -->
       <g class="hide s4-b1" transform="translate(130, 125)">
@@ -749,7 +749,7 @@
           <ellipse cx="8" cy="84" rx="6" ry="3" fill="#2C3E50"/>
           <ellipse cx="32" cy="84" rx="6" ry="3" fill="#2C3E50"/>
         </g>
-        <text x="82" y="205" text-anchor="middle" fill="#E74C3C" font-size="12" font-weight="700">Security</text>
+        <text x="82" y="205" text-anchor="middle" fill="#E74C3C" font-size="13" font-weight="700">Security</text>
 
         <!-- Performance character (right) — green, wide eyes, lightning bolt, stopwatch -->
         <g transform="translate(860, 110) scale(1.0)">
@@ -773,7 +773,7 @@
           <ellipse cx="10" cy="78" rx="5" ry="3" fill="#2C3E50"/>
           <ellipse cx="30" cy="78" rx="5" ry="3" fill="#2C3E50"/>
         </g>
-        <text x="882" y="205" text-anchor="middle" fill="#27AE60" font-size="12" font-weight="700">Performance</text>
+        <text x="882" y="205" text-anchor="middle" fill="#27AE60" font-size="13" font-weight="700">Performance</text>
 
         <!-- R2 Beat 1: Security raises HIGH -->
         <g class="hide s4-r2b1" transform="translate(130, 125)">
@@ -831,7 +831,7 @@
           <ellipse cx="8" cy="80" rx="6" ry="3" fill="#2C3E50"/>
           <ellipse cx="32" cy="80" rx="6" ry="3" fill="#2C3E50"/>
         </g>
-        <text x="82" y="205" text-anchor="middle" fill="#E67E22" font-size="12" font-weight="700">Data Quality</text>
+        <text x="82" y="205" text-anchor="middle" fill="#E67E22" font-size="13" font-weight="700">Data Quality</text>
 
         <!-- Maintainability character (right) — gray, wrench, bandaid, coffee mug, tired -->
         <g transform="translate(860, 110) scale(1.0)">
@@ -859,7 +859,7 @@
           <ellipse cx="8" cy="84" rx="6" ry="3" fill="#2C3E50"/>
           <ellipse cx="32" cy="84" rx="6" ry="3" fill="#2C3E50"/>
         </g>
-        <text x="882" y="205" text-anchor="middle" fill="#5D6D7E" font-size="12" font-weight="700">Maintainability</text>
+        <text x="882" y="205" text-anchor="middle" fill="#5D6D7E" font-size="13" font-weight="700">Maintainability</text>
 
         <!-- R3 Beat 1: Data Quality raises MEDIUM -->
         <g class="hide s4-r3b1" transform="translate(130, 125)">
@@ -992,20 +992,20 @@
       </g>
 
       <!-- Score bubbles -->
-      <g class="hide s5-score1"><circle cx="160" cy="120" r="24" fill="#FEF9E7" stroke="#F39C12" stroke-width="1.5"/><text x="160" y="128" text-anchor="middle" fill="#F39C12" font-size="20" font-weight="700">6</text></g>
-      <g class="hide s5-score2"><circle cx="480" cy="120" r="24" fill="#FDEDEC" stroke="#E74C3C" stroke-width="1.5"/><text x="480" y="128" text-anchor="middle" fill="#E74C3C" font-size="20" font-weight="800">4</text></g>
-      <g class="hide s5-score3"><circle cx="800" cy="120" r="24" fill="#E8F5E9" stroke="#27AE60" stroke-width="1.5"/><text x="800" y="128" text-anchor="middle" fill="#27AE60" font-size="20" font-weight="700">8</text></g>
-      <g class="hide s5-score4"><circle cx="160" cy="290" r="24" fill="#FEF9E7" stroke="#F39C12" stroke-width="1.5"/><text x="160" y="298" text-anchor="middle" fill="#F39C12" font-size="20" font-weight="700">5</text></g>
-      <g class="hide s5-score5"><circle cx="480" cy="290" r="24" fill="#FEF9E7" stroke="#F39C12" stroke-width="1.5"/><text x="480" y="298" text-anchor="middle" fill="#F39C12" font-size="20" font-weight="700">5</text></g>
-      <g class="hide s5-score6"><circle cx="800" cy="290" r="24" fill="#E8F5E9" stroke="#27AE60" stroke-width="1.5"/><text x="800" y="298" text-anchor="middle" fill="#27AE60" font-size="20" font-weight="700">7</text></g>
+      <g class="hide s5-score1"><circle cx="160" cy="105" r="24" fill="#FEF9E7" stroke="#F39C12" stroke-width="1.5"/><text x="160" y="113" text-anchor="middle" fill="#F39C12" font-size="20" font-weight="700">6</text></g>
+      <g class="hide s5-score2"><circle cx="480" cy="105" r="24" fill="#FDEDEC" stroke="#E74C3C" stroke-width="1.5"/><text x="480" y="113" text-anchor="middle" fill="#E74C3C" font-size="20" font-weight="800">4</text></g>
+      <g class="hide s5-score3"><circle cx="800" cy="105" r="24" fill="#E8F5E9" stroke="#27AE60" stroke-width="1.5"/><text x="800" y="113" text-anchor="middle" fill="#27AE60" font-size="20" font-weight="700">8</text></g>
+      <g class="hide s5-score4"><circle cx="160" cy="275" r="24" fill="#FEF9E7" stroke="#F39C12" stroke-width="1.5"/><text x="160" y="283" text-anchor="middle" fill="#F39C12" font-size="20" font-weight="700">5</text></g>
+      <g class="hide s5-score5"><circle cx="480" cy="275" r="24" fill="#FEF9E7" stroke="#F39C12" stroke-width="1.5"/><text x="480" y="283" text-anchor="middle" fill="#F39C12" font-size="20" font-weight="700">5</text></g>
+      <g class="hide s5-score6"><circle cx="800" cy="275" r="24" fill="#E8F5E9" stroke="#27AE60" stroke-width="1.5"/><text x="800" y="283" text-anchor="middle" fill="#27AE60" font-size="20" font-weight="700">7</text></g>
 
       <g class="hide s5-label">
-        <text x="160" y="260" text-anchor="middle" fill="#E74C3C" font-size="11" font-weight="600">Security</text>
-        <text x="480" y="260" text-anchor="middle" fill="#8E44AD" font-size="11" font-weight="600">Statistical Rigor Reviewer</text>
-        <text x="800" y="260" text-anchor="middle" fill="#27AE60" font-size="11" font-weight="600">Performance</text>
-        <text x="160" y="430" text-anchor="middle" fill="#E67E22" font-size="11" font-weight="600">Data Quality Auditor</text>
-        <text x="480" y="430" text-anchor="middle" fill="#1ABC9C" font-size="11" font-weight="600">Pipeline Safety Reviewer</text>
-        <text x="800" y="430" text-anchor="middle" fill="#5D6D7E" font-size="11" font-weight="600">Maintainability</text>
+        <text x="160" y="260" text-anchor="middle" fill="#E74C3C" font-size="13" font-weight="600">Security</text>
+        <text x="480" y="260" text-anchor="middle" fill="#8E44AD" font-size="13" font-weight="600">Stat Rigor</text>
+        <text x="800" y="260" text-anchor="middle" fill="#27AE60" font-size="13" font-weight="600">Performance</text>
+        <text x="160" y="430" text-anchor="middle" fill="#E67E22" font-size="13" font-weight="600">Data Quality</text>
+        <text x="480" y="430" text-anchor="middle" fill="#1ABC9C" font-size="13" font-weight="600">Pipeline Safety</text>
+        <text x="800" y="430" text-anchor="middle" fill="#5D6D7E" font-size="13" font-weight="600">Maintainability</text>
       </g>
       <g class="hide s5-submitted">
         <text x="480" y="490" text-anchor="middle" fill="#7F8C8D" font-size="13" font-style="italic">Blind final scores submitted.</text>
@@ -1018,10 +1018,10 @@
   ═══════════════════════════════════════════ -->
   <g class="hide s6-in">
     <g class="s6-out" style="opacity:1;">
-      <text x="480" y="120" text-anchor="middle" fill="#D35400" font-size="16" font-weight="700">CLAIM VERIFICATION</text>
+      <text x="480" y="160" text-anchor="middle" fill="#D35400" font-size="16" font-weight="700">CLAIM VERIFICATION</text>
 
       <!-- Auditor character -->
-      <g transform="translate(190, 130) scale(1.0)">
+      <g transform="translate(190, 180) scale(1.0)">
         <path d="M16,0 C24,-1 30,4 32,12 C34,22 30,30 22,32 C14,34 6,28 4,18 C2,6 8,1 16,0Z" fill="#FFDBB8" stroke="#2C3E50" stroke-width="1.8"/>
         <path d="M6,10 C4,2 12,-2 22,-1 C30,0 34,6 32,10 C30,6 24,3 18,4 C10,5 8,8 6,10Z" fill="#D35400" stroke="#2C3E50" stroke-width="1"/>
         <circle cx="13" cy="14" r="2.5" fill="#2C3E50"/><circle cx="27" cy="14" r="2.5" fill="#2C3E50"/>
@@ -1041,22 +1041,22 @@
         <ellipse cx="8" cy="82" rx="6" ry="3" fill="#2C3E50"/>
         <ellipse cx="32" cy="82" rx="6" ry="3" fill="#2C3E50"/>
       </g>
-      <text x="210" y="228" text-anchor="middle" fill="#D35400" font-size="12" font-weight="700">Completeness Auditor</text>
+      <text x="210" y="278" text-anchor="middle" fill="#D35400" font-size="13" font-weight="700">Completeness Auditor</text>
 
       <!-- Checklist -->
-      <g class="hide s6-check1" transform="translate(400, 165)">
+      <g class="hide s6-check1" transform="translate(400, 225)">
         <text x="0" y="0" fill="#27AE60" font-size="22" font-weight="700">&#x2713;</text>
         <text x="28" y="0" fill="#2C3E50" font-size="16">12/14 citations</text>
         <rect x="200" y="-18" width="92" height="26" rx="5" fill="#E8F5E9" stroke="#27AE60" stroke-width="1.2"/>
         <text x="246" y="2" text-anchor="middle" fill="#27AE60" font-size="12" font-weight="700">VERIFIED</text>
       </g>
-      <g class="hide s6-check2" transform="translate(400, 205)">
+      <g class="hide s6-check2" transform="translate(400, 275)">
         <text x="0" y="0" fill="#E74C3C" font-size="22" font-weight="700">&#x2717;</text>
         <text x="28" y="0" fill="#2C3E50" font-size="16">1 citation</text>
         <rect x="148" y="-18" width="112" height="26" rx="5" fill="#FDEDEC" stroke="#E74C3C" stroke-width="1.2"/>
         <text x="204" y="2" text-anchor="middle" fill="#E74C3C" font-size="12" font-weight="700">INACCURATE</text>
       </g>
-      <g class="hide s6-check3" transform="translate(400, 245)">
+      <g class="hide s6-check3" transform="translate(400, 325)">
         <text x="0" y="0" fill="#F39C12" font-size="22" font-weight="700">?</text>
         <text x="28" y="0" fill="#2C3E50" font-size="16">1 citation</text>
         <rect x="148" y="-18" width="130" height="26" rx="5" fill="#FEF9E7" stroke="#F39C12" stroke-width="1.2"/>
@@ -1070,7 +1070,7 @@
   ═══════════════════════════════════════════ -->
   <g class="hide s7-in">
     <!-- Judge character -->
-    <g transform="translate(200, 110) scale(1.1)">
+    <g transform="translate(200, 170) scale(1.1)">
       <path d="M20,0 C30,-2 38,4 40,14 C42,26 36,36 26,38 C16,40 6,32 4,20 C2,8 10,2 20,0Z" fill="#FFDBB8" stroke="#2C3E50" stroke-width="1.8"/>
       <path d="M6,16 C4,4 16,-4 28,-2 C38,0 44,8 42,16 C40,8 32,4 22,4 C12,4 8,10 6,16Z" fill="#95A5A6" stroke="#2C3E50" stroke-width="1.2"/>
       <circle cx="28" cy="18" r="6" fill="none" stroke="#A0782C" stroke-width="1.5"/>
@@ -1103,10 +1103,10 @@
       <ellipse cx="12" cy="92" rx="7" ry="3" fill="#1A252F"/>
       <ellipse cx="32" cy="92" rx="7" ry="3" fill="#1A252F"/>
     </g>
-    <text x="222" y="232" text-anchor="middle" fill="#2C3E50" font-size="13" font-weight="700">Supreme Judge</text>
+    <text x="222" y="292" text-anchor="middle" fill="#2C3E50" font-size="13" font-weight="700">Supreme Judge</text>
 
     <!-- Impact burst -->
-    <g class="hide s7-impact" transform="translate(275, 175)">
+    <g class="hide s7-impact" transform="translate(275, 235)">
       <line x1="0" y1="0" x2="-14" y2="-10" stroke="#F39C12" stroke-width="3" stroke-linecap="round"/>
       <line x1="0" y1="0" x2="16" y2="-8" stroke="#F39C12" stroke-width="3" stroke-linecap="round"/>
       <line x1="0" y1="0" x2="-10" y2="12" stroke="#F39C12" stroke-width="3" stroke-linecap="round"/>
@@ -1115,7 +1115,7 @@
     </g>
 
     <!-- Verdict box -->
-    <g class="hide s7-box" transform="translate(430, 120)">
+    <g class="hide s7-box" transform="translate(430, 180)">
       <rect width="400" height="140" rx="10" fill="#0D1117" stroke="#388BFD" stroke-width="2" filter="url(#glow)"/>
       <g class="hide s7-v1">
         <text x="24" y="36" fill="#CDD6F4" font-size="15" font-weight="700" font-family="monospace">VERDICT:</text>
