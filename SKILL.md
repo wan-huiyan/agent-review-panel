@@ -24,7 +24,7 @@ description: >
   launching reviewers.
 ---
 
-# Agent Review Panel v2.8
+# Agent Review Panel v2.9
 
 A multi-agent adversarial review system based on nine research foundations:
 ChatEval (ICLR 2024), AutoGen, Du et al. (ICML 2024), MachineSoM (ACL 2024),
