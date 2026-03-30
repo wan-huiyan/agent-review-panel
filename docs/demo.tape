@@ -22,10 +22,10 @@ Set Padding 20
 Set WindowBar "Colorful"
 Set WindowBarSize 40
 
-# --- User prompt ---
+# --- User prompt (already inside Claude Code) ---
 Set TypingSpeed 30ms
 Sleep 500ms
-Type "claude 'Review this ML pipeline from multiple perspectives: pipeline.py'"
+Type "Review this ML pipeline from multiple perspectives: pipeline.py"
 Sleep 300ms
 Enter
 Sleep 2s
