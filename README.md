@@ -11,6 +11,9 @@ A Claude Code skill that orchestrates multi-agent adversarial review panels. Mul
 
 [![Agent Review Panel — animated flow](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/pixel-flow.gif?v=1)](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/pixel-flow.gif?v=1)
 
+[![Agent Review Panel — sketch art flow](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/sketch-flow.gif?v=1)](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/sketch-flow-animated.svg?v=1)
+*Sketchy version: 8-scene animated story from prompt to verdict with expressive characters, adversarial debate, blind finals, and gavel slam.*
+
 [![Agent Review Panel demo](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/demo.gif?v=1)](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/demo.gif?v=1)
 
 ## Why This Exists

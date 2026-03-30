@@ -1,0 +1,774 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" width="960" height="540" style="font-family:'Segoe UI','Helvetica Neue',Arial,sans-serif;">
+  <defs>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="bshadow" x="-5%" y="-5%" width="110%" height="120%">
+      <feDropShadow dx="1" dy="2" stdDeviation="2" flood-color="#00000010"/>
+    </filter>
+  </defs>
+
+  <style>
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+    @keyframes blink { 0%,49% { opacity: 1; } 50%,100% { opacity: 0; } }
+    @keyframes pulseZzz { 0%,100% { opacity: 0.15; } 50% { opacity: 0.5; } }
+    @keyframes impactBurst { 0% { opacity: 0.8; } 100% { opacity: 0; } }
+
+    .hide { opacity: 0; }
+    .show { opacity: 1; }
+
+    /* Scene 1: Prompt (0-2s) — fade OUT at 2s */
+    .s1-bg      { animation: fadeIn 0.3s ease-out 0.1s forwards; }
+    .s1-cursor  { animation: blink 0.8s step-end 0.2s infinite; }
+    .s1-t1      { animation: fadeIn 0.05s ease-out 0.3s forwards; }
+    .s1-t2      { animation: fadeIn 0.05s ease-out 0.4s forwards; }
+    .s1-t3      { animation: fadeIn 0.05s ease-out 0.5s forwards; }
+    .s1-t4      { animation: fadeIn 0.05s ease-out 0.6s forwards; }
+    .s1-t5      { animation: fadeIn 0.05s ease-out 0.7s forwards; }
+    .s1-t6      { animation: fadeIn 0.05s ease-out 0.8s forwards; }
+    .s1-t7      { animation: fadeIn 0.05s ease-out 0.9s forwards; }
+    .s1-file    { animation: fadeIn 0.3s ease-out 1.2s forwards; }
+    .s1-out     { animation: fadeOut 0.6s ease-out 2.0s forwards; }
+
+    /* Scene 2: Gather (2-5s) */
+    .s2-in      { animation: fadeIn 0.5s ease-out 2.0s forwards; }
+    .s2-badge1  { animation: fadeIn 0.3s ease-out 2.6s forwards; }
+    .s2-badge2  { animation: fadeIn 0.3s ease-out 2.8s forwards; }
+    .s2-badge3  { animation: fadeIn 0.3s ease-out 3.0s forwards; }
+    .s2-spec1   { animation: fadeIn 0.4s ease-out 3.3s forwards; }
+    .s2-spec2   { animation: fadeIn 0.4s ease-out 3.6s forwards; }
+    .s2-spec3   { animation: fadeIn 0.4s ease-out 3.9s forwards; }
+    .s2-mining  { animation: fadeIn 0.4s ease-out 4.2s forwards; }
+    .s2-out     { animation: fadeOut 0.6s ease-out 4.8s forwards; }
+
+    /* Scene 3: Independent Review (5-9s) */
+    .s3-in      { animation: fadeIn 0.5s ease-out 5.0s forwards; }
+    .s3-wall    { animation: fadeIn 0.4s ease-out 5.0s forwards; }
+    .s3-r1      { animation: fadeIn 0.3s ease-out 5.3s forwards; }
+    .s3-r2      { animation: fadeIn 0.3s ease-out 5.8s forwards; }
+    .s3-r3      { animation: fadeIn 0.3s ease-out 6.3s forwards; }
+    .s3-r4      { animation: fadeIn 0.3s ease-out 6.8s forwards; }
+    .s3-r5      { animation: fadeIn 0.3s ease-out 7.3s forwards; }
+    .s3-r6      { animation: fadeIn 0.3s ease-out 7.8s forwards; }
+    .s3-out     { animation: fadeOut 0.6s ease-out 8.5s forwards; }
+
+    /* Scene 4: Debate (9-14.5s) */
+    .s4-in      { animation: fadeIn 0.5s ease-out 9.0s forwards; }
+    .s4-b1      { animation: fadeIn 0.4s ease-out 9.5s forwards; }
+    .s4-impact1 { animation: impactBurst 0.6s ease-out 9.5s forwards; }
+    .s4-b2      { animation: fadeIn 0.4s ease-out 10.5s forwards; }
+    .s4-b3      { animation: fadeIn 0.4s ease-out 11.5s forwards; }
+    .s4-code    { animation: fadeIn 0.3s ease-out 12.0s forwards; }
+    .s4-b4      { animation: fadeIn 0.4s ease-out 13.0s forwards; }
+    .s4-round   { animation: fadeIn 0.3s ease-out 13.5s forwards; }
+    .s4-out     { animation: fadeOut 0.6s ease-out 14.2s forwards; }
+
+    /* Scene 5: Blind Finals (14.5-17s) */
+    .s5-in       { animation: fadeIn 0.4s ease-out 14.5s forwards; }
+    .s5-normal   { animation: fadeOut 0.3s ease-out 14.8s forwards; }
+    .s5-blind    { animation: fadeIn 0.3s ease-out 14.8s forwards; }
+    .s5-label    { animation: fadeIn 0.3s ease-out 15.0s forwards; }
+    .s5-score1   { animation: fadeIn 0.2s ease-out 15.3s forwards; }
+    .s5-score2   { animation: fadeIn 0.2s ease-out 15.5s forwards; }
+    .s5-score3   { animation: fadeIn 0.2s ease-out 15.7s forwards; }
+    .s5-score4   { animation: fadeIn 0.2s ease-out 15.9s forwards; }
+    .s5-score5   { animation: fadeIn 0.2s ease-out 16.1s forwards; }
+    .s5-score6   { animation: fadeIn 0.2s ease-out 16.3s forwards; }
+    .s5-submitted { animation: fadeIn 0.3s ease-out 16.5s forwards; }
+    .s5-out      { animation: fadeOut 0.6s ease-out 16.8s forwards; }
+
+    /* Scene 6: Verify (17-19s) */
+    .s6-in      { animation: fadeIn 0.4s ease-out 17.0s forwards; }
+    .s6-check1  { animation: fadeIn 0.2s ease-out 17.5s forwards; }
+    .s6-check2  { animation: fadeIn 0.2s ease-out 17.8s forwards; }
+    .s6-check3  { animation: fadeIn 0.2s ease-out 18.1s forwards; }
+    .s6-out     { animation: fadeOut 0.6s ease-out 18.8s forwards; }
+
+    /* Scene 7: Judge Verdict (19-23s) */
+    .s7-in        { animation: fadeIn 0.6s ease-out 19.0s forwards; }
+    .s7-gavel-up  { animation: fadeOut 0.15s ease-out 20.3s forwards; }
+    .s7-gavel-down { animation: fadeIn 0.15s ease-out 20.3s forwards; }
+    .s7-impact    { animation: impactBurst 0.5s ease-out 20.4s forwards; }
+    .s7-box       { animation: fadeIn 0.4s ease-out 20.8s forwards; }
+    .s7-v1        { animation: fadeIn 0.3s ease-out 21.0s forwards; }
+    .s7-v2        { animation: fadeIn 0.3s ease-out 21.4s forwards; }
+    .s7-v3        { animation: fadeIn 0.3s ease-out 21.8s forwards; }
+
+    /* Scene 8: Hold (23-25s) */
+    .s8-zzz     { animation: pulseZzz 2s ease-in-out 23.0s infinite; }
+    .s8-caption { animation: fadeIn 0.5s ease-out 23.0s forwards; }
+    .s8-footer  { animation: fadeIn 0.5s ease-out 23.5s forwards; }
+  </style>
+
+  <!-- Background -->
+  <rect width="960" height="540" fill="#FAF8F4"/>
+
+  <!-- ═══ SCENE 1: THE PROMPT (0-2s) ═══ -->
+  <g class="s1-out" style="opacity:1;">
+    <!-- Claude Code character (small, top-left) -->
+    <g class="hide s1-bg" transform="translate(70, 120) scale(0.7)">
+      <path d="M16,0 C24,-2 32,2 34,10 C36,20 32,30 24,32 C16,34 6,28 4,18 C2,8 8,2 16,0Z" fill="#FFDBB8" stroke="#2C3E50" stroke-width="1.5"/>
+      <path d="M6,14 C4,4 14,-4 24,-2 C32,0 38,6 36,14 C34,8 28,4 20,4 C12,4 8,8 6,14Z" fill="#6B4226" stroke="#2C3E50" stroke-width="1"/>
+      <path d="M12,14 C14,12 18,12 20,14" fill="none" stroke="#2C3E50" stroke-width="2" stroke-linecap="round"/>
+      <path d="M24,13 C26,11 30,11 32,13" fill="none" stroke="#2C3E50" stroke-width="2" stroke-linecap="round"/>
+      <path d="M14,22 C18,26 26,26 30,22" fill="none" stroke="#2C3E50" stroke-width="1.5" stroke-linecap="round"/>
+      <ellipse cx="20" cy="52" rx="14" ry="16" fill="#4A90D9" stroke="#2C3E50" stroke-width="1.5"/>
+      <path d="M6,44 C-2,48 -6,56 -4,62" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M34,42 C42,38 50,34 56,30" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+      <circle cx="56" cy="30" r="4" fill="#FFDBB8" stroke="#2C3E50" stroke-width="1"/>
+      <path d="M14,66 L10,82" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M26,66 L30,82" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+      <ellipse cx="8" cy="84" rx="6" ry="3" fill="#2C3E50"/>
+      <ellipse cx="32" cy="84" rx="6" ry="3" fill="#2C3E50"/>
+      <path d="M4,8 L-2,0 L0,-6" fill="none" stroke="#4A90D9" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="0" cy="-8" r="3" fill="#4A90D9"/>
+      <text x="20" y="100" text-anchor="middle" fill="#4A90D9" font-size="10" font-weight="700">Claude Code</text>
+    </g>
+    <!-- Terminal box -->
+    <g class="hide s1-bg">
+      <rect x="180" y="200" width="600" height="80" rx="10" fill="#1E1E2E" stroke="#45475A" stroke-width="1.5"/>
+      <circle cx="200" cy="216" r="4" fill="#F38BA8"/>
+      <circle cx="212" cy="216" r="4" fill="#F9E2AF"/>
+      <circle cx="224" cy="216" r="4" fill="#A6E3A1"/>
+      <text x="196" y="252" fill="#89B4FA" font-size="14" font-family="monospace" font-weight="700">$</text>
+    </g>
+    <!-- Typing text -->
+    <g font-family="monospace" font-size="13" fill="#CDD6F4">
+      <text x="212" y="252" class="hide s1-t1" xml:space="preserve">Review </text>
+      <text x="267" y="252" class="hide s1-t2" xml:space="preserve">this </text>
+      <text x="306" y="252" class="hide s1-t3" xml:space="preserve">ML </text>
+      <text x="330" y="252" class="hide s1-t4" xml:space="preserve">pipeline </text>
+      <text x="400" y="252" class="hide s1-t5" xml:space="preserve">from </text>
+      <text x="440" y="252" class="hide s1-t6" xml:space="preserve">multiple </text>
+      <text x="510" y="252" class="hide s1-t7">perspectives:</text>
+    </g>
+    <rect x="597" y="240" width="8" height="15" fill="#CDD6F4" class="s1-cursor"/>
+    <!-- Code file icon -->
+    <g class="hide s1-file" transform="translate(700, 190)">
+      <path d="M2,6 Q0,0 8,1 L38,0 Q42,0 42,5 L44,72 Q44,76 40,76 L4,78 Q0,78 0,74 Z" fill="#FFF" stroke="#89B4FA" stroke-width="1.5"/>
+      <path d="M32,0 L32,14 Q32,16 34,16 L44,5" fill="#EBF5FB" stroke="#89B4FA" stroke-width="1"/>
+      <line x1="6" y1="24" x2="28" y2="24" stroke="#89B4FA" stroke-width="2" stroke-linecap="round"/>
+      <line x1="10" y1="32" x2="36" y2="32" stroke="#CDD6F4" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
+      <line x1="10" y1="40" x2="32" y2="40" stroke="#CDD6F4" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
+      <line x1="6" y1="48" x2="30" y2="48" stroke="#A6E3A1" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
+      <line x1="10" y1="56" x2="36" y2="56" stroke="#CDD6F4" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
+    </g>
+  </g>
+
+  <!-- ═══ SCENE 2: GATHER (2-5s) ═══ -->
+  <g class="hide s2-in">
+    <g class="s2-out" style="opacity:1;">
+      <!-- Claude Code (center-left) -->
+      <g transform="translate(100, 140) scale(0.7)">
+        <path d="M16,0 C24,-2 32,2 34,10 C36,20 32,30 24,32 C16,34 6,28 4,18 C2,8 8,2 16,0Z" fill="#FFDBB8" stroke="#2C3E50" stroke-width="1.5"/>
+        <path d="M6,14 C4,4 14,-4 24,-2 C32,0 38,6 36,14 C34,8 28,4 20,4 C12,4 8,8 6,14Z" fill="#6B4226" stroke="#2C3E50" stroke-width="1"/>
+        <path d="M12,14 C14,12 18,12 20,14" fill="none" stroke="#2C3E50" stroke-width="2" stroke-linecap="round"/>
+        <path d="M24,13 C26,11 30,11 32,13" fill="none" stroke="#2C3E50" stroke-width="2" stroke-linecap="round"/>
+        <path d="M14,22 C18,26 26,26 30,22" fill="none" stroke="#2C3E50" stroke-width="1.5" stroke-linecap="round"/>
+        <ellipse cx="20" cy="52" rx="14" ry="16" fill="#4A90D9" stroke="#2C3E50" stroke-width="1.5"/>
+        <path d="M6,44 C-2,48 -6,56 -4,62" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M34,42 C42,38 50,34 56,30" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+        <circle cx="56" cy="30" r="4" fill="#FFDBB8" stroke="#2C3E50" stroke-width="1"/>
+        <path d="M14,66 L10,82" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M26,66 L30,82" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+        <ellipse cx="8" cy="84" rx="6" ry="3" fill="#2C3E50"/>
+        <ellipse cx="32" cy="84" rx="6" ry="3" fill="#2C3E50"/>
+        <path d="M4,8 L-2,0 L0,-6" fill="none" stroke="#4A90D9" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="0" cy="-8" r="3" fill="#4A90D9"/>
+        <text x="20" y="100" text-anchor="middle" fill="#4A90D9" font-size="10" font-weight="700">Claude Code</text>
+      </g>
+
+      <!-- Signal badges (center) -->
+      <g class="hide s2-badge1" transform="translate(280, 160)">
+        <rect width="92" height="24" rx="12" fill="#E8F0FE" stroke="#4A90D9" stroke-width="1.2"/>
+        <text x="46" y="16" text-anchor="middle" fill="#4A90D9" font-size="10" font-weight="600">ML/Stats (7)</text>
+      </g>
+      <g class="hide s2-badge2" transform="translate(380, 160)">
+        <rect width="68" height="24" rx="12" fill="#E8F5E9" stroke="#27AE60" stroke-width="1.2"/>
+        <text x="34" y="16" text-anchor="middle" fill="#27AE60" font-size="10" font-weight="600">SQL (4)</text>
+      </g>
+      <g class="hide s2-badge3" transform="translate(456, 160)">
+        <rect width="88" height="24" rx="12" fill="#FFF3E0" stroke="#E67E22" stroke-width="1.2"/>
+        <text x="44" y="16" text-anchor="middle" fill="#E67E22" font-size="10" font-weight="600">Pipeline (3)</text>
+      </g>
+
+      <!-- Specialist 1: Stat Rigor (glasses) -->
+      <g class="hide s2-spec1" transform="translate(600, 120) scale(0.65)">
+        <path d="M16,0 C24,-1 30,3 32,12 C34,22 30,30 22,32 C14,33 6,26 4,16 C2,6 8,1 16,0Z" fill="#FFDBB8" stroke="#2C3E50" stroke-width="1.5"/>
+        <path d="M4,12 C2,2 14,-4 24,-2 C32,0 36,6 34,12 C32,6 26,2 18,3 C10,4 6,8 4,12Z" fill="#8E44AD" stroke="#2C3E50" stroke-width="1"/>
+        <circle cx="13" cy="15" r="6" fill="none" stroke="#2C3E50" stroke-width="1.5"/>
+        <circle cx="27" cy="14" r="6" fill="none" stroke="#2C3E50" stroke-width="1.5"/>
+        <line x1="19" y1="14" x2="21" y2="14" stroke="#2C3E50" stroke-width="1.5"/>
+        <line x1="11" y1="15" x2="15" y2="15" stroke="#2C3E50" stroke-width="2" stroke-linecap="round"/>
+        <line x1="25" y1="14" x2="29" y2="14" stroke="#2C3E50" stroke-width="2" stroke-linecap="round"/>
+        <path d="M14,24 C16,22 22,22 24,24" fill="none" stroke="#2C3E50" stroke-width="1.2"/>
+        <ellipse cx="22" cy="52" rx="13" ry="15" fill="#8E44AD" stroke="#2C3E50" stroke-width="1.5"/>
+        <path d="M8,44 C2,40 -2,34 2,28" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+        <circle cx="4" cy="27" r="3.5" fill="#FFDBB8" stroke="#2C3E50" stroke-width="1"/>
+        <path d="M36,44 C42,50 44,58 40,64" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M16,66 L12,82" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M28,66 L32,82" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+        <ellipse cx="10" cy="84" rx="6" ry="3" fill="#2C3E50"/>
+        <ellipse cx="34" cy="84" rx="6" ry="3" fill="#2C3E50"/>
+        <text x="20" y="100" text-anchor="middle" fill="#8E44AD" font-size="10" font-weight="700">Stat Rigor</text>
+      </g>
+
+      <!-- Specialist 2: Data Quality (magnifying glass) -->
+      <g class="hide s2-spec2" transform="translate(690, 130) scale(0.6)">
+        <path d="M16,0 C24,-1 30,4 31,12 C32,22 28,28 22,30 C14,32 6,26 4,16 C2,6 8,1 16,0Z" fill="#FFDBB8" stroke="#2C3E50" stroke-width="1.5"/>
+        <path d="M6,10 C4,2 12,-2 22,-1 C30,0 34,6 32,10 C30,6 24,3 18,4 C10,5 8,8 6,10Z" fill="#D35400" stroke="#2C3E50" stroke-width="1"/>
+        <circle cx="12" cy="14" r="3" fill="#2C3E50"/>
+        <circle cx="26" cy="12" r="5" fill="none" stroke="#2C3E50" stroke-width="1.5"/>
+        <circle cx="26" cy="12" r="2" fill="#2C3E50"/>
+        <path d="M22,6 C24,4 30,4 32,6" fill="none" stroke="#2C3E50" stroke-width="1.5" stroke-linecap="round"/>
+        <ellipse cx="18" cy="22" rx="4" ry="2.5" fill="none" stroke="#2C3E50" stroke-width="1.2"/>
+        <ellipse cx="20" cy="50" rx="12" ry="14" fill="#E67E22" stroke="#2C3E50" stroke-width="1.5"/>
+        <path d="M34,42 C44,36 50,30 52,26" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+        <circle cx="54" cy="22" r="8" fill="none" stroke="#E67E22" stroke-width="2.5"/>
+        <path d="M6,44 C0,50 -2,58 0,62" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M14,62 L10,78" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M26,62 L30,78" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+        <ellipse cx="8" cy="80" rx="6" ry="3" fill="#2C3E50"/>
+        <ellipse cx="32" cy="80" rx="6" ry="3" fill="#2C3E50"/>
+        <text x="20" y="96" text-anchor="middle" fill="#E67E22" font-size="10" font-weight="700">Data Quality</text>
+      </g>
+
+      <!-- Specialist 3: Pipeline Safety (hard hat) -->
+      <g class="hide s2-spec3" transform="translate(790, 120) scale(0.6)">
+        <path d="M16,2 C24,0 30,4 32,12 C34,22 30,30 22,32 C14,34 6,28 4,18 C2,8 8,2 16,2Z" fill="#FFDBB8" stroke="#2C3E50" stroke-width="1.5"/>
+        <path d="M0,10 C-2,0 12,-6 22,-4 C34,-2 40,4 38,10 L36,14 C34,10 26,6 18,6 C10,6 4,10 2,14 Z" fill="#F9E2AF" stroke="#2C3E50" stroke-width="1.2"/>
+        <rect x="-2" y="10" width="42" height="4" rx="2" fill="#F39C12" stroke="#2C3E50" stroke-width="1"/>
+        <circle cx="13" cy="17" r="2.5" fill="#2C3E50"/>
+        <circle cx="27" cy="17" r="2.5" fill="#2C3E50"/>
+        <path d="M12,24 C14,26 18,24 20,26 C22,24 26,26 28,24" fill="none" stroke="#2C3E50" stroke-width="1.2"/>
+        <ellipse cx="20" cy="52" rx="14" ry="16" fill="#1ABC9C" stroke="#2C3E50" stroke-width="1.5"/>
+        <line x1="10" y1="40" x2="20" y2="66" stroke="#F9E2AF" stroke-width="2"/>
+        <line x1="30" y1="40" x2="20" y2="66" stroke="#F9E2AF" stroke-width="2"/>
+        <path d="M34,42 C44,34 48,26 46,22" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M44,16 L42,22 L46,22 L50,18 L48,14 L44,16Z" fill="#FFDBB8" stroke="#2C3E50" stroke-width="1"/>
+        <path d="M6,44 C-2,52 -4,58 -2,64" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M14,66 L10,82" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M26,66 L30,82" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+        <ellipse cx="8" cy="84" rx="6" ry="3" fill="#2C3E50"/>
+        <ellipse cx="32" cy="84" rx="6" ry="3" fill="#2C3E50"/>
+        <text x="20" y="100" text-anchor="middle" fill="#1ABC9C" font-size="10" font-weight="700">Pipeline Safety</text>
+      </g>
+
+      <!-- Mining text -->
+      <g class="hide s2-mining">
+        <text x="480" y="220" text-anchor="middle" fill="#B8B0A4" font-size="11" font-style="italic">Mining 3 memories, 2 lessons...</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- ═══ SCENE 3: INDEPENDENT REVIEW (5-9s) ═══ -->
+  <g class="hide s3-in">
+    <g class="s3-out" style="opacity:1;">
+      <!-- Title -->
+      <text x="480" y="130" text-anchor="middle" fill="#7F8C8D" font-size="11" font-weight="600" letter-spacing="2">INDEPENDENT REVIEW</text>
+      <!-- Dashed wall barriers -->
+      <g class="hide s3-wall">
+        <line x1="165" y1="145" x2="165" y2="380" stroke="#B8B0A4" stroke-width="1.5" stroke-dasharray="4,4"/>
+        <line x1="295" y1="145" x2="295" y2="380" stroke="#B8B0A4" stroke-width="1.5" stroke-dasharray="4,4"/>
+        <line x1="425" y1="145" x2="425" y2="380" stroke="#B8B0A4" stroke-width="1.5" stroke-dasharray="4,4"/>
+        <line x1="555" y1="145" x2="555" y2="380" stroke="#B8B0A4" stroke-width="1.5" stroke-dasharray="4,4"/>
+        <line x1="685" y1="145" x2="685" y2="380" stroke="#B8B0A4" stroke-width="1.5" stroke-dasharray="4,4"/>
+        <line x1="815" y1="145" x2="815" y2="380" stroke="#B8B0A4" stroke-width="1.5" stroke-dasharray="4,4"/>
+        <text x="480" y="142" text-anchor="middle" fill="#B8B0A4" font-size="9" font-weight="600" letter-spacing="2">NO CROSS-TALK</text>
+      </g>
+
+      <!-- Reviewer 1: Security -->
+      <g class="hide s3-r1">
+        <g transform="translate(82, 170) scale(0.55)">
+          <path d="M16,0 C24,-1 30,4 32,12 C34,22 30,30 22,32 C14,34 6,28 4,18 C2,6 8,1 16,0Z" fill="#FFDBB8" stroke="#2C3E50" stroke-width="1.8"/>
+          <path d="M10,10 L16,12" fill="none" stroke="#2C3E50" stroke-width="2" stroke-linecap="round"/>
+          <path d="M30,10 L24,12" fill="none" stroke="#2C3E50" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="14" cy="16" r="2" fill="#2C3E50"/><circle cx="26" cy="16" r="2" fill="#2C3E50"/>
+          <line x1="14" y1="24" x2="26" y2="24" stroke="#2C3E50" stroke-width="1.5" stroke-linecap="round"/>
+          <ellipse cx="20" cy="52" rx="14" ry="16" fill="#E74C3C" stroke="#2C3E50" stroke-width="1.5"/>
+          <path d="M16,42 L20,38 L24,42 L24,50 C24,54 20,56 20,56 C20,56 16,54 16,50Z" fill="#C0392B" stroke="#2C3E50" stroke-width="1"/>
+          <path d="M6,46 C-4,44 -6,50 2,54 L20,50" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M34,46 C44,44 46,50 38,54 L20,50" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M14,66 L10,82" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M26,66 L30,82" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+        </g>
+        <text x="93" y="232" text-anchor="middle" fill="#E74C3C" font-size="8" font-weight="700">SEC</text>
+        <g transform="translate(55, 240)">
+          <rect width="76" height="24" rx="8" fill="#FFF" stroke="#E74C3C" stroke-width="1.2"/>
+          <text x="38" y="11" text-anchor="middle" fill="#2C3E50" font-size="8">2 issues</text>
+          <text x="38" y="21" text-anchor="middle" fill="#E74C3C" font-size="7.5" font-weight="700">1 HIGH</text>
+        </g>
+      </g>
+
+      <!-- Reviewer 2: Stat Rigor -->
+      <g class="hide s3-r2">
+        <g transform="translate(212, 175) scale(0.5)">
+          <path d="M16,0 C24,-1 30,4 32,12 C34,22 30,30 22,32 C14,34 6,28 4,18 C2,6 8,1 16,0Z" fill="#FFDBB8" stroke="#2C3E50" stroke-width="1.8"/>
+          <circle cx="13" cy="15" r="6" fill="none" stroke="#2C3E50" stroke-width="1.5"/>
+          <circle cx="27" cy="14" r="6" fill="none" stroke="#2C3E50" stroke-width="1.5"/>
+          <line x1="19" y1="14" x2="21" y2="14" stroke="#2C3E50" stroke-width="1.5"/>
+          <line x1="11" y1="15" x2="15" y2="15" stroke="#2C3E50" stroke-width="2" stroke-linecap="round"/>
+          <line x1="25" y1="14" x2="29" y2="14" stroke="#2C3E50" stroke-width="2" stroke-linecap="round"/>
+          <path d="M14,24 C16,22 22,22 24,24" fill="none" stroke="#2C3E50" stroke-width="1.2"/>
+          <ellipse cx="20" cy="52" rx="13" ry="15" fill="#8E44AD" stroke="#2C3E50" stroke-width="1.5"/>
+          <path d="M6,44 C0,38 -2,32 2,28" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+          <circle cx="4" cy="27" r="3" fill="#FFDBB8" stroke="#2C3E50" stroke-width="1"/>
+          <path d="M34,44 C40,50 42,58 38,64" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M14,66 L10,82" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M26,66 L30,82" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+        </g>
+        <text x="222" y="232" text-anchor="middle" fill="#8E44AD" font-size="8" font-weight="700">STAT</text>
+        <g transform="translate(184, 240)">
+          <rect width="76" height="24" rx="8" fill="#FFF" stroke="#8E44AD" stroke-width="1.2"/>
+          <text x="38" y="11" text-anchor="middle" fill="#2C3E50" font-size="8">3 issues</text>
+          <text x="38" y="21" text-anchor="middle" fill="#E74C3C" font-size="7.5" font-weight="700">2 HIGH</text>
+        </g>
+      </g>
+
+      <!-- Reviewer 3: Performance -->
+      <g class="hide s3-r3">
+        <g transform="translate(342, 178) scale(0.5)">
+          <path d="M16,0 C24,-1 30,4 32,12 C34,22 30,30 22,32 C14,34 6,28 4,18 C2,6 8,1 16,0Z" fill="#FFDBB8" stroke="#2C3E50" stroke-width="1.8"/>
+          <circle cx="13" cy="15" r="3.5" fill="#FFF" stroke="#2C3E50" stroke-width="1.5"/><circle cx="13" cy="15" r="2" fill="#2C3E50"/>
+          <circle cx="27" cy="15" r="3.5" fill="#FFF" stroke="#2C3E50" stroke-width="1.5"/><circle cx="27" cy="15" r="2" fill="#2C3E50"/>
+          <line x1="14" y1="24" x2="26" y2="24" stroke="#2C3E50" stroke-width="1.2" stroke-linecap="round"/>
+          <ellipse cx="20" cy="52" rx="12" ry="14" fill="#27AE60" stroke="#2C3E50" stroke-width="1.5"/>
+          <circle cx="38" cy="44" r="5" fill="#FFF" stroke="#27AE60" stroke-width="1.5"/>
+          <line x1="38" y1="42" x2="38" y2="46" stroke="#2C3E50" stroke-width="1"/>
+          <path d="M6,44 C-2,50 -4,58 -2,62" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M14,64 L12,76" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M26,64 L28,76" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+        </g>
+        <text x="352" y="232" text-anchor="middle" fill="#27AE60" font-size="8" font-weight="700">PERF</text>
+        <g transform="translate(314, 240)">
+          <rect width="76" height="24" rx="8" fill="#FFF" stroke="#27AE60" stroke-width="1.2"/>
+          <text x="38" y="11" text-anchor="middle" fill="#2C3E50" font-size="8">1 issue</text>
+          <text x="38" y="21" text-anchor="middle" fill="#7F8C8D" font-size="7.5">0 high</text>
+        </g>
+      </g>
+
+      <!-- Reviewer 4: Data Quality -->
+      <g class="hide s3-r4">
+        <g transform="translate(472, 175) scale(0.5)">
+          <path d="M16,0 C24,-1 30,4 32,12 C34,22 30,30 22,32 C14,34 6,28 4,18 C2,6 8,1 16,0Z" fill="#FFDBB8" stroke="#2C3E50" stroke-width="1.8"/>
+          <circle cx="13" cy="14" r="2.5" fill="#2C3E50"/>
+          <circle cx="27" cy="14" r="4" fill="none" stroke="#2C3E50" stroke-width="1.5"/><circle cx="27" cy="14" r="2" fill="#2C3E50"/>
+          <ellipse cx="18" cy="22" rx="3" ry="2" fill="none" stroke="#2C3E50" stroke-width="1.2"/>
+          <ellipse cx="20" cy="50" rx="12" ry="14" fill="#E67E22" stroke="#2C3E50" stroke-width="1.5"/>
+          <path d="M34,42 C42,36 48,30 50,26" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+          <circle cx="52" cy="22" r="7" fill="none" stroke="#E67E22" stroke-width="2"/>
+          <path d="M6,44 C0,50 -2,58 0,62" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M14,62 L10,78" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M26,62 L30,78" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+        </g>
+        <text x="482" y="232" text-anchor="middle" fill="#E67E22" font-size="8" font-weight="700">DATA</text>
+        <g transform="translate(444, 240)">
+          <rect width="76" height="24" rx="8" fill="#FFF" stroke="#E67E22" stroke-width="1.2"/>
+          <text x="38" y="11" text-anchor="middle" fill="#2C3E50" font-size="8">4 issues</text>
+          <text x="38" y="21" text-anchor="middle" fill="#E74C3C" font-size="7.5" font-weight="700">1 HIGH</text>
+        </g>
+      </g>
+
+      <!-- Reviewer 5: Pipeline Safety -->
+      <g class="hide s3-r5">
+        <g transform="translate(602, 170) scale(0.5)">
+          <path d="M16,2 C24,0 30,4 32,12 C34,22 30,30 22,32 C14,34 6,28 4,18 C2,8 8,2 16,2Z" fill="#FFDBB8" stroke="#2C3E50" stroke-width="1.8"/>
+          <path d="M0,10 C-2,0 12,-6 22,-4 C34,-2 40,4 38,10 L36,14 C34,10 26,6 18,6 C10,6 4,10 2,14Z" fill="#F9E2AF" stroke="#2C3E50" stroke-width="1.2"/>
+          <rect x="-2" y="10" width="42" height="4" rx="2" fill="#F39C12" stroke="#2C3E50" stroke-width="1"/>
+          <circle cx="13" cy="18" r="2.5" fill="#2C3E50"/><circle cx="27" cy="18" r="2.5" fill="#2C3E50"/>
+          <path d="M12,26 C14,28 18,26 20,28 C22,26 26,28 28,26" fill="none" stroke="#2C3E50" stroke-width="1.2"/>
+          <ellipse cx="20" cy="52" rx="14" ry="16" fill="#1ABC9C" stroke="#2C3E50" stroke-width="1.5"/>
+          <path d="M34,42 C44,34 48,26 46,22" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M6,44 C-2,52 -4,58 -2,64" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M14,66 L10,82" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M26,66 L30,82" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+        </g>
+        <text x="612" y="232" text-anchor="middle" fill="#1ABC9C" font-size="8" font-weight="700">PIPE</text>
+        <g transform="translate(574, 240)">
+          <rect width="76" height="24" rx="8" fill="#FFF" stroke="#1ABC9C" stroke-width="1.2"/>
+          <text x="38" y="11" text-anchor="middle" fill="#2C3E50" font-size="8">2 issues</text>
+          <text x="38" y="21" text-anchor="middle" fill="#E74C3C" font-size="7.5" font-weight="700">1 HIGH</text>
+        </g>
+      </g>
+
+      <!-- Reviewer 6: Maintainability -->
+      <g class="hide s3-r6">
+        <g transform="translate(732, 180) scale(0.5)">
+          <path d="M16,0 C24,-1 30,4 32,12 C34,22 30,30 22,32 C14,34 6,28 4,18 C2,6 8,1 16,0Z" fill="#FFDBB8" stroke="#2C3E50" stroke-width="1.8"/>
+          <path d="M10,14 C12,16 16,16 18,14" fill="none" stroke="#2C3E50" stroke-width="2" stroke-linecap="round"/>
+          <path d="M22,14 C24,16 28,16 30,14" fill="none" stroke="#2C3E50" stroke-width="2" stroke-linecap="round"/>
+          <path d="M16,24 C18,22 22,22 24,24" fill="none" stroke="#2C3E50" stroke-width="1.2"/>
+          <ellipse cx="20" cy="52" rx="13" ry="15" fill="#5D6D7E" stroke="#2C3E50" stroke-width="1.5"/>
+          <path d="M34,44 C40,40 44,36 46,32" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M44,28 L48,32 L46,36 L42,32Z" fill="#95A5A6" stroke="#2C3E50" stroke-width="1"/>
+          <path d="M6,44 C-4,36 -2,20 4,14" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+          <circle cx="4" cy="12" r="3" fill="#FFDBB8" stroke="#2C3E50" stroke-width="1"/>
+          <path d="M14,66 L10,82" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M26,66 L30,82" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+        </g>
+        <text x="742" y="232" text-anchor="middle" fill="#5D6D7E" font-size="8" font-weight="700">MAINT</text>
+        <g transform="translate(704, 240)">
+          <rect width="76" height="24" rx="8" fill="#FFF" stroke="#5D6D7E" stroke-width="1.2"/>
+          <text x="38" y="11" text-anchor="middle" fill="#2C3E50" font-size="8">1 issue</text>
+          <text x="38" y="21" text-anchor="middle" fill="#7F8C8D" font-size="7.5">0 high</text>
+        </g>
+      </g>
+    </g>
+  </g>
+
+  <!-- ═══ SCENE 4: ADVERSARIAL DEBATE (9-14.5s) ═══ -->
+  <g class="hide s4-in">
+    <g class="s4-out" style="opacity:1;">
+      <!-- Title -->
+      <text x="480" y="130" text-anchor="middle" fill="#8E44AD" font-size="12" font-weight="700">ADVERSARIAL DEBATE</text>
+
+      <!-- Stat Rigor (left) -->
+      <g transform="translate(60, 150) scale(0.7)">
+        <path d="M16,0 C24,-1 30,4 32,12 C34,22 30,30 22,32 C14,34 6,28 4,18 C2,6 8,1 16,0Z" fill="#FFDBB8" stroke="#2C3E50" stroke-width="1.8"/>
+        <circle cx="13" cy="15" r="6" fill="none" stroke="#2C3E50" stroke-width="1.5"/>
+        <circle cx="27" cy="14" r="6" fill="none" stroke="#2C3E50" stroke-width="1.5"/>
+        <line x1="19" y1="14" x2="21" y2="14" stroke="#2C3E50" stroke-width="1.5"/>
+        <path d="M8,8 L18,11" fill="none" stroke="#2C3E50" stroke-width="2" stroke-linecap="round"/>
+        <path d="M32,8 L22,11" fill="none" stroke="#2C3E50" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="13" cy="16" r="2" fill="#2C3E50"/><circle cx="27" cy="15" r="2" fill="#2C3E50"/>
+        <ellipse cx="20" cy="24" rx="5" ry="3" fill="#2C3E50" opacity="0.3"/>
+        <path d="M15,22 C17,26 23,26 25,22" fill="none" stroke="#2C3E50" stroke-width="1.5"/>
+        <ellipse cx="22" cy="52" rx="13" ry="15" fill="#8E44AD" stroke="#2C3E50" stroke-width="1.5"/>
+        <path d="M34,44 C42,36 48,28 50,22" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+        <circle cx="50" cy="20" r="5" fill="#FFDBB8" stroke="#2C3E50" stroke-width="1.5"/>
+        <path d="M6,44 C-2,50 -4,56 -2,62" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M16,66 L12,82" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M28,66 L32,82" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+      </g>
+      <text x="78" y="228" text-anchor="middle" fill="#8E44AD" font-size="9" font-weight="700">Stat Rigor</text>
+
+      <!-- Pipeline Safety (right) -->
+      <g transform="translate(820, 150) scale(0.7)">
+        <path d="M16,2 C24,0 30,4 32,12 C34,22 30,30 22,32 C14,34 6,28 4,18 C2,8 8,2 16,2Z" fill="#FFDBB8" stroke="#2C3E50" stroke-width="1.8"/>
+        <path d="M0,10 C-2,0 12,-6 22,-4 C34,-2 40,4 38,10 L36,14 C34,10 26,6 18,6 C10,6 4,10 2,14Z" fill="#F9E2AF" stroke="#2C3E50" stroke-width="1.2"/>
+        <rect x="-2" y="10" width="42" height="4" rx="2" fill="#F39C12" stroke="#2C3E50" stroke-width="1"/>
+        <path d="M10,16 L18,16" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M22,16 L30,16" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M14,26 C16,24 24,24 26,26" fill="none" stroke="#2C3E50" stroke-width="1.5" stroke-linecap="round"/>
+        <ellipse cx="20" cy="52" rx="14" ry="16" fill="#1ABC9C" stroke="#2C3E50" stroke-width="1.5"/>
+        <line x1="10" y1="40" x2="20" y2="66" stroke="#F9E2AF" stroke-width="2"/>
+        <line x1="30" y1="40" x2="20" y2="66" stroke="#F9E2AF" stroke-width="2"/>
+        <path d="M6,46 C-4,44 -6,50 2,54 L20,50" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M34,46 C44,44 46,50 38,54 L20,50" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M14,66 L10,82" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M26,66 L30,82" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+      </g>
+      <text x="838" y="228" text-anchor="middle" fill="#1ABC9C" font-size="9" font-weight="700">Pipeline Safety</text>
+
+      <!-- Beat 1: HIGH finding (from left) -->
+      <g class="hide s4-b1" transform="translate(140, 150)">
+        <rect width="280" height="40" rx="10" fill="#FFF" stroke="#8E44AD" stroke-width="1.5" filter="url(#bshadow)"/>
+        <polygon points="0,16 -8,20 0,24" fill="#FFF" stroke="#8E44AD" stroke-width="1.5"/>
+        <rect x="-1" y="17" width="3" height="6" fill="#FFF"/>
+        <rect x="8" y="6" width="40" height="15" rx="4" fill="#E74C3C"/>
+        <text x="28" y="17" text-anchor="middle" fill="#FFF" font-size="8.5" font-weight="700">HIGH</text>
+        <text x="54" y="16" fill="#2C3E50" font-size="9">train_test_split without stratification</text>
+        <text x="12" y="32" fill="#7F8C8D" font-size="8.5">will leak class imbalance into validation.</text>
+      </g>
+      <!-- Impact burst -->
+      <g class="hide s4-impact1">
+        <line x1="132" y1="162" x2="120" y2="158" stroke="#E74C3C" stroke-width="2" stroke-linecap="round"/>
+        <line x1="132" y1="174" x2="118" y2="178" stroke="#E74C3C" stroke-width="2" stroke-linecap="round"/>
+        <line x1="132" y1="168" x2="116" y2="168" stroke="#E74C3C" stroke-width="2" stroke-linecap="round"/>
+      </g>
+
+      <!-- Beat 2: DISAGREE (from right) -->
+      <g class="hide s4-b2" transform="translate(520, 200)">
+        <rect width="290" height="40" rx="10" fill="#FFF" stroke="#1ABC9C" stroke-width="1.5" filter="url(#bshadow)"/>
+        <polygon points="290,16 298,20 290,24" fill="#FFF" stroke="#1ABC9C" stroke-width="1.5"/>
+        <rect x="288" y="17" width="3" height="6" fill="#FFF"/>
+        <rect x="8" y="6" width="68" height="15" rx="4" fill="#F39C12"/>
+        <text x="42" y="17" text-anchor="middle" fill="#FFF" font-size="8.5" font-weight="700">DISAGREE</text>
+        <text x="82" y="16" fill="#2C3E50" font-size="9">upstream sampling already</text>
+        <text x="12" y="32" fill="#7F8C8D" font-size="8.5">balances classes before this stage.</text>
+      </g>
+
+      <!-- Beat 3: Evidence (from left) -->
+      <g class="hide s4-b3" transform="translate(140, 250)">
+        <rect width="300" height="40" rx="10" fill="#FFF" stroke="#8E44AD" stroke-width="1.5" filter="url(#bshadow)"/>
+        <polygon points="0,16 -8,20 0,24" fill="#FFF" stroke="#8E44AD" stroke-width="1.5"/>
+        <rect x="-1" y="17" width="3" height="6" fill="#FFF"/>
+        <text x="12" y="16" fill="#2C3E50" font-size="9" font-weight="600">Show me the evidence.</text>
+        <text x="160" y="16" fill="#7F8C8D" font-size="8.5">Line 42 reads raw CSV</text>
+        <text x="12" y="32" fill="#7F8C8D" font-size="8.5">with no prior balancing step.</text>
+      </g>
+      <!-- Code snippet icon -->
+      <g class="hide s4-code" transform="translate(450, 254)">
+        <rect width="24" height="18" rx="3" fill="#1E1E2E" stroke="#45475A" stroke-width="1"/>
+        <line x1="4" y1="7" x2="14" y2="7" stroke="#89B4FA" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="6" y1="12" x2="18" y2="12" stroke="#A6E3A1" stroke-width="1.5" stroke-linecap="round"/>
+      </g>
+
+      <!-- Beat 4: CONCEDE (from right) -->
+      <g class="hide s4-b4" transform="translate(520, 300)">
+        <rect width="290" height="40" rx="10" fill="#FFF" stroke="#1ABC9C" stroke-width="1.5" filter="url(#bshadow)"/>
+        <polygon points="290,16 298,20 290,24" fill="#FFF" stroke="#1ABC9C" stroke-width="1.5"/>
+        <rect x="288" y="17" width="3" height="6" fill="#FFF"/>
+        <rect x="8" y="6" width="64" height="15" rx="4" fill="#8E44AD"/>
+        <text x="40" y="17" text-anchor="middle" fill="#FFF" font-size="8.5" font-weight="700">CONCEDE</text>
+        <text x="78" y="16" fill="#2C3E50" font-size="9">the raw ingest path is unprotected.</text>
+        <text x="12" y="32" fill="#E74C3C" font-size="8.5" font-weight="600">Upgrading to HIGH.</text>
+      </g>
+
+      <!-- Round 1 badge -->
+      <g class="hide s4-round">
+        <rect x="440" y="348" width="56" height="20" rx="10" fill="#FEF9E7" stroke="#F39C12" stroke-width="1.2"/>
+        <text x="468" y="362" text-anchor="middle" fill="#F39C12" font-size="9" font-weight="600">Round 1</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- ═══ SCENE 5: BLIND FINALS (14.5-17s) ═══ -->
+  <g class="hide s5-in">
+    <g class="s5-out" style="opacity:1;">
+      <text x="480" y="145" text-anchor="middle" fill="#8E44AD" font-size="12" font-weight="700">BLIND FINAL SCORING</text>
+
+      <!-- 6 reviewers normal pose (will fade out) -->
+      <g class="s5-normal" style="opacity:1;">
+        <g transform="translate(130, 210)">
+          <circle cx="0" cy="0" r="16" fill="#FFDBB8" stroke="#2C3E50" stroke-width="1.5"/>
+          <circle cx="-5" cy="-2" r="2.5" fill="#2C3E50"/><circle cx="5" cy="-2" r="2.5" fill="#2C3E50"/>
+          <path d="M-5,5 L5,5" stroke="#2C3E50" stroke-width="1.5" stroke-linecap="round"/>
+          <ellipse cx="0" cy="32" rx="12" ry="14" fill="#E74C3C" stroke="#2C3E50" stroke-width="1.5"/>
+          <path d="M-8,44 L-10,58" stroke="#2C3E50" stroke-width="2" stroke-linecap="round"/>
+          <path d="M8,44 L10,58" stroke="#2C3E50" stroke-width="2" stroke-linecap="round"/>
+        </g>
+        <g transform="translate(260, 210)">
+          <circle cx="0" cy="0" r="16" fill="#FFDBB8" stroke="#2C3E50" stroke-width="1.5"/>
+          <circle cx="-5" cy="-2" r="5" fill="none" stroke="#2C3E50" stroke-width="1"/><circle cx="5" cy="-2" r="5" fill="none" stroke="#2C3E50" stroke-width="1"/>
+          <line x1="-2" y1="-2" x2="2" y2="-2" stroke="#2C3E50" stroke-width="1"/>
+          <line x1="-7" y1="-2" x2="-3" y2="-2" stroke="#2C3E50" stroke-width="2" stroke-linecap="round"/>
+          <line x1="3" y1="-2" x2="7" y2="-2" stroke="#2C3E50" stroke-width="2" stroke-linecap="round"/>
+          <path d="M-4,5 C-2,7 2,7 4,5" fill="none" stroke="#2C3E50" stroke-width="1.2"/>
+          <ellipse cx="0" cy="32" rx="12" ry="14" fill="#8E44AD" stroke="#2C3E50" stroke-width="1.5"/>
+          <path d="M-8,44 L-10,58" stroke="#2C3E50" stroke-width="2" stroke-linecap="round"/>
+          <path d="M8,44 L10,58" stroke="#2C3E50" stroke-width="2" stroke-linecap="round"/>
+        </g>
+        <g transform="translate(390, 210)">
+          <circle cx="0" cy="0" r="16" fill="#FFDBB8" stroke="#2C3E50" stroke-width="1.5"/>
+          <circle cx="-5" cy="-2" r="3.5" fill="#FFF" stroke="#2C3E50" stroke-width="1"/><circle cx="-5" cy="-2" r="2" fill="#2C3E50"/>
+          <circle cx="5" cy="-2" r="3.5" fill="#FFF" stroke="#2C3E50" stroke-width="1"/><circle cx="5" cy="-2" r="2" fill="#2C3E50"/>
+          <line x1="-4" y1="5" x2="4" y2="5" stroke="#2C3E50" stroke-width="1.2" stroke-linecap="round"/>
+          <ellipse cx="0" cy="32" rx="12" ry="14" fill="#27AE60" stroke="#2C3E50" stroke-width="1.5"/>
+          <path d="M-8,44 L-10,58" stroke="#2C3E50" stroke-width="2" stroke-linecap="round"/>
+          <path d="M8,44 L10,58" stroke="#2C3E50" stroke-width="2" stroke-linecap="round"/>
+        </g>
+        <g transform="translate(520, 210)">
+          <circle cx="0" cy="0" r="16" fill="#FFDBB8" stroke="#2C3E50" stroke-width="1.5"/>
+          <circle cx="-5" cy="-2" r="2.5" fill="#2C3E50"/><circle cx="5" cy="-2" r="2.5" fill="#2C3E50"/>
+          <ellipse cx="0" cy="5" rx="3.5" ry="2" fill="none" stroke="#2C3E50" stroke-width="1.2"/>
+          <ellipse cx="0" cy="32" rx="12" ry="14" fill="#E67E22" stroke="#2C3E50" stroke-width="1.5"/>
+          <path d="M-8,44 L-10,58" stroke="#2C3E50" stroke-width="2" stroke-linecap="round"/>
+          <path d="M8,44 L10,58" stroke="#2C3E50" stroke-width="2" stroke-linecap="round"/>
+        </g>
+        <g transform="translate(650, 210)">
+          <circle cx="0" cy="0" r="16" fill="#FFDBB8" stroke="#2C3E50" stroke-width="1.5"/>
+          <circle cx="-5" cy="-2" r="2.5" fill="#2C3E50"/><circle cx="5" cy="-2" r="2.5" fill="#2C3E50"/>
+          <path d="M-4,5 C-2,7 2,5 4,7" fill="none" stroke="#2C3E50" stroke-width="1.2"/>
+          <ellipse cx="0" cy="32" rx="12" ry="14" fill="#1ABC9C" stroke="#2C3E50" stroke-width="1.5"/>
+          <path d="M-8,44 L-10,58" stroke="#2C3E50" stroke-width="2" stroke-linecap="round"/>
+          <path d="M8,44 L10,58" stroke="#2C3E50" stroke-width="2" stroke-linecap="round"/>
+        </g>
+        <g transform="translate(780, 210)">
+          <circle cx="0" cy="0" r="16" fill="#FFDBB8" stroke="#2C3E50" stroke-width="1.5"/>
+          <path d="M-7,-2 C-5,0 -3,0 -1,-2" fill="none" stroke="#2C3E50" stroke-width="1.5"/>
+          <path d="M1,-2 C3,0 5,0 7,-2" fill="none" stroke="#2C3E50" stroke-width="1.5"/>
+          <path d="M-3,5 C-1,4 1,4 3,5" fill="none" stroke="#2C3E50" stroke-width="1.2"/>
+          <ellipse cx="0" cy="32" rx="12" ry="14" fill="#5D6D7E" stroke="#2C3E50" stroke-width="1.5"/>
+          <path d="M-8,44 L-10,58" stroke="#2C3E50" stroke-width="2" stroke-linecap="round"/>
+          <path d="M8,44 L10,58" stroke="#2C3E50" stroke-width="2" stroke-linecap="round"/>
+        </g>
+      </g>
+
+      <!-- Blindfolded state (hands over eyes) -->
+      <g class="hide s5-blind">
+        <g transform="translate(130, 210)">
+          <circle cx="0" cy="0" r="16" fill="#FFDBB8" stroke="#2C3E50" stroke-width="1.5"/>
+          <rect x="-12" y="-6" width="24" height="9" rx="4" fill="#FFDBB8" stroke="#2C3E50" stroke-width="1.2"/>
+          <ellipse cx="0" cy="32" rx="12" ry="14" fill="#E74C3C" stroke="#2C3E50" stroke-width="1.5"/>
+          <path d="M-12,24 C-16,16 -14,4 -10,-2" stroke="#2C3E50" stroke-width="2" stroke-linecap="round"/>
+          <path d="M12,24 C16,16 14,4 10,-2" stroke="#2C3E50" stroke-width="2" stroke-linecap="round"/>
+        </g>
+        <g transform="translate(260, 210)">
+          <circle cx="0" cy="0" r="16" fill="#FFDBB8" stroke="#2C3E50" stroke-width="1.5"/>
+          <rect x="-12" y="-6" width="24" height="9" rx="4" fill="#FFDBB8" stroke="#2C3E50" stroke-width="1.2"/>
+          <ellipse cx="0" cy="32" rx="12" ry="14" fill="#8E44AD" stroke="#2C3E50" stroke-width="1.5"/>
+          <path d="M-12,24 C-16,16 -14,4 -10,-2" stroke="#2C3E50" stroke-width="2" stroke-linecap="round"/>
+          <path d="M12,24 C16,16 14,4 10,-2" stroke="#2C3E50" stroke-width="2" stroke-linecap="round"/>
+        </g>
+        <g transform="translate(390, 210)">
+          <circle cx="0" cy="0" r="16" fill="#FFDBB8" stroke="#2C3E50" stroke-width="1.5"/>
+          <rect x="-12" y="-6" width="24" height="9" rx="4" fill="#FFDBB8" stroke="#2C3E50" stroke-width="1.2"/>
+          <ellipse cx="0" cy="32" rx="12" ry="14" fill="#27AE60" stroke="#2C3E50" stroke-width="1.5"/>
+          <path d="M-12,24 C-16,16 -14,4 -10,-2" stroke="#2C3E50" stroke-width="2" stroke-linecap="round"/>
+          <path d="M12,24 C16,16 14,4 10,-2" stroke="#2C3E50" stroke-width="2" stroke-linecap="round"/>
+        </g>
+        <g transform="translate(520, 210)">
+          <circle cx="0" cy="0" r="16" fill="#FFDBB8" stroke="#2C3E50" stroke-width="1.5"/>
+          <rect x="-12" y="-6" width="24" height="9" rx="4" fill="#FFDBB8" stroke="#2C3E50" stroke-width="1.2"/>
+          <ellipse cx="0" cy="32" rx="12" ry="14" fill="#E67E22" stroke="#2C3E50" stroke-width="1.5"/>
+          <path d="M-12,24 C-16,16 -14,4 -10,-2" stroke="#2C3E50" stroke-width="2" stroke-linecap="round"/>
+          <path d="M12,24 C16,16 14,4 10,-2" stroke="#2C3E50" stroke-width="2" stroke-linecap="round"/>
+        </g>
+        <g transform="translate(650, 210)">
+          <circle cx="0" cy="0" r="16" fill="#FFDBB8" stroke="#2C3E50" stroke-width="1.5"/>
+          <rect x="-12" y="-6" width="24" height="9" rx="4" fill="#FFDBB8" stroke="#2C3E50" stroke-width="1.2"/>
+          <ellipse cx="0" cy="32" rx="12" ry="14" fill="#1ABC9C" stroke="#2C3E50" stroke-width="1.5"/>
+          <path d="M-12,24 C-16,16 -14,4 -10,-2" stroke="#2C3E50" stroke-width="2" stroke-linecap="round"/>
+          <path d="M12,24 C16,16 14,4 10,-2" stroke="#2C3E50" stroke-width="2" stroke-linecap="round"/>
+        </g>
+        <g transform="translate(780, 210)">
+          <circle cx="0" cy="0" r="16" fill="#FFDBB8" stroke="#2C3E50" stroke-width="1.5"/>
+          <rect x="-12" y="-6" width="24" height="9" rx="4" fill="#FFDBB8" stroke="#2C3E50" stroke-width="1.2"/>
+          <ellipse cx="0" cy="32" rx="12" ry="14" fill="#5D6D7E" stroke="#2C3E50" stroke-width="1.5"/>
+          <path d="M-12,24 C-16,16 -14,4 -10,-2" stroke="#2C3E50" stroke-width="2" stroke-linecap="round"/>
+          <path d="M12,24 C16,16 14,4 10,-2" stroke="#2C3E50" stroke-width="2" stroke-linecap="round"/>
+        </g>
+      </g>
+
+      <!-- Score bubbles -->
+      <g class="hide s5-score1"><circle cx="130" cy="172" r="16" fill="#FEF9E7" stroke="#F39C12" stroke-width="1.5"/><text x="130" y="177" text-anchor="middle" fill="#F39C12" font-size="14" font-weight="700">6</text></g>
+      <g class="hide s5-score2"><circle cx="260" cy="172" r="16" fill="#FDEDEC" stroke="#E74C3C" stroke-width="1.5"/><text x="260" y="177" text-anchor="middle" fill="#E74C3C" font-size="15" font-weight="800">4</text></g>
+      <g class="hide s5-score3"><circle cx="390" cy="172" r="16" fill="#E8F5E9" stroke="#27AE60" stroke-width="1.5"/><text x="390" y="177" text-anchor="middle" fill="#27AE60" font-size="14" font-weight="700">8</text></g>
+      <g class="hide s5-score4"><circle cx="520" cy="172" r="16" fill="#FEF9E7" stroke="#F39C12" stroke-width="1.5"/><text x="520" y="177" text-anchor="middle" fill="#F39C12" font-size="14" font-weight="700">5</text></g>
+      <g class="hide s5-score5"><circle cx="650" cy="172" r="16" fill="#FEF9E7" stroke="#F39C12" stroke-width="1.5"/><text x="650" y="177" text-anchor="middle" fill="#F39C12" font-size="14" font-weight="700">5</text></g>
+      <g class="hide s5-score6"><circle cx="780" cy="172" r="16" fill="#E8F5E9" stroke="#27AE60" stroke-width="1.5"/><text x="780" y="177" text-anchor="middle" fill="#27AE60" font-size="14" font-weight="700">7</text></g>
+
+      <!-- Labels under each -->
+      <g class="hide s5-label">
+        <text x="130" y="282" text-anchor="middle" fill="#E74C3C" font-size="8" font-weight="600">SEC</text>
+        <text x="260" y="282" text-anchor="middle" fill="#8E44AD" font-size="8" font-weight="600">STAT</text>
+        <text x="390" y="282" text-anchor="middle" fill="#27AE60" font-size="8" font-weight="600">PERF</text>
+        <text x="520" y="282" text-anchor="middle" fill="#E67E22" font-size="8" font-weight="600">DATA</text>
+        <text x="650" y="282" text-anchor="middle" fill="#1ABC9C" font-size="8" font-weight="600">PIPE</text>
+        <text x="780" y="282" text-anchor="middle" fill="#5D6D7E" font-size="8" font-weight="600">MAINT</text>
+      </g>
+
+      <g class="hide s5-submitted">
+        <text x="480" y="310" text-anchor="middle" fill="#7F8C8D" font-size="11" font-style="italic">Blind final scores submitted.</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- ═══ SCENE 6: VERIFY (17-19s) ═══ -->
+  <g class="hide s6-in">
+    <g class="s6-out" style="opacity:1;">
+      <text x="480" y="145" text-anchor="middle" fill="#D35400" font-size="12" font-weight="700">CLAIM VERIFICATION</text>
+
+      <!-- Auditor character -->
+      <g transform="translate(260, 165) scale(0.65)">
+        <path d="M16,0 C24,-1 30,4 32,12 C34,22 30,30 22,32 C14,34 6,28 4,18 C2,6 8,1 16,0Z" fill="#FFDBB8" stroke="#2C3E50" stroke-width="1.8"/>
+        <path d="M6,10 C4,2 12,-2 22,-1 C30,0 34,6 32,10 C30,6 24,3 18,4 C10,5 8,8 6,10Z" fill="#D35400" stroke="#2C3E50" stroke-width="1"/>
+        <circle cx="13" cy="14" r="2.5" fill="#2C3E50"/><circle cx="27" cy="14" r="2.5" fill="#2C3E50"/>
+        <line x1="14" y1="24" x2="26" y2="24" stroke="#2C3E50" stroke-width="2" stroke-linecap="round"/>
+        <ellipse cx="20" cy="50" rx="13" ry="15" fill="#D35400" stroke="#2C3E50" stroke-width="1.5"/>
+        <path d="M34,42 C40,38 42,34 42,30" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+        <rect x="36" y="18" width="18" height="22" rx="2" fill="#FFF" stroke="#D35400" stroke-width="1.5"/>
+        <rect x="40" y="15" width="10" height="5" rx="2" fill="#D35400"/>
+        <path d="M6,44 C0,50 -2,56 0,60" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M14,64 L10,80" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M26,64 L30,80" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+        <ellipse cx="8" cy="82" rx="6" ry="3" fill="#2C3E50"/>
+        <ellipse cx="32" cy="82" rx="6" ry="3" fill="#2C3E50"/>
+      </g>
+      <text x="273" y="240" text-anchor="middle" fill="#D35400" font-size="9" font-weight="700">Auditor</text>
+
+      <!-- Checklist -->
+      <g class="hide s6-check1" transform="translate(420, 180)">
+        <text x="0" y="0" fill="#27AE60" font-size="16" font-weight="700">&#x2713;</text>
+        <text x="22" y="0" fill="#2C3E50" font-size="12">12/14 citations</text>
+        <rect x="160" y="-14" width="76" height="20" rx="4" fill="#E8F5E9" stroke="#27AE60" stroke-width="1"/>
+        <text x="198" y="1" text-anchor="middle" fill="#27AE60" font-size="10" font-weight="700">VERIFIED</text>
+      </g>
+      <g class="hide s6-check2" transform="translate(420, 210)">
+        <text x="0" y="0" fill="#E74C3C" font-size="16" font-weight="700">&#x2717;</text>
+        <text x="22" y="0" fill="#2C3E50" font-size="12">1 citation</text>
+        <rect x="120" y="-14" width="96" height="20" rx="4" fill="#FDEDEC" stroke="#E74C3C" stroke-width="1"/>
+        <text x="168" y="1" text-anchor="middle" fill="#E74C3C" font-size="10" font-weight="700">INACCURATE</text>
+      </g>
+      <g class="hide s6-check3" transform="translate(420, 240)">
+        <text x="0" y="0" fill="#F39C12" font-size="16" font-weight="700">?</text>
+        <text x="22" y="0" fill="#2C3E50" font-size="12">1 citation</text>
+        <rect x="120" y="-14" width="110" height="20" rx="4" fill="#FEF9E7" stroke="#F39C12" stroke-width="1"/>
+        <text x="175" y="1" text-anchor="middle" fill="#F39C12" font-size="10" font-weight="700">UNVERIFIABLE</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- ═══ SCENE 7: SUPREME JUDGE VERDICT (19-23s) ═══ -->
+  <g class="hide s7-in">
+    <!-- Judge character (center, larger) -->
+    <g transform="translate(280, 130) scale(0.9)">
+      <path d="M20,0 C30,-2 38,4 40,14 C42,26 36,36 26,38 C16,40 6,32 4,20 C2,8 10,2 20,0Z" fill="#FFDBB8" stroke="#2C3E50" stroke-width="1.8"/>
+      <path d="M6,16 C4,4 16,-4 28,-2 C38,0 44,8 42,16 C40,8 32,4 22,4 C12,4 8,10 6,16Z" fill="#95A5A6" stroke="#2C3E50" stroke-width="1.2"/>
+      <rect x="12" y="16" width="8" height="4" rx="2" fill="#2C3E50"/>
+      <rect x="26" y="16" width="8" height="4" rx="2" fill="#2C3E50"/>
+      <line x1="16" y1="28" x2="30" y2="28" stroke="#2C3E50" stroke-width="1.5" stroke-linecap="round"/>
+      <path d="M8,40 C4,38 -2,46 0,62 L4,78 Q22,84 40,78 L44,62 C46,46 40,38 36,40 Q22,44 8,40Z" fill="#2C3E50" stroke="#1A252F" stroke-width="1.5"/>
+      <path d="M12,40 C16,44 28,44 32,40" fill="none" stroke="#34495E" stroke-width="2"/>
+      <!-- Gavel raised -->
+      <g class="s7-gavel-up" style="opacity:1;">
+        <path d="M36,44 C46,36 54,24 56,16" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+        <rect x="50" y="8" width="16" height="10" rx="2" fill="#A0782C" stroke="#8B6914" stroke-width="1.2"/>
+      </g>
+      <!-- Gavel down -->
+      <g class="hide s7-gavel-down">
+        <path d="M36,44 C44,48 50,52 54,56" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+        <rect x="48" y="52" width="16" height="10" rx="2" fill="#A0782C" stroke="#8B6914" stroke-width="1.2"/>
+      </g>
+      <path d="M8,44 C-2,50 -4,58 -2,66" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M16,76 L14,90" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M28,76 L30,90" fill="none" stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+      <ellipse cx="12" cy="92" rx="7" ry="3" fill="#1A252F"/>
+      <ellipse cx="32" cy="92" rx="7" ry="3" fill="#1A252F"/>
+    </g>
+    <text x="300" y="255" text-anchor="middle" fill="#2C3E50" font-size="11" font-weight="700">Supreme Judge</text>
+
+    <!-- Impact burst -->
+    <g class="hide s7-impact" transform="translate(340, 185)">
+      <line x1="0" y1="0" x2="-12" y2="-8" stroke="#F39C12" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="0" y1="0" x2="14" y2="-6" stroke="#F39C12" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="0" y1="0" x2="-8" y2="10" stroke="#F39C12" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="0" y1="0" x2="10" y2="12" stroke="#F39C12" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="0" y1="0" x2="0" y2="-14" stroke="#F39C12" stroke-width="2.5" stroke-linecap="round"/>
+    </g>
+
+    <!-- Verdict box -->
+    <g class="hide s7-box" transform="translate(480, 140)">
+      <rect width="340" height="120" rx="8" fill="#0D1117" stroke="#388BFD" stroke-width="2" filter="url(#glow)"/>
+      <g class="hide s7-v1">
+        <text x="20" y="32" fill="#CDD6F4" font-size="13" font-weight="700" font-family="monospace">VERDICT:</text>
+        <rect x="110" y="16" width="72" height="22" rx="4" fill="#E74C3C"/>
+        <text x="146" y="32" text-anchor="middle" fill="#FFF" font-size="11" font-weight="700">REVISE</text>
+      </g>
+      <g class="hide s7-v2">
+        <text x="20" y="62" fill="#CDD6F4" font-size="12" font-family="monospace">Consensus: <tspan fill="#E74C3C" font-weight="700">5.8</tspan>/10</text>
+      </g>
+      <g class="hide s7-v3">
+        <text x="20" y="88" fill="#A6ADC8" font-size="11" font-family="monospace">Top: stratified split +</text>
+        <text x="20" y="105" fill="#A6ADC8" font-size="11" font-family="monospace">     input validation</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- ═══ SCENE 8: HOLD + zzZ (23-25s) ═══ -->
+  <g class="hide s8-zzz" transform="translate(860, 340)">
+    <text fill="#B8B0A4" font-size="14" font-weight="700">z</text>
+    <text x="12" y="-8" fill="#B8B0A4" font-size="18" font-weight="700">Z</text>
+    <text x="26" y="-18" fill="#B8B0A4" font-size="22" font-weight="700">Z</text>
+  </g>
+  <g class="hide s8-caption">
+    <text x="480" y="440" text-anchor="middle" fill="#B8B0A4" font-size="14" font-style="italic">all while you sleep</text>
+  </g>
+  <g class="hide s8-footer">
+    <text x="480" y="510" text-anchor="middle" fill="#D5CFC6" font-size="10">agent-review-panel — multi-agent adversarial review for Claude Code</text>
+  </g>
+
+</svg>
