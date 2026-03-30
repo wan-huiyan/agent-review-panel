@@ -4,8 +4,19 @@
 
 A Claude Code skill that orchestrates multi-agent adversarial review panels. Multiple AI reviewers with distinct personas independently evaluate your work, debate each other's findings, then a supreme judge renders the final verdict — all compiled into a structured report for human review.
 
-![Agent Review Panel — debate flow](docs/demo-flow.png)
-*Example: 4-6 reviewers independently review an ML pipeline, debate each other's findings, then a completeness auditor and supreme judge weigh in.*
+[![Agent Review Panel — pipeline architecture](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/hero-flow.svg?v=1)](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/hero-flow.svg?v=1)
+
+[![Agent Review Panel demo](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/demo.gif?v=1)](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/demo.gif?v=1)
+
+<details>
+<summary>See full terminal screenshot (click to expand)</summary>
+
+![Agent Review Panel — terminal demo](docs/demo-flow.png)
+*4-6 reviewers independently review an ML pipeline, debate each other's findings, then a completeness auditor and supreme judge weigh in.*
+
+> To re-record the GIF demo: `./docs/record-demo.sh` (requires [VHS](https://github.com/charmbracelet/vhs) or asciinema)
+
+</details>
 
 ## Why This Exists
 
@@ -22,9 +33,9 @@ A Claude Code skill that orchestrates multi-agent adversarial review panels. Mul
 | Cross-reviewer debate & engagement | Reviewers respond to each other's specific points across 1-3 rounds |
 | Anti-groupthink blind assessment | Final scores given without seeing others' finals — prevents conformity |
 | Post-debate completeness audit | Dedicated agent re-reads source line-by-line after debate to catch what everyone missed |
-| Claim verification (Phase 4.6) | Verifies all reviewer line-number citations against actual source — catches hallucinated findings |
-| Severity verification (Phase 4.7) | Reads actual code for every P0/P1 finding — catches overstated severity |
-| Verification commands (Phase 4.55) | Runs grep/read commands from reviewers to confirm or contradict P0/P1 claims |
+| Claim verification (Phase 9) | Verifies all reviewer line-number citations against actual source — catches hallucinated findings |
+| Severity verification (Phase 10) | Reads actual code for every P0/P1 finding — catches overstated severity |
+| Verification commands (Phase 8) | Runs grep/read commands from reviewers to confirm or contradict P0/P1 claims |
 | Epistemic labels on findings | Every finding tagged [VERIFIED], [CONSENSUS], [SINGLE-SOURCE], [UNVERIFIED], or [DISPUTED] |
 | Defect classification | Findings labeled [EXISTING_DEFECT] or [PLAN_RISK] — P0 requires existing defect evidence |
 | Scope & limitations disclosure | Every report states what the panel cannot evaluate — prevents over-trust |
@@ -33,8 +44,8 @@ A Claude Code skill that orchestrates multi-agent adversarial review panels. Mul
 | Auto-persona from content signals | 10 signal groups with keyword detection add domain specialists up to 6 reviewers |
 | Auto Precise/Exhaustive mode | Code → require line citations; plans → allow broader risk identification. Auto-detected. |
 | Source-grounded debate | Disputed points include inline source code snippets — keeps debate anchored to reality |
-| Context gathering (Phase 1) | Auto-scans sibling directories for docs, traces imports/references, discovers safety mechanisms, asks user about gaps |
-| Tiered knowledge mining (Phase 1) | L0/L1/L2 loading: scans index lines first, then summaries, then full content only for relevant items — reduces token waste by ~80% vs flat reads |
+| Context gathering (Phase 1-2) | Auto-scans sibling directories for docs, traces imports/references, discovers safety mechanisms, asks user about gaps |
+| Tiered knowledge mining (Phase 1-2) | L0/L1/L2 loading: scans index lines first, then summaries, then full content only for relevant items — reduces token waste by ~80% vs flat reads |
 | Built-in domain checklists | 10 signal groups get pre-built review checklists (ML, SQL, Pipeline, Cost, etc.) — zero-latency domain expertise |
 | VoltAgent specialist agents | Optional upgrade: 127+ specialist agents across 10 families replace generic persona-prompted reviewers for deeper domain reviews |
 | Absent-safeguard check (judge) | Judge verifies [CRITICAL] recommendations account for existing safety mechanisms before endorsing |
@@ -49,20 +60,21 @@ The skill doesn't just find *more* issues — it **structures** them. You get co
 
 ## How It Works
 
-```
-Phase 1     Context & Setup        Scan sibling dirs, trace references, discover safeguards, select personas
-Phase 2     Independent Review     4-6 reviewers evaluate in parallel (no cross-talk)
-Phase 2.5   Private Reflection     Each reviewer re-reads and rates own confidence
-Phase 3     Debate (1-3 rounds)    Reviewers engage with each other + find new issues
-Phase 3.5   Summarize              Distill resolved/unresolved points between rounds
-Phase 4     Blind Final            Each reviewer gives final score independently
-Phase 4.5   Completeness Audit     Dedicated agent scans for what the panel missed
-Phase 4.55  Verify Commands        Run reviewer grep/read commands for P0/P1 findings (advisory)
-Phase 4.6   Claim Verification     Verify all line-number citations against source
-Phase 4.7   Severity Verification  Read actual code for every P0/P1 — downgrade if overstated
-Phase 5     Supreme Judge          Opus arbitrates everything including verification results
-Phase 6     Document               Structured markdown report for human review
-```
+| Stage          | Phase | Action                                                          |
+|----------------|-------|-----------------------------------------------------------------|
+| **Gather**     | 1.    | Context & Setup — scan sibling dirs, trace references, discover safeguards |
+|                | 2.    | Detect Specialists — signal detection, persona selection, knowledge mining |
+| **Review**     | 3.    | Independent Review — 4-6 reviewers evaluate in parallel (no cross-talk) |
+|                | 4.    | Private Reflection — each reviewer re-reads and rates own confidence |
+| **Debate**     | 5.    | Adversarial Debate (1-3 rounds) — reviewers engage + find new issues |
+|                | 6.    | Summarize — distill resolved/unresolved points between rounds |
+|                | 7.    | Blind Final — each reviewer gives final score independently |
+| **Verify**     | 8.    | Verify Commands — run reviewer grep/read commands for P0/P1 findings (advisory) |
+|                | 9.    | Claim Verification — verify all line-number citations against source |
+|                | 10.   | Severity Verification — read actual code for every P0/P1; downgrade if overstated |
+|                | 11.   | Completeness Audit — dedicated agent scans for what the panel missed |
+| **Adjudicate** | 12.   | Supreme Judge — Opus arbitrates everything including verification results |
+|                | 13.   | Document — structured markdown report for human review |
 
 ## What Makes This Different from "Just Asking Claude to Review"
 
@@ -84,10 +96,10 @@ This isn't possible with a single agent.
 
 The panel doesn't just find issues — it verifies them through multiple independent mechanisms:
 
-- **Completeness Auditor** — a post-debate agent re-reads the source line-by-line to find what every reviewer missed
-- **Claim Verification** (Phase 4.6) — checks every line-number citation against actual source; classifies as [VERIFIED], [INACCURATE], [MISATTRIBUTED], [HALLUCINATED], or [UNVERIFIABLE]
-- **Severity Verification** (Phase 4.7) — reads actual code for every P0/P1 finding; v2.6 benchmark showed 2/3 P0 findings were overstated
-- **Verification Commands** (Phase 4.55) — runs reviewer-provided grep/read commands to confirm or contradict claims
+- **Completeness Auditor** (Phase 11) — a post-debate agent re-reads the source line-by-line to find what every reviewer missed
+- **Claim Verification** (Phase 9) — checks every line-number citation against actual source; classifies as [VERIFIED], [INACCURATE], [MISATTRIBUTED], [HALLUCINATED], or [UNVERIFIABLE]
+- **Severity Verification** (Phase 10) — reads actual code for every P0/P1 finding; v2.6 benchmark showed 2/3 P0 findings were overstated
+- **Verification Commands** (Phase 8) — runs reviewer-provided grep/read commands to confirm or contradict claims
 - **Absent-safeguard check** — judge verifies that [CRITICAL] recommendations account for existing safety mechanisms
 
 ### 3. Anti-Groupthink Mechanisms
@@ -200,7 +212,7 @@ git clone https://github.com/wan-huiyan/agent-review-panel.git ~/.cursor/skills/
 
 > **Cursor adaptation note:** This skill was written for Claude Code's **Agent tool** (6+ subagent calls with parallel spawn, model selection, etc.). Cursor has its own subagent/task mechanism (e.g. `mcp_task`), but the full panel flow isn't guaranteed without adaptation — differences in parallel spawning, prompt shape, and model selection (e.g. `model: "opus"`) may affect behavior.
 >
-> **Adapting for Cursor:** The core pattern is straightforward — one subagent/task per reviewer in Phase 2, collect results, then one per reviewer in Phase 3 (debate), then single agents for the completeness audit and judge. If you adapt it, PRs are welcome!
+> **Adapting for Cursor:** The core pattern is straightforward — one subagent/task per reviewer in the Review stage (Phases 3-4), collect results, then one per reviewer in the Debate stage (Phases 5-7), then single agents for the Verify and Adjudicate stages. If you adapt it, PRs are welcome!
 
 ## Tests
 
