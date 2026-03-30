@@ -13,5 +13,8 @@
     "test:golden": "node --test tests/golden-file.test.mjs",
     "test:golden:update": "UPDATE_GOLDEN=1 node --test tests/golden-file.test.mjs"
   },
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "puppeteer": "^24.40.0"
+  }
 }
