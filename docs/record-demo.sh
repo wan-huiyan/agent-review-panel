@@ -72,17 +72,7 @@ record_with_asciinema() {
     cat > "$script_file" << 'DEMO'
 #!/usr/bin/env bash
 # Simulated demo output — not a real Claude session.
-prompt() { printf '\033[1;35m❯\033[0m '; }
-
-prompt
-sleep 0.5
-echo "claude"
-sleep 0.8
-echo ""
-prompt
-sleep 0.3
-echo "Review this ML pipeline from multiple perspectives: pipeline.py"
-sleep 1.2
+# Start directly with skill output (no claude launch)
 
 echo ""
 echo "━━━ Gather: Context Scan & Persona Selection ━━━"
