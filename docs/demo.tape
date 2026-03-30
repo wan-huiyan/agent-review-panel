@@ -19,12 +19,25 @@ Set Height 540
 Set Framerate 15
 Set Theme "Catppuccin Mocha"
 Set Padding 20
-Set TypingSpeed 0
+Set WindowBar "Colorful"
+Set WindowBarSize 40
 
-# --- Start directly with skill output (no claude launch) ---
+# --- User prompt ---
+Set TypingSpeed 30ms
 Sleep 500ms
+Type "claude 'Review this ML pipeline from multiple perspectives: pipeline.py'"
+Sleep 300ms
+Enter
+Sleep 2s
 
-# --- Gather Stage (Phases 1-2): Context Scan & Persona Selection ---
+# --- All output via a single script to avoid shell interpretation ---
+Set TypingSpeed 0
+Type "cat << 'DEMO_EOF'"
+Enter
+Sleep 100ms
+
+Type ""
+Enter
 Type "━━━ Gather: Context Scan & Persona Selection ━━━"
 Enter
 Sleep 1s
@@ -33,7 +46,6 @@ Type ""
 Enter
 Type "Scanning context... detected signals:"
 Enter
-Sleep 700ms
 Type "  ● ML/Statistics (7)  ● SQL (4)  ● Data Pipeline (3)"
 Enter
 Sleep 1s
@@ -42,7 +54,6 @@ Type ""
 Enter
 Type "Auto-adding personas:"
 Enter
-Sleep 500ms
 Type "  ✦ Statistical Rigor Reviewer"
 Enter
 Sleep 350ms
@@ -59,7 +70,6 @@ Type "Mining knowledge: 3 feedback memories, 2 project lessons found"
 Enter
 Sleep 1.5s
 
-# --- Review Stage (Phases 3-4): Independent Review ---
 Type ""
 Enter
 Type "━━━ Review: Independent Review ━━━"
@@ -72,8 +82,6 @@ Type "Launching 6 independent reviewers in parallel..."
 Enter
 Sleep 1.2s
 
-Type ""
-Enter
 Type "  [1/6] Security Reviewer         ▸ found 2 issues (1 high)"
 Enter
 Sleep 500ms
@@ -93,7 +101,6 @@ Type "  [6/6] Maintainability Reviewer   ▸ found 1 issue  (0 high)"
 Enter
 Sleep 1.5s
 
-# --- Debate Stage (Phases 5-7): Adversarial Debate ---
 Type ""
 Enter
 Type "━━━ Debate: Adversarial Debate ━━━"
@@ -123,63 +130,56 @@ Type "                     unprotected. Upgrading to HIGH."
 Enter
 Sleep 1.5s
 
-# --- Debate Stage continued: Blind Scoring ---
 Type ""
 Enter
 Type "━━━ Debate: Blind Final Scoring ━━━"
 Enter
 Sleep 1s
 
-Type ""
-Enter
 Type "Blind final scores submitted."
 Enter
 Sleep 700ms
-
 Type "  Security: 6/10 | Stat Rigor: 4/10 | Perf: 8/10"
 Enter
 Type "  Data Quality: 5/10 | Safety: 5/10 | Maintain: 7/10"
 Enter
 Sleep 1.2s
 
-# --- Verify Stage (Phases 8-9): Audit & Claim Verification ---
 Type ""
 Enter
 Type "━━━ Verify: Audit & Claim Verification ━━━"
 Enter
 Sleep 1s
 
-Type ""
-Enter
 Type "Claim verification: 12/14 citations [VERIFIED]"
 Enter
 Type "                     1 [INACCURATE]  1 [UNVERIFIABLE]"
 Enter
 Sleep 1.5s
 
-# --- Adjudicate Stage (Phases 10-11): Supreme Judge Verdict ---
 Type ""
 Enter
 Type "━━━ Adjudicate: Supreme Judge Verdict ━━━"
 Enter
 Sleep 1s
 
-Type ""
-Enter
 Type "Supreme Judge rendering verdict..."
 Enter
 Sleep 1.5s
 
 Type ""
 Enter
-Type "╔══════════════════════════════════════════════════════╗"
+Type "+------------------------------------------------------+"
 Enter
-Type "║  VERDICT: REVISE - 3 blocking issues identified      ║"
+Type "|  VERDICT: REVISE - 3 blocking issues identified      |"
 Enter
-Type "║  Consensus score: 5.8 / 10                          ║"
+Type "|  Consensus score: 5.8 / 10                           |"
 Enter
-Type "║  Top action: add stratified split + input validation ║"
+Type "|  Top action: add stratified split + input validation  |"
 Enter
-Type "╚══════════════════════════════════════════════════════╝"
+Type "+------------------------------------------------------+"
+Enter
+
+Type "DEMO_EOF"
 Enter
 Sleep 3s
