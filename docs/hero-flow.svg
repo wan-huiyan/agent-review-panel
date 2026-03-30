@@ -173,19 +173,20 @@
   <rect x="156" y="232" width="136" height="118" rx="8" fill="url(#cardSheen)" stroke="#30363d" stroke-width="1"/>
   <rect x="156" y="232" width="136" height="3" rx="2" fill="#bc8cff"/>
   <!-- Phase label -->
-  <text x="166" y="251" fill="#bc8cff" font-size="9" font-weight="700" letter-spacing="0.5">DEBATE</text>
-  <text x="166" y="264" fill="#e6edf3" font-size="10.5" font-weight="600">Blind Finals</text>
-  <!-- Blindfold / hidden eye icon -->
-  <!-- Eye outline -->
-  <ellipse cx="224" cy="290" rx="18" ry="11" fill="none" stroke="#bc8cff" stroke-width="1.5"/>
-  <!-- Strikethrough / blindfold bar -->
-  <line x1="206" y1="280" x2="242" y2="300" stroke="#bc8cff" stroke-width="2.5" stroke-linecap="round"/>
-  <!-- Pupil (dimmed) -->
-  <circle cx="224" cy="290" r="5" fill="none" stroke="#bc8cff" stroke-width="1" opacity="0.4"/>
-  <!-- Sub-text -->
-  <text x="166" y="320" fill="#8b949e" font-size="8">Anti-groupthink</text>
-  <text x="166" y="331" fill="#8b949e" font-size="8">scoring — reviewers</text>
-  <text x="166" y="342" fill="#8b949e" font-size="8">score independently</text>
+  <text x="224" y="251" text-anchor="middle" fill="#bc8cff" font-size="9" font-weight="700" letter-spacing="0.5">DEBATE</text>
+  <text x="224" y="264" text-anchor="middle" fill="#e6edf3" font-size="10.5" font-weight="600">Blind Finals</text>
+  <!-- Blindfold / hidden eye icon (centered) -->
+  <ellipse cx="224" cy="286" rx="16" ry="10" fill="none" stroke="#bc8cff" stroke-width="1.5"/>
+  <circle cx="224" cy="286" r="5" fill="none" stroke="#bc8cff" stroke-width="1" opacity="0.4"/>
+  <line x1="208" y1="276" x2="240" y2="296" stroke="#bc8cff" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Sub-text (centered, full width) -->
+  <text x="224" y="312" text-anchor="middle" fill="#8b949e" font-size="8">Anti-groupthink scoring</text>
+  <text x="224" y="323" text-anchor="middle" fill="#8b949e" font-size="8">Reviewers score independently</text>
+  <!-- Badges (matching sibling cards) -->
+  <rect x="168" y="334" width="48" height="12" rx="2" fill="#161b22" stroke="#bc8cff" stroke-width="0.8"/>
+  <text x="192" y="343" text-anchor="middle" fill="#bc8cff" font-size="6.5" font-weight="700">PRIVATE</text>
+  <rect x="222" y="334" width="52" height="12" rx="2" fill="#161b22" stroke="#d29922" stroke-width="0.8"/>
+  <text x="248" y="343" text-anchor="middle" fill="#d29922" font-size="6.5" font-weight="700">NO BIAS</text>
 
   <!-- Arrow: phase 4 → phase 4.5 -->
   <line x1="292" y1="291" x2="308" y2="291" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arrowGray)"/>
@@ -193,22 +194,19 @@
   <!-- ─── PHASE 4.5–4.6: Audit & Verify ─── -->
   <rect x="312" y="232" width="148" height="118" rx="8" fill="url(#cardSheen)" stroke="#30363d" stroke-width="1"/>
   <rect x="312" y="232" width="148" height="3" rx="2" fill="#3fb950"/>
-  <text x="322" y="251" fill="#3fb950" font-size="9" font-weight="700" letter-spacing="0.5">VERIFY</text>
-  <text x="322" y="264" fill="#e6edf3" font-size="10.5" font-weight="600">Audit &amp; Verify</text>
-  <!-- Shield + checkmark icon -->
-  <path d="M390,274 L390,274 L376,274 L376,295 Q376,305 386,310 Q396,305 396,295 L396,274 Z" fill="none" stroke="#3fb950" stroke-width="1.8"/>
-  <!-- Check inside shield -->
-  <polyline points="380,292 384,297 393,283" fill="none" stroke="#3fb950" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-  <!-- Sub-text -->
-  <text x="322" y="296" fill="#8b949e" font-size="7.5">Completeness</text>
-  <text x="322" y="307" fill="#8b949e" font-size="7.5">audit + claim</text>
-  <text x="322" y="318" fill="#8b949e" font-size="7.5">verification</text>
-  <!-- Verified badge -->
-  <rect x="322" y="326" width="52" height="14" rx="3" fill="#1a3128" stroke="#3fb950" stroke-width="1"/>
-  <text x="348" y="336" text-anchor="middle" fill="#3fb950" font-size="7.5" font-weight="700">VERIFIED</text>
-  <!-- Critical badge -->
-  <rect x="380" y="326" width="46" height="14" rx="3" fill="#2d1a1f" stroke="#f85149" stroke-width="1"/>
-  <text x="403" y="336" text-anchor="middle" fill="#f85149" font-size="7.5" font-weight="700">CRITICAL</text>
+  <text x="386" y="251" text-anchor="middle" fill="#3fb950" font-size="9" font-weight="700" letter-spacing="0.5">VERIFY</text>
+  <text x="386" y="264" text-anchor="middle" fill="#e6edf3" font-size="10.5" font-weight="600">Audit &amp; Verify</text>
+  <!-- Shield + checkmark icon (centered) -->
+  <path d="M386,272 L374,276 L374,288 Q374,298 386,302 Q398,298 398,288 L398,276 Z" fill="none" stroke="#3fb950" stroke-width="1.8"/>
+  <polyline points="379,286 384,292 393,279" fill="none" stroke="#3fb950" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Sub-text (centered, full width) -->
+  <text x="386" y="316" text-anchor="middle" fill="#8b949e" font-size="8">Completeness audit</text>
+  <text x="386" y="327" text-anchor="middle" fill="#8b949e" font-size="8">+ claim verification</text>
+  <!-- Badges (centered) -->
+  <rect x="330" y="334" width="52" height="14" rx="3" fill="#1a3128" stroke="#3fb950" stroke-width="1"/>
+  <text x="356" y="344" text-anchor="middle" fill="#3fb950" font-size="7.5" font-weight="700">VERIFIED</text>
+  <rect x="388" y="334" width="46" height="14" rx="3" fill="#2d1a1f" stroke="#f85149" stroke-width="1"/>
+  <text x="411" y="344" text-anchor="middle" fill="#f85149" font-size="7.5" font-weight="700">CRITICAL</text>
 
   <!-- Arrow: phase 4.5 → phase 5 -->
   <line x1="460" y1="291" x2="476" y2="291" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arrowGray)"/>
@@ -216,32 +214,31 @@
   <!-- ─── PHASE 5: Supreme Judge ─── -->
   <rect x="480" y="232" width="130" height="118" rx="8" fill="url(#judgeSheen)" stroke="#388bfd" stroke-width="1.5" filter="url(#glow)"/>
   <rect x="480" y="232" width="130" height="3" rx="2" fill="#388bfd"/>
-  <text x="490" y="251" fill="#58a6ff" font-size="9" font-weight="700" letter-spacing="0.5">ADJUDICATE</text>
-  <text x="490" y="264" fill="#e6edf3" font-size="10.5" font-weight="600">Supreme Judge</text>
-  <!-- Scales of justice icon -->
-  <!-- Center pillar -->
-  <line x1="545" y1="275" x2="545" y2="303" stroke="#58a6ff" stroke-width="2" stroke-linecap="round"/>
-  <!-- Base -->
-  <line x1="537" y1="303" x2="553" y2="303" stroke="#58a6ff" stroke-width="2" stroke-linecap="round"/>
-  <!-- Balance beam (tilted slightly for visual interest) -->
-  <line x1="527" y1="279" x2="563" y2="275" stroke="#58a6ff" stroke-width="2" stroke-linecap="round"/>
+  <text x="545" y="251" text-anchor="middle" fill="#58a6ff" font-size="9" font-weight="700" letter-spacing="0.5">ADJUDICATE</text>
+  <text x="545" y="264" text-anchor="middle" fill="#e6edf3" font-size="10.5" font-weight="600">Supreme Judge</text>
+  <!-- Scales of justice icon (centered) -->
+  <!-- Vertical pillar -->
+  <line x1="545" y1="272" x2="545" y2="300" stroke="#58a6ff" stroke-width="2" stroke-linecap="round"/>
+  <!-- Horizontal beam -->
+  <line x1="530" y1="276" x2="560" y2="276" stroke="#58a6ff" stroke-width="2" stroke-linecap="round"/>
   <!-- Left pan -->
-  <line x1="527" y1="279" x2="523" y2="290" stroke="#58a6ff" stroke-width="1.2"/>
-  <line x1="527" y1="279" x2="531" y2="290" stroke="#58a6ff" stroke-width="1.2"/>
-  <path d="M522,290 Q527,294 532,290" fill="none" stroke="#58a6ff" stroke-width="1.2"/>
+  <line x1="530" y1="276" x2="527" y2="286" stroke="#58a6ff" stroke-width="1.5"/>
+  <line x1="530" y1="276" x2="533" y2="286" stroke="#58a6ff" stroke-width="1.5"/>
+  <path d="M525,286 Q530,292 535,286" fill="none" stroke="#58a6ff" stroke-width="1.5"/>
   <!-- Right pan -->
-  <line x1="563" y1="275" x2="559" y2="286" stroke="#58a6ff" stroke-width="1.2"/>
-  <line x1="563" y1="275" x2="567" y2="286" stroke="#58a6ff" stroke-width="1.2"/>
-  <path d="M558,286 Q563,290 568,286" fill="none" stroke="#58a6ff" stroke-width="1.2"/>
-  <!-- Sub-text -->
-  <text x="490" y="310" fill="#8b949e" font-size="7.5">Opus arbitrates</text>
-  <text x="490" y="321" fill="#8b949e" font-size="7.5">with epistemic</text>
-  <text x="490" y="332" fill="#8b949e" font-size="7.5">labels</text>
-  <!-- Epistemic label chips -->
-  <rect x="490" y="338" width="40" height="12" rx="2" fill="#161b22" stroke="#d29922" stroke-width="0.8"/>
-  <text x="510" y="347" text-anchor="middle" fill="#d29922" font-size="6.5" font-weight="700">DISPUTED</text>
-  <rect x="535" y="338" width="36" height="12" rx="2" fill="#161b22" stroke="#3fb950" stroke-width="0.8"/>
-  <text x="553" y="347" text-anchor="middle" fill="#3fb950" font-size="6.5" font-weight="700">AGREED</text>
+  <line x1="560" y1="276" x2="557" y2="286" stroke="#58a6ff" stroke-width="1.5"/>
+  <line x1="560" y1="276" x2="563" y2="286" stroke="#58a6ff" stroke-width="1.5"/>
+  <path d="M555,286 Q560,292 565,286" fill="none" stroke="#58a6ff" stroke-width="1.5"/>
+  <!-- Base -->
+  <line x1="539" y1="300" x2="551" y2="300" stroke="#58a6ff" stroke-width="2" stroke-linecap="round"/>
+  <!-- Sub-text (centered, full width) -->
+  <text x="545" y="316" text-anchor="middle" fill="#8b949e" font-size="8">Opus arbitrates with</text>
+  <text x="545" y="327" text-anchor="middle" fill="#8b949e" font-size="8">epistemic labels</text>
+  <!-- Epistemic label chips (centered) -->
+  <rect x="494" y="334" width="44" height="12" rx="2" fill="#161b22" stroke="#d29922" stroke-width="0.8"/>
+  <text x="516" y="343" text-anchor="middle" fill="#d29922" font-size="6.5" font-weight="700">DISPUTED</text>
+  <rect x="544" y="334" width="40" height="12" rx="2" fill="#161b22" stroke="#3fb950" stroke-width="0.8"/>
+  <text x="564" y="343" text-anchor="middle" fill="#3fb950" font-size="6.5" font-weight="700">AGREED</text>
 
   <!-- Arrow: Phase 5 → Output -->
   <line x1="610" y1="291" x2="638" y2="291" stroke="#388bfd" stroke-width="1.8" marker-end="url(#arrowBlue)"/>

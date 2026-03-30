@@ -22,22 +22,23 @@ Set Padding 20
 Set WindowBar "Colorful"
 Set WindowBarSize 40
 
-# --- Start heredoc FIRST so nothing gets executed by shell ---
+# --- Sink stdin to /dev/null so nothing executes; terminal echo displays text ---
+# clear wipes the command line itself from view
 Set TypingSpeed 0
-Sleep 500ms
-Type "cat << 'DEMO_EOF'"
+Type "clear; cat > /dev/null"
 Enter
-Sleep 100ms
+Sleep 500ms
 
-# --- User prompt (typed with animation inside heredoc) ---
+# --- User prompt (typed with animation) ---
 Set TypingSpeed 30ms
-Type "Review this ML pipeline from multiple perspectives: pipeline.py"
+Type "Review this ML pipeline from multiple perspectives: src/pipeline/"
 Sleep 300ms
 Enter
 Sleep 2s
 
-# --- Rest of output (fast) ---
+# --- Stage output (fast typing, paced with sleeps) ---
 Set TypingSpeed 0
+
 Type ""
 Enter
 Type "━━━ Gather: Context Scan & Persona Selection ━━━"
@@ -181,7 +182,4 @@ Type "|  Top action: add stratified split + input validation  |"
 Enter
 Type "+------------------------------------------------------+"
 Enter
-
-Type "DEMO_EOF"
-Enter
-Sleep 3s
+Sleep 6s
