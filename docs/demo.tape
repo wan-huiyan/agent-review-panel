@@ -26,4 +26,4 @@ Set WindowBarSize 40
 Set TypingSpeed 0
 Type "clear; bash docs/demo-output.sh"
 Enter
-Sleep 40s
+Sleep 60s
