@@ -22,20 +22,22 @@ Set Padding 20
 Set WindowBar "Colorful"
 Set WindowBarSize 40
 
-# --- User prompt (already inside Claude Code) ---
-Set TypingSpeed 30ms
+# --- Start heredoc FIRST so nothing gets executed by shell ---
+Set TypingSpeed 0
 Sleep 500ms
+Type "cat << 'DEMO_EOF'"
+Enter
+Sleep 100ms
+
+# --- User prompt (typed with animation inside heredoc) ---
+Set TypingSpeed 30ms
 Type "Review this ML pipeline from multiple perspectives: pipeline.py"
 Sleep 300ms
 Enter
 Sleep 2s
 
-# --- All output via a single script to avoid shell interpretation ---
+# --- Rest of output (fast) ---
 Set TypingSpeed 0
-Type "cat << 'DEMO_EOF'"
-Enter
-Sleep 100ms
-
 Type ""
 Enter
 Type "━━━ Gather: Context Scan & Persona Selection ━━━"

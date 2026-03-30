@@ -218,16 +218,21 @@
   <rect x="480" y="232" width="130" height="3" rx="2" fill="#388bfd"/>
   <text x="490" y="251" fill="#58a6ff" font-size="9" font-weight="700" letter-spacing="0.5">ADJUDICATE</text>
   <text x="490" y="264" fill="#e6edf3" font-size="10.5" font-weight="600">Supreme Judge</text>
-  <!-- Gavel icon (path-based for clean rendering) -->
-  <!-- Gavel head — horizontal rounded rectangle -->
-  <rect x="520" y="274" width="26" height="14" rx="3" fill="none" stroke="#58a6ff" stroke-width="2"/>
-  <!-- Handle — vertical line from center of head downward -->
-  <line x1="533" y1="288" x2="533" y2="306" stroke="#58a6ff" stroke-width="2.5" stroke-linecap="round"/>
-  <!-- Strike base — small horizontal line under handle -->
-  <line x1="525" y1="306" x2="541" y2="306" stroke="#58a6ff" stroke-width="2" stroke-linecap="round"/>
-  <!-- Motion lines -->
-  <line x1="515" y1="278" x2="510" y2="275" stroke="#58a6ff" stroke-width="1" opacity="0.4" stroke-linecap="round"/>
-  <line x1="515" y1="284" x2="510" y2="284" stroke="#58a6ff" stroke-width="1" opacity="0.4" stroke-linecap="round"/>
+  <!-- Scales of justice icon -->
+  <!-- Center pillar -->
+  <line x1="545" y1="275" x2="545" y2="303" stroke="#58a6ff" stroke-width="2" stroke-linecap="round"/>
+  <!-- Base -->
+  <line x1="537" y1="303" x2="553" y2="303" stroke="#58a6ff" stroke-width="2" stroke-linecap="round"/>
+  <!-- Balance beam (tilted slightly for visual interest) -->
+  <line x1="527" y1="279" x2="563" y2="275" stroke="#58a6ff" stroke-width="2" stroke-linecap="round"/>
+  <!-- Left pan -->
+  <line x1="527" y1="279" x2="523" y2="290" stroke="#58a6ff" stroke-width="1.2"/>
+  <line x1="527" y1="279" x2="531" y2="290" stroke="#58a6ff" stroke-width="1.2"/>
+  <path d="M522,290 Q527,294 532,290" fill="none" stroke="#58a6ff" stroke-width="1.2"/>
+  <!-- Right pan -->
+  <line x1="563" y1="275" x2="559" y2="286" stroke="#58a6ff" stroke-width="1.2"/>
+  <line x1="563" y1="275" x2="567" y2="286" stroke="#58a6ff" stroke-width="1.2"/>
+  <path d="M558,286 Q563,290 568,286" fill="none" stroke="#58a6ff" stroke-width="1.2"/>
   <!-- Sub-text -->
   <text x="490" y="310" fill="#8b949e" font-size="7.5">Opus arbitrates</text>
   <text x="490" y="321" fill="#8b949e" font-size="7.5">with epistemic</text>
