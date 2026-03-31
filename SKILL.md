@@ -24,7 +24,7 @@ description: >
   launching reviewers.
 ---
 
-# Agent Review Panel v2.9
+# Agent Review Panel v2.10
 
 A multi-agent adversarial review system based on nine research foundations:
 ChatEval (ICLR 2024), AutoGen, Du et al. (ICML 2024), MachineSoM (ACL 2024),
@@ -163,6 +163,48 @@ the #1 cause of incorrect [CRITICAL] recommendations.**
    how many instances of the excluded event exist in the date range and verify
    ALL are excluded, not just one."
 
+3c. **Codebase State Check (v2.10)** — When reviewing code that lives in a git
+   repository, determine the exact codebase state being reviewed. This prevents
+   the panel from flagging code as "missing" when it exists on main but not in
+   the reviewed branch/worktree.
+
+   **Why this matters:** In a real engagement, a 4-reviewer panel + completeness
+   auditor unanimously flagged a class as "non-existent" — but it existed on
+   `main` (merged via a PR after the worktree branched). All reviewers checked
+   the worktree files, none checked `main`. The finding was confidently wrong.
+
+   **Steps:**
+   ```bash
+   # 1. Detect if we're in a worktree
+   git rev-parse --is-inside-work-tree 2>/dev/null && \
+   WORKTREE=$(git rev-parse --show-toplevel) && \
+   BRANCH=$(git rev-parse --abbrev-ref HEAD)
+
+   # 2. Find the default branch (main or master)
+   DEFAULT_BRANCH=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@') || DEFAULT_BRANCH="main"
+
+   # 3. Find the branch point and count divergence
+   MERGE_BASE=$(git merge-base HEAD origin/$DEFAULT_BRANCH 2>/dev/null)
+   COMMITS_BEHIND=$(git rev-list --count HEAD..origin/$DEFAULT_BRANCH 2>/dev/null || echo "unknown")
+
+   # 4. List PRs/commits merged to main since branch point
+   git log --oneline $MERGE_BASE..origin/$DEFAULT_BRANCH 2>/dev/null | head -20
+   ```
+
+   **If commits_behind > 0:** Include a `[STALE_BRANCH]` warning in the context
+   brief listing what was merged to main since the branch point. Inject into ALL
+   reviewer prompts: "The code under review is {N} commits behind {default_branch}.
+   These changes were merged since: {list}. Before claiming code or features are
+   'missing', check whether they exist on {default_branch} via
+   `git show {default_branch}:{filepath}`."
+
+   **If in a git worktree specifically** (detected via `git worktree list`):
+   add extra emphasis — worktrees are commonly used for isolated development and
+   are especially prone to divergence from main.
+
+   **Record in Context Brief:** Add a "Codebase State" section with: branch name,
+   commits behind main, key PRs merged since branch point, worktree status.
+
 4. **Knowledge Mining (tiered loading)** — Mine local knowledge using a 3-tier
    approach to minimize token waste while maximizing relevant context:
 
@@ -195,9 +237,9 @@ the #1 cause of incorrect [CRITICAL] recommendations.**
    checklist already covers the signal group, web research is skipped unless
    explicitly requested.
 
-6. **Context Brief** — Compile into structured brief with sections: System
-   Documentation Found, Referenced Files, Safety Mechanisms, Knowledge Mining
-   Results, Web Research Findings, Domain Checklist, Context Gaps.
+6. **Context Brief** — Compile into structured brief with sections: Codebase
+   State, System Documentation Found, Referenced Files, Safety Mechanisms,
+   Knowledge Mining Results, Web Research Findings, Domain Checklist, Context Gaps.
 
 7. **User Confirmation** — If significant context gaps exist or deep research
    is available but not requested, ask before proceeding.
@@ -532,6 +574,8 @@ Write structured markdown report to `review_panel_report.md` (or user-specified 
 **Verdict:** {recommendation}  |  **Confidence:** {High|Medium|Low}
 **Auto-detected signals:** {list or "None — base set used"}
 **Review mode:** {Precise|Exhaustive|Mixed} (auto-detected from content type)
+**Codebase state:** {branch name} | {N commits behind {default_branch}} | {worktree: yes/no}
+{If stale: "⚠️ STALE BRANCH — {N} commits merged to {default_branch} since branch point. Findings about missing code should be verified against {default_branch}."}
 
 ## Executive Summary
 {Judge's verdict, 3-5 sentences. Score X/10.}
