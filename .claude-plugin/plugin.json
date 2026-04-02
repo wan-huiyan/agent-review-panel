@@ -1,7 +1,7 @@
 {
   "name": "agent-review-panel",
-  "version": "2.9.0",
-  "description": "Multi-agent adversarial review panel with debate, claim verification, severity verification, auto Precise/Exhaustive mode, tiered knowledge mining, structured domain checklists, and VoltAgent specialist agent integration",
+  "version": "2.10.0",
+  "description": "Multi-agent adversarial review panel — 4-6 AI reviewers debate your code/plans, then a judge delivers a structured verdict with epistemic labels",
   "author": {
     "name": "wan-huiyan",
     "url": "https://github.com/wan-huiyan"
