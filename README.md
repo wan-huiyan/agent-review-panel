@@ -1,7 +1,5 @@
-[![Version](https://img.shields.io/badge/version-2.10.0-blue)](https://github.com/wan-huiyan/agent-review-panel/releases) [![GitHub release](https://img.shields.io/github/v/release/wan-huiyan/agent-review-panel)](https://github.com/wan-huiyan/agent-review-panel/releases) [![Claude Code](https://img.shields.io/badge/Claude_Code-skill-orange)](https://claude.com/claude-code) [![license](https://img.shields.io/github/license/wan-huiyan/agent-review-panel)](LICENSE) [![last commit](https://img.shields.io/github/last-commit/wan-huiyan/agent-review-panel)](https://github.com/wan-huiyan/agent-review-panel/commits)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![GitHub release](https://img.shields.io/github/v/release/wan-huiyan/agent-review-panel)](https://github.com/wan-huiyan/agent-review-panel/releases) [![Claude Code](https://img.shields.io/badge/Claude_Code-skill-orange)](https://claude.com/claude-code) [![license](https://img.shields.io/github/license/wan-huiyan/agent-review-panel)](LICENSE) [![last commit](https://img.shields.io/github/last-commit/wan-huiyan/agent-review-panel)](https://github.com/wan-huiyan/agent-review-panel/commits)
 [![Tests](https://github.com/wan-huiyan/agent-review-panel/actions/workflows/test.yml/badge.svg)](https://github.com/wan-huiyan/agent-review-panel/actions/workflows/test.yml)
-[![Claude Code](https://img.shields.io/badge/Claude%20Code-skill-8A2BE2)](https://claude.ai/code)
 [![Research Papers](https://img.shields.io/badge/research%20foundations-9%20papers-orange)](#research-foundations)
 
 # Agent Review Panel
