@@ -1,125 +1,167 @@
+[![Version](https://img.shields.io/badge/version-2.10.0-blue)](https://github.com/wan-huiyan/agent-review-panel/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Tests](https://github.com/wan-huiyan/agent-review-panel/actions/workflows/test.yml/badge.svg)](https://github.com/wan-huiyan/agent-review-panel/actions/workflows/test.yml)
+[![Claude Code](https://img.shields.io/badge/Claude%20Code-skill-8A2BE2)](https://claude.ai/code)
+[![Research Papers](https://img.shields.io/badge/research%20foundations-9%20papers-orange)](#research-foundations)
+
 # Agent Review Panel
 
-[![Tests](https://github.com/wan-huiyan/agent-review-panel/actions/workflows/test.yml/badge.svg)](https://github.com/wan-huiyan/agent-review-panel/actions/workflows/test.yml)
+**Multiple AI reviewers independently evaluate your code, plans, or docs — then debate each other's findings. A judge renders the final verdict. You get a structured report with consensus, disagreements, and prioritized action items.**
 
-A Claude Code skill that orchestrates multi-agent adversarial review panels. Multiple AI reviewers with distinct personas independently evaluate your work, debate each other's findings, then a supreme judge renders the final verdict — all compiled into a structured report for human review.
+A [Claude Code](https://claude.ai/code) skill that orchestrates multi-agent adversarial review panels backed by [9 research papers](#research-foundations) on multi-agent debate.
 
 [![Agent Review Panel — pipeline architecture](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/hero-flow.svg?v=1)](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/hero-flow.svg?v=1)
 
 [![Agent Review Panel demo](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/demo.gif?v=1)](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/demo.gif?v=1)
 
-## Why This Exists
+## Quick Start
 
-**The single-reviewer problem:** When you ask Claude to "review this code" or "check this plan," you get one perspective. It's thorough, but it's one mind looking at one thing. It won't argue with itself. It won't catch its own blind spots. And it will never tell you "I'm not sure about this" the way a real team would.
+**Install:**
+```bash
+git clone https://github.com/wan-huiyan/agent-review-panel.git ~/.claude/skills/agent-review-panel
+```
 
-**What research shows:** Papers from ICLR 2024 (ChatEval), ICML 2024 (Du et al.), and ACL 2024 (MachineSoM) demonstrate that multi-agent debate consistently outperforms single-agent review on evaluation quality — agents cross-verify each other's claims, challenge weak reasoning, and surface issues no individual reviewer would find alone.
+**Use:**
+```
+> Review this implementation plan from multiple perspectives: docs/my_plan.md
 
-**What you get that a single reviewer can't provide:**
+> /agent-review-panel
+```
 
-| Feature | What It Does |
-|---|---|
-| Structured disagreements with reasoning | Each disagreement shows both sides' arguments + the judge's ruling |
-| Numerical scores + verdict | Every reviewer scores independently; judge delivers final recommendation |
-| Cross-reviewer debate & engagement | Reviewers respond to each other's specific points across 1-3 rounds |
-| Anti-groupthink blind assessment | Final scores given without seeing others' finals — prevents conformity |
-| Post-debate completeness audit | Dedicated agent re-reads source line-by-line after debate to catch what everyone missed |
-| Claim verification (Phase 9) | Verifies all reviewer line-number citations against actual source — catches hallucinated findings |
-| Severity verification (Phase 10) | Reads actual code for every P0/P1 finding — catches overstated severity |
-| Verification commands (Phase 8) | Runs grep/read commands from reviewers to confirm or contradict P0/P1 claims |
-| Epistemic labels on findings | Every finding tagged [VERIFIED], [CONSENSUS], [SINGLE-SOURCE], [UNVERIFIED], or [DISPUTED] |
-| Defect classification | Findings labeled [EXISTING_DEFECT] or [PLAN_RISK] — P0 requires existing defect evidence |
-| Scope & limitations disclosure | Every report states what the panel cannot evaluate — prevents over-trust |
-| Correlated-bias warning | When all reviewers agree (spread < 2pts), flags that unanimity may reflect shared model bias |
-| Code-level detail catching | Line-by-line audit of constants, sets, SQL, config values in every review |
-| Auto-persona from content signals | 10 signal groups with keyword detection add domain specialists up to 6 reviewers |
-| Auto Precise/Exhaustive mode | Code → require line citations; plans → allow broader risk identification. Auto-detected. |
-| Source-grounded debate | Disputed points include inline source code snippets — keeps debate anchored to reality |
-| Context gathering (Phase 1-2) | Auto-scans sibling directories for docs, traces imports/references, discovers safety mechanisms, asks user about gaps |
-| Tiered knowledge mining (Phase 1-2) | L0/L1/L2 loading: scans index lines first, then summaries, then full content only for relevant items — reduces token waste by ~80% vs flat reads |
-| Built-in domain checklists | 10 signal groups get pre-built review checklists (ML, SQL, Pipeline, Cost, etc.) — zero-latency domain expertise |
-| VoltAgent specialist agents | Optional upgrade: 127+ specialist agents across 10 families replace generic persona-prompted reviewers for deeper domain reviews |
-| Absent-safeguard check (judge) | Judge verifies [CRITICAL] recommendations account for existing safety mechanisms before endorsing |
-| Reviewer suggestion qualifier | Reviewers must state what safeguard would need to be absent; flag unverified assumptions |
-| Diverse reasoning strategies | Each reviewer uses a different reasoning approach (systematic enumeration, adversarial simulation, backward reasoning, etc.) |
-| Anti-rhetoric guard | Judge flags position changes driven by eloquence rather than evidence |
-| Dynamic sycophancy intervention | Detects and intervenes when >50% of position changes lack new evidence |
-| Judge confidence gating | Low-confidence verdicts get "HUMAN REVIEW RECOMMENDED" flag instead of forcing a call |
-| Deep research mode | Opt-in web research for domain best practices; triggered by "deep review" or offered when strong signals detected |
+**What you get:** A `review_panel_report.md` with executive summary, consensus points, disagreement points (with judge rulings), completeness audit findings, and prioritized action items — all tagged with epistemic labels ([VERIFIED], [CONSENSUS], [DISPUTED], etc.).
 
-The skill doesn't just find *more* issues — it **structures** them. You get consensus points, disagreement points with both sides' reasoning, a judge's ruling, and prioritized action items. A single reviewer gives you a list; the panel gives you a deliberation.
+<details>
+<summary><strong>Example report output (truncated)</strong></summary>
 
-## How It Works
+```markdown
+# Review Panel Report
+**Work reviewed:** src/auth/middleware.ts  |  **Date:** 2026-03-28
+**Panel:** 4 reviewers + Auditor + Judge
+**Verdict:** Approve with Revisions  |  **Confidence:** High
+**Review mode:** Precise (auto-detected from content type: code)
 
-| Stage          | Phase | Action                                                          |
-|----------------|-------|-----------------------------------------------------------------|
-| **Gather**     | 1.    | Context & Setup — scan sibling dirs, trace references, discover safeguards |
-|                | 2.    | Detect Specialists — signal detection, persona selection, knowledge mining |
-| **Review**     | 3.    | Independent Review — 4-6 reviewers evaluate in parallel (no cross-talk) |
-|                | 4.    | Private Reflection — each reviewer re-reads and rates own confidence |
-| **Debate**     | 5.    | Adversarial Debate (1-3 rounds) — reviewers engage + find new issues |
-|                | 6.    | Summarize — distill resolved/unresolved points between rounds |
-|                | 7.    | Blind Final — each reviewer gives final score independently |
-| **Verify**     | 8.    | Verify Commands — run reviewer grep/read commands for P0/P1 findings (advisory) |
-|                | 9.    | Claim Verification — verify all line-number citations against source |
-|                | 10.   | Severity Verification — read actual code for every P0/P1; downgrade if overstated |
-|                | 11.   | Completeness Audit — dedicated agent scans for what the panel missed |
-| **Adjudicate** | 12.   | Supreme Judge — Opus arbitrates everything including verification results |
-|                | 13.   | Document — structured markdown report for human review |
+## Executive Summary
+The authentication middleware is well-structured with proper token validation
+and rate limiting. Two substantive issues emerged: the session store lacks
+TTL enforcement (P1, [VERIFIED]) and the CORS configuration is overly
+permissive for production (P1, [CONSENSUS]). Score: 7/10.
 
-## What Makes This Different from "Just Asking Claude to Review"
+## Consensus Points
+- Token rotation logic is correct and handles edge cases well
+- Error responses follow RFC 7807 format consistently
 
-### 1. Real Debate, Not Simulated Perspectives
+## Disagreement Points
+**Session store TTL:** Security Auditor (P0) vs Architecture Critic (P2)
+Judge ruling: P1 — the risk is real but mitigated by the upstream API gateway
+timeout. [VERIFIED] against actual code.
 
-When you ask a single agent to "review from multiple perspectives," it produces parallel sections — but they never disagree. There's no cross-verification, no "wait, that's wrong because..." moments.
+## Action Items
+- [P1] [VERIFIED] Add TTL to session store entries (src/auth/session.ts:47)
+- [P1] [CONSENSUS] Restrict CORS origins in production config
+- [P2] [SINGLE-SOURCE] Consider adding request signing for internal APIs
+```
 
-The review panel spawns independent subagents that genuinely engage:
+</details>
+
+## Installation
+
+### Claude Code (v1.0+)
+
+```bash
+git clone https://github.com/wan-huiyan/agent-review-panel.git ~/.claude/skills/agent-review-panel
+```
+
+The skill triggers automatically when you ask for multi-perspective reviews, panel reviews, adversarial reviews, or invoke `/agent-review-panel`.
+
+### Cursor (experimental)
+
+<details>
+<summary>Cursor installation options</summary>
+
+This skill was built for Claude Code's Agent tool (parallel subagent spawning, model selection). Cursor has its own mechanisms that may require adaptation.
+
+**Per-project rule (most reliable):**
+```bash
+mkdir -p .cursor/rules
+# Create .cursor/rules/agent-review-panel.mdc with the content of SKILL.md
+# Add frontmatter: alwaysApply: true
+```
+
+**Manual global install:**
+```bash
+git clone https://github.com/wan-huiyan/agent-review-panel.git ~/.cursor/skills/agent-review-panel
+```
+
+The core pattern is straightforward — one subagent/task per reviewer in Phase 3, collect results, then one per reviewer in Phase 5 (debate), then single agents for verification and judge. If you adapt it, PRs are welcome.
+
+</details>
+
+## Why Use a Panel Instead of a Single Reviewer?
+
+When you ask Claude to "review this code," you get one perspective. It won't argue with itself, catch its own blind spots, or tell you "I'm not sure about this."
+
+The panel spawns independent reviewers that genuinely engage:
 
 > **Feasibility Analyst:** "The `data_available_through` hardcoding is minor — it's documented."
 >
-> **Risk Assessor:** "Disagree. If stale, the lookforward extends past actual data → model trains on rows with incomplete outcomes → silent false-negative bias."
+> **Risk Assessor:** "Disagree. If stale, the lookforward extends past actual data — model trains on incomplete outcomes — silent false-negative bias."
 >
 > **Feasibility Analyst (Round 2):** "Valid point. I upgrade this to IMPORTANT."
 
-This isn't possible with a single agent.
+A single reviewer gives you a list. The panel gives you a deliberation — with structured disagreements, judge rulings, and confidence levels.
 
-### 2. Multi-Layered Verification
+## How It Works
 
-The panel doesn't just find issues — it verifies them through multiple independent mechanisms:
+| Stage | Phase | Action |
+|---|---|---|
+| **Gather** | 1. | Context & Setup — scan sibling dirs, trace references, discover safeguards |
+| | 2. | Detect Specialists — signal detection, persona selection, knowledge mining |
+| **Review** | 3. | Independent Review — 4-6 reviewers evaluate in parallel (no cross-talk) |
+| | 4. | Private Reflection — each reviewer re-reads and rates own confidence |
+| **Debate** | 5. | Adversarial Debate (1-3 rounds) — reviewers engage + find new issues |
+| | 6. | Summarize — distill resolved/unresolved points between rounds |
+| | 7. | Blind Final — each reviewer gives final score independently |
+| **Verify** | 8. | Verify Commands — run reviewer grep/read commands for P0/P1 findings (advisory) |
+| | 9. | Claim Verification — verify all line-number citations against source |
+| | 10. | Severity Verification — read actual code for every P0/P1; downgrade if overstated |
+| | 11. | Completeness Audit — dedicated agent scans for what the panel missed |
+| **Adjudicate** | 12. | Supreme Judge — Opus arbitrates everything including verification results |
+| | 13. | Document — structured markdown report for human review |
 
-- **Completeness Auditor** (Phase 11) — a post-debate agent re-reads the source line-by-line to find what every reviewer missed
-- **Claim Verification** (Phase 9) — checks every line-number citation against actual source; classifies as [VERIFIED], [INACCURATE], [MISATTRIBUTED], [HALLUCINATED], or [UNVERIFIABLE]
-- **Severity Verification** (Phase 10) — reads actual code for every P0/P1 finding; v2.6 benchmark showed 2/3 P0 findings were overstated
-- **Verification Commands** (Phase 8) — runs reviewer-provided grep/read commands to confirm or contradict claims
-- **Absent-safeguard check** — judge verifies that [CRITICAL] recommendations account for existing safety mechanisms
+## Features
 
-### 3. Anti-Groupthink Mechanisms
+**Review process:**
+- 4-6 reviewers with distinct personas evaluate in parallel, then debate across 1-3 rounds
+- Auto-selects personas based on content type (code, plan, docs, mixed) and technology signals across 10 signal groups (SQL, ML, Terraform, Auth, API, Frontend, Cost, Pipeline, Portability, Repo Hygiene)
+- Each reviewer uses a different reasoning strategy (systematic enumeration, adversarial simulation, backward reasoning, etc.)
+- Auto Precise/Exhaustive mode: code requires line citations; plans allow broader risk identification
 
-Research shows multi-agent systems are prone to conformity — agents abandon correct findings under social pressure. We counter this with:
+**Verification layer:**
+- Claim verification checks all reviewer citations against actual source code
+- Severity verification reads the codebase to confirm P0/P1 findings before the judge sees them (v2.6 benchmark: 2/3 P0 findings were overstated)
+- Verification commands: runs read-only grep/cat commands from reviewers to confirm or contradict claims
+- Defect classification: findings labeled [EXISTING_DEFECT] or [PLAN_RISK] — P0 requires existing defect evidence
+- Completeness audit: post-debate agent re-reads source line-by-line for what everyone missed
 
-- **Private reflection** before debate (MachineSoM) — agents commit to confidence levels before seeing others' views
-- **Blind final assessment** (ChatEval) — final scores given without seeing others' finals
-- **Calibrated agreement intensity** (DebateLLM) — each persona has a tuned skepticism level (20-60%), preventing both reflexive agreement and manufactured disagreement
-- **Conformity tracking** — the judge flags any agent that flipped position without new evidence
-- **Dynamic sycophancy intervention** (CONSENSAGENT) — when >50% of position changes lack new evidence, an alert is injected requiring agents to identify a weakness in the consensus
-- **Judge confidence gating** (Trust or Escalate) — low-confidence verdicts flag "HUMAN REVIEW RECOMMENDED" rather than forcing a definitive call
+**Anti-groupthink safeguards:**
+- Blind final scoring, private reflection, calibrated skepticism levels (20-60%)
+- Sycophancy detection intervenes when >50% of position changes lack new evidence
+- Anti-rhetoric assessment flags position changes driven by eloquence rather than evidence
+- Judge confidence gating: low-confidence verdicts flag "HUMAN REVIEW RECOMMENDED"
+- Correlated-bias warning when all reviewers converge (unanimous agreement is the most dangerous failure mode)
 
-### 4. Structured Output for Humans
+**Output:**
+- Structured markdown report: executive summary, consensus, disagreements (with judge rulings), prioritized action items
+- Epistemic labels on every finding: [VERIFIED], [CONSENSUS], [SINGLE-SOURCE], [UNVERIFIED], [DISPUTED]
+- Scope & limitations disclosure — every report states what the panel cannot evaluate
 
-The output isn't a wall of text. It's a scannable report:
+**Advanced:**
+- VoltAgent integration — maps personas to 127+ specialist agents for deeper domain-specific reviews when installed
+- Codebase state check — detects worktree/branch divergence to prevent false "missing code" findings
+- Tiered knowledge mining (L0/L1/L2) — scans index lines first, then summaries, then full content only for relevant items
+- Deep research mode — opt-in web research for domain best practices
 
-```markdown
-## Executive Summary              ← Read this in 30 seconds
-## Scope & Limitations            ← What the panel can't evaluate
-## Score Summary Table            ← Initial → Final scores per reviewer
-## Consensus Points               ← What everyone agreed on
-## Disagreement Points            ← Each side's argument + judge's ruling
-## Completeness Audit Findings    ← What the whole panel missed
-## Coverage Gaps                  ← Risk categories no reviewer examined
-## Action Items                   ← [P0] [VERIFIED] / [P1] [CONSENSUS] / etc.
-## Detailed Reviews               ← Collapsible: all rounds, verification tables, judge analysis
-```
-
-## Usage
+## Usage Examples
 
 ```
 > Review this implementation plan from multiple perspectives: docs/my_plan.md
@@ -132,77 +174,52 @@ The output isn't a wall of text. It's a scannable report:
 
 > Have agents debate whether this refactor is worth the complexity
 
-> /agent-review-panel deep              ← deep research mode (adds web research)
+> /agent-review-panel deep              # adds web research for domain best practices
 
-> Do a deep review of this ML pipeline   ← also triggers deep research mode
+> Do a deep review of this ML pipeline   # also triggers deep research mode
 ```
 
-The skill auto-detects content type (pure code, pure plan, mixed, documentation) and selects appropriate personas and review mode (Precise for code, Exhaustive for plans). It scans for technology signals across 10 signal groups (SQL, ML/Statistics, Infrastructure, Auth, API, Frontend, Cost/Billing, Data Pipeline, Skill/Docs Portability, Repo/Data Hygiene) and automatically adds domain-specific reviewers when 3+ keywords from a signal group are detected. You can also specify custom reviewers.
-
-## Research Foundations
-
-| Source | Contribution |
-|--------|-------------|
-| [ChatEval](https://github.com/thunlp/ChatEval) (ICLR 2024) | Blind final judgment, anti-groupthink |
-| [AutoGen](https://github.com/microsoft/autogen) Multi-Agent Debate | Solver/aggregator architecture |
-| [Du et al.](https://arxiv.org/abs/2305.14325) (ICML 2024) | Cross-verification for factuality |
-| [MachineSoM](https://github.com/zjunlp/MachineSoM) (ACL 2024) | Private reflection, conformity tracking |
-| [DebateLLM](https://github.com/instadeepai/DebateLLM) | Agreement intensity modulation |
-| [DMAD](https://github.com/MraDonkey/DMAD) (ICLR 2025) | Diverse reasoning strategies per persona |
-| [Talk Isn't Always Cheap](https://arxiv.org/abs/2509.05396) (ICML 2025) | Anti-rhetoric guard in judge prompt |
-| [CONSENSAGENT](https://aclanthology.org/2025.findings-acl.1141/) (ACL 2025) | Dynamic sycophancy intervention |
-| [Trust or Escalate](https://arxiv.org/abs/2407.18370) (ICLR 2025) | Judge confidence gating |
-| [AI Trust Evaluation Framework](https://github.com/wan-huiyan/ai-trust-evaluation) | Claim verification, epistemic labels, scope disclosure, correlated-bias detection |
-| [VoltAgent/awesome-claude-code-subagents](https://github.com/VoltAgent/awesome-claude-code-subagents) | 127+ specialist agents across 10 families; persona-to-agent mapping for domain-specific reviews |
-
-See `ROADMAP.md` for the full research roadmap (includes trust & verification items, merged from former TRUST_ROADMAP.md).
+The skill auto-detects content type and selects appropriate personas and review mode. You can also specify custom reviewers.
 
 ## Cost & Performance
 
-- **Duration:** ~6-8 minutes per review (vs ~3 minutes for single-agent). 6-reviewer panels (with auto-persona) run ~8 minutes.
-- **Tokens:** Comparable to single-agent (~75k vs ~80k) — focused personas are more token-efficient. Auto-added reviewers add ~25-30% when triggered.
-- **When to use:** High-stakes reviews where you need structured disagreement tracking, not quick feedback
-- **When NOT to use:** Simple code reviews, style checks, or when you just need a quick sanity check
+| Metric | Value |
+|---|---|
+| Duration | ~6-10 minutes (4-reviewer panel); ~10-12 minutes (6-reviewer with auto-persona) |
+| Token usage | Varies by content length and panel size. Typical range: 150k-350k total tokens across all subagent calls (input + output). Higher than single-agent review due to parallel reviewers + debate rounds. |
+| Best for | High-stakes reviews where you need structured disagreement tracking |
+| Not for | Quick code reviews, style checks, or single-opinion feedback |
 
-## Installation
+## Known Limitations
 
-### Claude Code
+- **Same base model:** All reviewers are Claude instances. Unanimous agreement may reflect shared model biases rather than genuine quality. The correlated-bias warning flags this, but cannot eliminate it.
+- **No runtime analysis:** The panel reviews static code and documents. It cannot evaluate runtime behavior, production data patterns, or performance under load.
+- **Token cost:** Multi-agent review costs more than single-agent. Use for high-stakes reviews, not routine checks.
+- **Temporal reasoning:** Despite explicit checks, temporal scope verification (e.g., "excludes Christmas" with multi-year data) remains the hardest class of bug for panels to catch reliably.
 
-**Option 1: Plugin install (recommended)**
-```bash
-/plugin marketplace add wan-huiyan/agent-review-panel
-/plugin install agent-review-panel@wan-huiyan-agent-review-panel
-```
+## Research Foundations
 
-**Option 2: Git clone**
-```bash
-git clone https://github.com/wan-huiyan/agent-review-panel.git ~/.claude/skills/agent-review-panel
-```
+This skill implements mechanisms from 9 papers on multi-agent debate and evaluation:
 
-### Cursor
+| Paper | Venue | Contribution to This Skill |
+|---|---|---|
+| [ChatEval](https://github.com/thunlp/ChatEval) | ICLR 2024 | Multi-agent debate evaluation with diverse role prompts |
+| [AutoGen](https://github.com/microsoft/autogen) | — | Solver/aggregator multi-agent architecture |
+| [Du et al.](https://arxiv.org/abs/2305.14325) | ICML 2024 | Cross-verification through iterative debate for factuality |
+| [MachineSoM](https://github.com/zjunlp/MachineSoM) | ACL 2024 | Private reflection, conformity tracking |
+| [DebateLLM](https://github.com/instadeepai/DebateLLM) | ICML 2024 | Agreement intensity modulation |
+| [DMAD](https://github.com/MraDonkey/DMAD) | ICLR 2025 | Diverse reasoning strategies per persona |
+| [Talk Isn't Always Cheap](https://arxiv.org/abs/2509.05396) | ICML 2025 | Failure mode analysis informing debate quality safeguards |
+| [CONSENSAGENT](https://aclanthology.org/2025.findings-acl.1141/) | ACL 2025 | Dynamic sycophancy intervention |
+| [Trust or Escalate](https://arxiv.org/abs/2407.18370) | ICLR 2025 Oral | Judge confidence gating with selective escalation |
 
-Cursor supports skills via `~/.cursor/skills/` (Cursor 2.4+), though global discovery can be flaky. Options from most to least reliable:
+The skill adapts these mechanisms (demonstrated on reasoning benchmarks) to the practical domain of code and document review. Additional integrations: [AI Trust Evaluation Framework](https://github.com/wan-huiyan/ai-trust-evaluation) (claim verification, epistemic labels), [VoltAgent](https://github.com/VoltAgent/awesome-claude-code-subagents) (127+ specialist agents). See [ROADMAP.md](ROADMAP.md) for planned additions.
 
-**Option 1: Per-project rule (most reliable)**
-```bash
-mkdir -p .cursor/rules
-# Create .cursor/rules/agent-review-panel.mdc with the content of SKILL.md
-# Add frontmatter: alwaysApply: true
-```
+## Prerequisites
 
-**Option 2: npx skills CLI**
-```bash
-npx skills add wan-huiyan/agent-review-panel --global
-```
-
-**Option 3: Manual global install**
-```bash
-git clone https://github.com/wan-huiyan/agent-review-panel.git ~/.cursor/skills/agent-review-panel
-```
-
-> **Cursor adaptation note:** This skill was written for Claude Code's **Agent tool** (6+ subagent calls with parallel spawn, model selection, etc.). Cursor has its own subagent/task mechanism (e.g. `mcp_task`), but the full panel flow isn't guaranteed without adaptation — differences in parallel spawning, prompt shape, and model selection (e.g. `model: "opus"`) may affect behavior.
->
-> **Adapting for Cursor:** The core pattern is straightforward — one subagent/task per reviewer in the Review stage (Phases 3-4), collect results, then one per reviewer in the Debate stage (Phases 5-7), then single agents for the Verify and Adjudicate stages. If you adapt it, PRs are welcome!
+- **Claude Code** v1.0+ (the skill uses the Agent tool for parallel subagent spawning)
+- Works with Claude Pro, Max, or API access
+- **Optional:** [VoltAgent specialist agents](https://github.com/VoltAgent/awesome-claude-code-subagents) for stronger domain-specific reviews
 
 ## Tests
 
@@ -212,42 +229,57 @@ The project includes a comprehensive test suite (363 tests) using Node.js built-
 npm test                    # run all 363 tests
 npm run test:triggers       # trigger classification (49 prompts)
 npm run test:manifest       # manifest consistency across files
-npm run test:eval-suite     # eval-suite structural integrity
 npm run test:report         # report structure validation
 npm run test:behavioral     # behavioral assertion framework
 npm run test:golden         # golden-file structural snapshots
 ```
 
-The eval suite (`eval-suite.json`) contains 49 trigger classification examples, 10 behavioral test cases with regex assertions, and 11 edge-case scenarios — useful for understanding exactly when the skill should and shouldn't trigger.
-
 ## Companion Skills
 
 | Skill | What It Does | When to Use |
-|-------|-------------|-------------|
-| [plan-review-integrator](https://github.com/wan-huiyan/plan-review-integrator) | Takes review panel output and integrates findings into an implementation plan — classifies each finding, applies concrete edits, produces a traceability summary | After a panel review of a plan document, run `/plan-review-integrator` to turn findings into plan updates |
+|---|---|---|
+| [plan-review-integrator](https://github.com/wan-huiyan/plan-review-integrator) | Takes review panel output and integrates findings into an implementation plan — classifies each finding, applies concrete edits, produces a traceability summary | After a panel review of a plan document |
 
----
+## Contributing
 
-The skill triggers automatically when you ask for multi-perspective reviews, panel reviews, adversarial reviews, or invoke `/agent-review-panel`.
+Contributions welcome! Areas where help is especially useful:
+
+- **Cursor adaptation** — adapting the Agent tool calls to Cursor's subagent mechanism
+- **New domain checklists** — adding signal groups beyond the current 10
+- **Benchmark cases** — real-world review scenarios for the eval suite
+
+Please open an issue to discuss before submitting large PRs.
+
+## Uninstalling
+
+```bash
+rm -rf ~/.claude/skills/agent-review-panel
+```
 
 ## Version History
 
-See `ROADMAP.md` for detailed version history, research sources, and deferred items.
+See [CHANGELOG.md](CHANGELOG.md) for detailed version history. See [ROADMAP.md](ROADMAP.md) for research sources and deferred items.
 
-| Version | Date | Highlights |
-|---------|------|------------|
-| v1 | 2026-03-14 | ChatEval + AutoGen + Du et al. foundations |
-| v2 | 2026-03-15 | MachineSoM + DebateLLM: private reflection, agreement intensity |
-| v2.1 | 2026-03-17 | Auto-persona from content signals, source-grounded debate |
-| v2.2 | 2026-03-18 | DMAD reasoning strategies, anti-rhetoric guard, sycophancy intervention, confidence gating |
-| v2.3 | 2026-03-18 | Knowledge mining, domain checklists, deep research mode |
-| v2.4 | 2026-03-19 | Portability signal group (9 total) |
-| v2.5 | 2026-03-20 | Trust layer: claim verification, epistemic labels, scope disclosure |
-| v2.6 | 2026-03-25 | Schliff optimization (75 → 86), reference extraction, A/B validated |
-| v2.7 | 2026-03-26 | Severity verification, temporal scope checks, defect classification |
-| v2.8 | 2026-03-26 | Severity dampening, coverage check, verify-before-claim, auto Precise/Exhaustive mode, tiered knowledge mining, Repo/Data Hygiene signal (10 total) |
-| v2.9 | 2026-03-29 | VoltAgent specialist agent integration (127+ agents, 10 families) |
+| Version | Highlights |
+|---------|------------|
+| v2.10 | Codebase state check — prevents false "missing code" findings in worktrees |
+| v2.9 | VoltAgent specialist agent integration (127+ agents, 10 families) |
+| v2.8 | Auto Precise/Exhaustive mode, verification commands, tiered knowledge mining |
+| v2.7 | Severity verification, defect classification, temporal scope checks |
+| v2.6 | Schliff optimization (75 → 86), reference extraction, A/B validated |
+| v2.5 | Trust layer: claim verification, epistemic labels, scope disclosure |
+| v2.4 | Portability signal group |
+| v2.3 | Knowledge mining, domain checklists, deep research mode |
+| v2.2 | DMAD reasoning strategies, context gathering, anti-rhetoric guard |
+| v2.1 | Auto-persona from content signals, source-grounded debate |
+| v2.0 | Completeness auditor, new discovery requirement |
+| v1.0 | Initial release: multi-agent review with debate and judge |
+
+## License
+
+[MIT](LICENSE) — Huiyan Wan
 
 ## Acknowledgements
 
-Trigger accuracy and eval suite improved using [schliff](https://github.com/Zandereins/schliff) — an autonomous skill scoring and improvement framework. Schliff's 7-dimension structural scorer identified weak trigger coverage and guided targeted description enrichment (composite score: 64 → 75).
+- Eval suite improved using [schliff](https://github.com/Zandereins/schliff)
+- See [HOW_WE_BUILT_THIS.md](HOW_WE_BUILT_THIS.md) for the design journey
