@@ -4,9 +4,9 @@ A living document mapping academic research and open-source projects to skill fe
 
 ---
 
-## Already Incorporated (v1–v2.6)
+## Already Incorporated (v1–v2.13)
 
-These foundations form the core architecture. Research adopted in v1–v2.5; structural optimisation in v2.6.
+These foundations form the core architecture. Research adopted in v1–v2.5; structural optimisation in v2.6; verification round in v2.11.
 
 | Source | What We Took | Version |
 |--------|-------------|---------|
@@ -15,6 +15,7 @@ These foundations form the core architecture. Research adopted in v1–v2.5; str
 | **Du et al.** (ICML 2024) | Cross-verification for factuality, debate-improves-accuracy thesis | v1 |
 | **MachineSoM** (zjunlp/MachineSoM, ACL 2024) | Private reflection rounds, conformity tracking (tf/ft/tt/ff) | v2 |
 | **DebateLLM** (instadeepai/DebateLLM) | Agreement intensity modulation, round summarization, judge-mediated convergence | v2 |
+| **MiroFish** ([666ghj/MiroFish](https://github.com/666ghj/MiroFish)) | Heterogeneous agent personalities matched to task characteristics; influenced auto-persona detection (v2.1) and persona-matched verification agents (v2.11) | v2.1, v2.11 |
 
 ### Key findings from each
 

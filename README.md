@@ -26,7 +26,10 @@ git clone https://github.com/wan-huiyan/agent-review-panel.git ~/.claude/skills/
 > /agent-review-panel
 ```
 
-**What you get:** A `review_panel_report.md` with executive summary, consensus points, disagreement points (with judge rulings), completeness audit findings, and prioritized action items — all tagged with epistemic labels ([VERIFIED], [CONSENSUS], [DISPUTED], etc.).
+**What you get:** Three output files:
+- `review_panel_report.md` — executive summary, consensus, disagreements (with judge rulings), prioritized action items tagged with epistemic labels
+- `review_panel_process.md` — full "director's cut" log of every agent's verbatim output with persona profiles
+- `review_panel_report.html` — interactive dashboard with filterable issue cards, charts, and a Panel Gallery
 
 <details>
 <summary><strong>Example report output (truncated)</strong></summary>
@@ -119,12 +122,14 @@ A single reviewer gives you a list. The panel gives you a deliberation — with 
 | **Debate** | 5. | Adversarial Debate (1-3 rounds) — reviewers engage + find new issues |
 | | 6. | Summarize — distill resolved/unresolved points between rounds |
 | | 7. | Blind Final — each reviewer gives final score independently |
-| **Verify** | 8. | Verify Commands — run reviewer grep/read commands for P0/P1 findings (advisory) |
-| | 9. | Claim Verification — verify all line-number citations against source |
-| | 10. | Severity Verification — read actual code for every P0/P1; downgrade if overstated |
-| | 11. | Completeness Audit — dedicated agent scans for what the panel missed |
-| **Adjudicate** | 12. | Supreme Judge — Opus arbitrates everything including verification results |
-| | 13. | Document — structured markdown report for human review |
+| **Verify** | 8. | Completeness Audit — dedicated agent scans for what the panel missed |
+| | 9. | Verify Commands — run reviewer grep/read commands for P0/P1 findings (advisory) |
+| | 10. | Claim Verification — verify all line-number citations against source |
+| | 11. | Severity Verification — read actual code for every P0/P1; downgrade if overstated |
+| | 12. | Tier Assignment — confidence-based draft → judge-advised refinement per dispute |
+| | 13. | Targeted Verification — persona-matched agents investigate each dispute point |
+| **Adjudicate** | 14. | Supreme Judge — Opus arbitrates everything including verification round evidence |
+| **Output** | 15. | Primary Report (`.md`) + Process History (`.md`) + Interactive Dashboard (`.html`) |
 
 ## Features
 
@@ -140,6 +145,7 @@ A single reviewer gives you a list. The panel gives you a deliberation — with 
 - Verification commands: runs read-only grep/cat commands from reviewers to confirm or contradict claims
 - Defect classification: findings labeled [EXISTING_DEFECT] or [PLAN_RISK] — P0 requires existing defect evidence
 - Completeness audit: post-debate agent re-reads source line-by-line for what everyone missed
+- **Targeted verification round (v2.11):** each unresolved dispute gets a tiered (Light ~2k / Standard ~8k / Deep ~32k tokens) verification agent matched to the claim type (statistician for stats claims, security auditor for security claims, etc.) — verdicts feed directly into the judge's rulings
 
 **Anti-groupthink safeguards:**
 - Blind final scoring, private reflection, calibrated skepticism levels (20-60%)
@@ -148,9 +154,10 @@ A single reviewer gives you a list. The panel gives you a deliberation — with 
 - Judge confidence gating: low-confidence verdicts flag "HUMAN REVIEW RECOMMENDED"
 - Correlated-bias warning when all reviewers converge (unanimous agreement is the most dangerous failure mode)
 
-**Output:**
-- Structured markdown report: executive summary, consensus, disagreements (with judge rulings), prioritized action items
-- Epistemic labels on every finding: [VERIFIED], [CONSENSUS], [SINGLE-SOURCE], [UNVERIFIED], [DISPUTED]
+**Output (three files per review):**
+- **Primary report** (`review_panel_report.md`): executive summary, consensus, disagreements (with judge rulings), prioritized action items with epistemic labels ([VERIFIED], [CONSENSUS], [SINGLE-SOURCE], [UNVERIFIED], [DISPUTED])
+- **Process history** (`review_panel_process.md`): verbatim "director's cut" of every agent's output with persona profiles at each entry point — full transparency into the panel's reasoning
+- **Interactive HTML dashboard** (`review_panel_report.html`): filterable/sortable issue cards with severity chips, confidence bars, verification verdict badges; Panel Gallery with avatar cards for every agent; confidence distribution and tier breakdown charts (Tailwind CSS + Chart.js)
 - Scope & limitations disclosure — every report states what the panel cannot evaluate
 
 **Advanced:**
@@ -197,7 +204,7 @@ The skill auto-detects content type and selects appropriate personas and review 
 
 ## Research Foundations
 
-Agent Review Panel is grounded in [9 peer-reviewed papers](docs/research-foundations.md) on multi-agent debate and evaluation quality (ChatEval/ICLR 2024, Du et al./ICML 2024, MachineSoM/ACL 2024, and more).
+Agent Review Panel is grounded in [9 peer-reviewed papers](docs/research-foundations.md) on multi-agent debate and evaluation quality (ChatEval/ICLR 2024, Du et al./ICML 2024, MachineSoM/ACL 2024, and more). Additionally inspired by [MiroFish](https://github.com/666ghj/MiroFish) (multi-agent prediction engine with heterogeneous agent personalities) — MiroFish's research patterns influenced the v2.1 auto-persona detection and the v2.11 persona-matched verification agent design. See [ROADMAP.md](ROADMAP.md) for the full research roadmap.
 
 ## Prerequisites
 
@@ -246,6 +253,9 @@ See [CHANGELOG.md](CHANGELOG.md) for detailed version history. See [ROADMAP.md](
 
 | Version | Highlights |
 |---------|------------|
+| v2.13 | Persona profiles in process history + Panel Gallery in HTML dashboard |
+| v2.12 | Triple output: primary report + process history + interactive HTML dashboard |
+| v2.11 | Verification round: tiered (Light/Standard/Deep) persona-matched agents per dispute |
 | v2.10 | Codebase state check — prevents false "missing code" findings in worktrees |
 | v2.9 | VoltAgent specialist agent integration (127+ agents, 10 families) |
 | v2.8 | Auto Precise/Exhaustive mode, verification commands, tiered knowledge mining |
@@ -265,5 +275,6 @@ See [CHANGELOG.md](CHANGELOG.md) for detailed version history. See [ROADMAP.md](
 
 ## Acknowledgements
 
+- Inspired by [MiroFish](https://github.com/666ghj/MiroFish) — multi-agent prediction engine with heterogeneous agent personalities and memory; influenced auto-persona detection and persona-matched verification agents
 - Eval suite improved using [schliff](https://github.com/Zandereins/schliff)
 - See [HOW_WE_BUILT_THIS.md](HOW_WE_BUILT_THIS.md) for the design journey
