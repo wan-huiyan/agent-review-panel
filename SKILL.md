@@ -24,7 +24,7 @@ description: >
   launching reviewers.
 ---
 
-# Agent Review Panel v2.10
+# Agent Review Panel v2.13
 
 A multi-agent adversarial review system based on nine research foundations:
 ChatEval (ICLR 2024), AutoGen, Du et al. (ICML 2024), MachineSoM (ACL 2024),
@@ -91,8 +91,12 @@ Phase 4.5: Completeness Audit → Dedicated agent scans for what the panel misse
 Phase 4.55: Verify Commands  → Run up to 5 reviewer verification commands (advisory)
 Phase 4.6: Claim Verification → Verify all line-number citations against source
 Phase 4.7: Severity Verification → Read actual code for every P0/P1, downgrade if overstated
-Phase 5: Supreme Judge      → Opus arbitrates everything including verification results
-Phase 6: Document           → Structured markdown report for human review
+Phase 4.8: Verification Tier Assignment → Confidence draft (4.8a) + judge refinement (4.8b)
+Phase 4.9: Targeted Verification Agents → Persona-matched agents dispatched per dispute point
+Phase 5: Supreme Judge      → Opus arbitrates everything including verification round evidence
+Phase 6.1: Primary Report   → Structured markdown summary (review_panel_report.md)
+Phase 6.2: Process History  → Full director's-cut log of every agent action (review_panel_process.md)
+Phase 6.3: HTML Report      → Interactive single-file HTML dashboard (review_panel_report.html)
 ```
 
 ---
@@ -379,6 +383,8 @@ VoltAgent agents instead of generic personas:
 | Completeness Audit (4.5) | `voltagent-meta:knowledge-synthesizer` | Synthesize what the panel missed |
 | Claim Verification (4.6) | `voltagent-qa-sec:code-reviewer` | Verify line-number citations |
 | Severity Verification (4.7) | `voltagent-qa-sec:debugger` | Read actual code for P0/P1 findings |
+| Tier Refinement Advisor (4.8b) | Generic + opus | (must be domain-neutral to refine tiers) |
+| Verification Agents (4.9) | Persona-matched — see Phase 4.9 table | Each agent matched to claim type |
 | Supreme Judge (5) | Generic + opus | (judge must be domain-neutral) |
 
 **Step 3: Suggest installation when beneficial.** If a selected persona would
@@ -545,10 +551,133 @@ verification table when ruling on disagreements.
 
 ---
 
+## Phase 4.8: Verification Tier Assignment (v2.11)
+
+After Phases 4.5–4.7, collect all **unresolved dispute points** from Phase 3.5
+summaries plus any **high-uncertainty action items** bearing `[SINGLE-SOURCE]`,
+`[DISPUTED]`, or `[UNVERIFIED]` labels. Each point is assigned a depth tier that
+controls the verification agent's budget and capabilities in Phase 4.9.
+
+**Skip condition:** If there are zero unresolved disputes and zero unverified
+action items, skip Phases 4.8 and 4.9 entirely.
+
+### Tier Definitions
+
+| Tier | Budget | Capabilities | When to Use | Example |
+|---|---|---|---|---|
+| **Light** | ~2k tokens | grep/read only, no web search | Factual claim checkable in a single file or constant lookup | "Reviewer A claims the threshold constant is 0.05 but the report says 0.5 — check the code." |
+| **Standard** | ~8k tokens | Multi-file reads, import tracing, static analysis | Claim requires following logic across files or comparing multiple outputs | "Two reviewers disagree on whether the rate-limiter handles concurrent requests — trace the implementation across its dependencies." |
+| **Deep** | ~32k tokens | Web search, multi-round reasoning | Requires external knowledge, novel domain, or fundamental disagreement unresolvable from code alone | "Security reviewer claims the PRNG is cryptographically weak for this use case — requires researching current best practices for the specific algorithm." |
+
+### Assignment Pipeline (default: both steps; quick mode: step 1 only)
+
+Tier assignment runs as a two-step pipeline. Step 1 is always fast; step 2
+(the judge refinement) is the default but can be skipped by requesting
+"quick tier assignment" or "confidence-based tiers only".
+
+**Step 1 — Confidence-Based Draft (always runs; no agent needed):**
+
+The orchestrator derives initial tier assignments from existing Phase 2.5
+confidence ratings and debate round signals:
+
+- **Deep**: Any reviewer rated the claim Low confidence in Phase 2.5, OR the
+  point remained unresolved across 2+ debate rounds, OR the claim requires
+  external or runtime knowledge (e.g., production behavior, third-party API
+  semantics, literature validation)
+- **Standard**: Any reviewer rated Medium/mixed confidence, OR unresolved for
+  exactly 1 debate round, OR claim requires cross-file logic tracing
+- **Light**: All reviewers rated the claim High confidence AND it is a simple
+  checkable fact (file exists, value matches, line present)
+
+Produces a draft tier table:
+```
+| Point # | Summary | Draft Tier | Signal (confidence ratings + rounds unresolved) |
+|---------|---------|------------|------------------------------------------------|
+```
+
+**Step 2 — Judge-Advised Refinement (default: on):**
+
+A single Opus agent (Phase 4.8b) receives the confidence-based draft table and
+all supporting context (context brief, Phase 3.5 summaries, Phase 4 blind finals,
+completeness audit, claim and severity verification results). Its job is to
+**review and refine** the draft — upgrade, downgrade, or confirm each tier with
+reasoning. It also assigns the verification persona per point.
+
+The advisor works from the draft rather than from scratch: the confidence ratings
+give it the "ground-level" signal from reviewers who lived through the debate,
+and the advisor's role is oversight and correction, not cold assessment from zero.
+
+Final tier table:
+```
+| Point # | Summary | Draft Tier | Final Tier | Override Reason | Suggested Persona |
+|---------|---------|------------|------------|-----------------|-------------------|
+```
+
+---
+
+## Phase 4.9: Targeted Verification Agents (v2.11)
+
+Dispatch one verification agent per collected dispute/action item. All Light and
+Standard agents launch **in parallel**; Deep agents can also parallelize unless
+they share a scarce resource (e.g., web search rate limits).
+
+### Persona Matching
+
+Classify each claim's type and select the matching verification persona. VoltAgent
+agents are preferred when available; fall back to generic + focused prompt.
+
+| Claim Type | Verification Persona | VoltAgent (preferred) |
+|---|---|---|
+| Statistical / numerical | Data Scientist | `voltagent-data-ai:data-scientist` |
+| Code correctness / logic | Code Reviewer | `voltagent-qa-sec:code-reviewer` |
+| Architecture / design | Architect Reviewer | `voltagent-qa-sec:architect-reviewer` |
+| Security vulnerability | Security Auditor | `voltagent-qa-sec:security-auditor` |
+| Performance / scalability | Performance Engineer | `voltagent-qa-sec:performance-engineer` |
+| Database / SQL | Database Expert | `voltagent-data-ai:database-optimizer` |
+| Infrastructure / ops | SRE | `voltagent-infra:sre-engineer` |
+| Framing / narrative | Domain expert | Generic + domain context |
+| Business logic / feasibility | Business Analyst | Generic + business context |
+| Default / unclear | Verification Agent | Generic + focused prompt |
+
+### Capability Limits by Tier
+
+- **Light** (~2k tokens): May only grep/read/head/tail. Single focused query.
+  Return one of `[VR_CONFIRMED]`, `[VR_REFUTED]`, `[VR_INCONCLUSIVE]` with one
+  piece of quoted evidence. Do not expand scope beyond the specific claim.
+- **Standard** (~8k tokens): May read multiple files, trace imports, run static
+  analysis commands. Return verdict with supporting evidence from multiple sources.
+  Explore adjacent code only if directly relevant to the dispute.
+- **Deep** (~32k tokens): Full agent capabilities including web search and multiple
+  reasoning rounds. Return a comprehensive verdict; cite external sources when they
+  resolve the dispute. Scope limited to the specific dispute — do not produce a
+  second full review.
+
+### Verdict Labels
+
+- `[VR_CONFIRMED]` — Evidence confirms the original claim
+- `[VR_REFUTED]` — Evidence contradicts the claim
+- `[VR_PARTIAL]` — Claim is partially supported; the agent qualifies what holds
+- `[VR_INCONCLUSIVE]` — Insufficient evidence to verify either way
+- `[VR_NEW_FINDING]` — Verification revealed an additional issue beyond the dispute
+
+### Verification Round Summary
+
+After all agents complete, compile into a summary table:
+
+```
+| Point | Tier | Persona | Verdict | Key Evidence |
+|-------|------|---------|---------|--------------|
+```
+
+This table is passed to Phase 5 as input item 8.
+
+---
+
 ## Phase 5: Supreme Judge
 
-Single agent (`model: "opus"`). Receives all prior outputs. Steps (in order):
-0. Review verification results (claims, severity, commands)
+Single agent (`model: "opus"`). Receives all prior outputs (including the
+Verification Round Summary from Phase 4.9 as input item 8). Steps (in order):
+0. Review verification results (claims, severity, commands, **and verification round**)
 0.5a-b. Verify audit findings, anti-rhetoric assessment
 0.5c. Severity dampening — minimum evidence-justified severity. **In Precise mode, findings without code citations cannot exceed P2.**
 0.5d. Coverage check — flag unexamined risk categories, scan source for gaps
@@ -561,11 +690,17 @@ See `references/prompt-templates.md` for the full judge prompt.
 
 ---
 
-## Phase 6: Human Review Document
+## Phase 6: Output Generation
 
-Write structured markdown report to `review_panel_report.md` (or user-specified name).
+Three output files are written at the end of every review. All three are produced
+sequentially; Phases 6.2 and 6.3 run in parallel once Phase 6.1 is complete.
 
-### Report Structure
+---
+
+### Phase 6.1: Primary Markdown Report
+
+Write structured summary to `review_panel_report.md` (or user-specified name).
+This is the main deliverable — concise, structured, action-oriented.
 
 ```markdown
 # Review Panel Report
@@ -593,12 +728,16 @@ Defect type labels: [EXISTING_DEFECT] (bug in current code) [PLAN_RISK] (risk if
 
 ## Consensus Points
 {Bullet list of points all/most reviewers agreed on, confirmed by judge}
+
 ## Disagreement Points (with judge rulings)
-{Each disagreement: Side A, Side B, Judge's ruling with reasoning}
+{Each disagreement: Side A, Side B, Verification Round result if run, Judge's ruling with reasoning}
+
 ## Completeness Audit Findings
 {New issues found by auditor, verified by judge}
+
 ## Coverage Gaps (if any)
 {Risk categories no reviewer examined, with judge's independent assessment}
+
 ## Action Items (with severity AND epistemic labels)
 
 ## Detailed Reviews (collapsible sections)
@@ -610,19 +749,145 @@ Defect type labels: [EXISTING_DEFECT] (bug in current code) [PLAN_RISK] (risk if
 - Verification Command Execution Results
 - Claim Verification Report
 - Severity Verification Table
+- Verification Tier Assignment (4.8)
+- Targeted Verification Results (4.9)
 - Supreme Judge Full Analysis
 ```
 
-After writing, tell user: report location, verdict + score, consensus vs
-disagreements count, audit findings count, top action item.
+---
+
+### Phase 6.2: Full Agent Process History
+
+Write `review_panel_process.md` — the "director's cut". This is a complete,
+chronological, verbatim log of every agent's output with nothing summarized away.
+The orchestrator assembles this from accumulated outputs; no new agent needed.
+
+**Persona profiles are embedded** at the point each agent first enters the flow:
+before each agent's output, a structured "Persona Profile" block documents that
+agent's role, expertise, reasoning strategy, agreement intensity (for panelists),
+matched-claim-type (for Phase 4.9 agents), and which phases they participated in.
+This makes the process history fully self-explanatory to a reader who wasn't present.
+
+Structure (in order, verbatim for each):
+
+```
+Persona Profiles Registry (at top)
+  - All panelist profiles listed before any review output
+  - Phase 4.8b tier advisor profile
+  - Phase 4.9 verification agent profiles (added as they are assigned)
+  - Supreme judge profile
+
+Phase 1: Setup
+  - Context Brief (full)
+  - Persona selection rationale
+  - Review mode detection
+
+Phase 2: Independent Reviews
+  - [Persona Profile — Persona A] full profile block
+  - [Persona A] Full review text
+  - [Persona Profile — Persona B] full profile block
+  - [Persona B] Full review text
+  - ... (all N)
+
+Phase 2.5: Private Reflections
+  - [Persona A] Full reflection + per-finding confidence ratings
+  - [Persona B] Full reflection
+  - ... (all N)
+
+Phase 3: Debate Rounds
+  - Round 1: All reviewer responses (verbatim)
+  - Phase 3.5 Summary: Resolved / Still in dispute / New discoveries
+  - Round 2: All reviewer responses (if run)
+  - Phase 3.5 Summary: ...
+  - Round 3: ... (if run)
+
+Phase 4: Blind Final Assessments
+  - [Persona A] Final score, top 3 points, recommendation, verdict
+  - [Persona B] ...
+  - ... (all N, unsealed)
+
+Phase 4.5: Completeness Audit
+  - Full auditor output
+
+Phase 4.55: Verification Command Execution
+  - Each command run, raw output, annotation
+
+Phase 4.6: Claim Verification
+  - Full verification table + flagged claims
+
+Phase 4.7: Severity Verification
+  - Full severity verification table + reasoning per finding
+
+Phase 4.8: Verification Tier Assignment
+  - Phase 4.8a: Confidence-based draft table (with signals)
+  - [Persona Profile — Tier Refinement Advisor] profile block
+  - Phase 4.8b: Tier refinement advisor full output (overrides + reasoning)
+
+Phase 4.9: Targeted Verification Agents
+  - [Persona Profile — Verification Agent: Point #1] full profile block
+    (role, matched-claim-type, why matched, tier, VoltAgent subagent or generic)
+  - [Point #1 — Tier — Persona] Full investigation trail, what was searched,
+    what was found, full reasoning, verdict
+  - [Persona Profile — Verification Agent: Point #2] ...
+  - [Point #2 ...] (all N verification agents, verbatim)
+
+Phase 5: Supreme Judge Deliberation
+  - [Persona Profile — Supreme Judge] profile block
+  - Full judge output (all steps, unabridged)
+```
+
+See `references/prompt-templates.md` for the Phase 6.2 assembly spec.
+
+---
+
+### Phase 6.3: Interactive HTML Report
+
+Launch a single Opus agent to write `review_panel_report.html` — a polished,
+self-contained single-file interactive dashboard. The agent receives the full
+structured data from all prior phases.
+
+**Features:**
+- Dashboard overview: verdict, score, panel composition at a glance
+- Stats row: issue counts by severity (P0–P3), tier (Light/Standard/Deep),
+  verdict (VR_CONFIRMED/VR_REFUTED/VR_PARTIAL/VR_INCONCLUSIVE/VR_NEW_FINDING)
+- Charts: confidence distribution, tier breakdown (donut), verdict breakdown
+  (horizontal bar), pipeline flow (issues entering/surviving each verification phase)
+- **Panel Gallery**: collapsible section with avatar cards for every agent —
+  panelists (role, agreement intensity, reasoning strategy, phase badges), Phase
+  4.9 verification specialists (matched claim type, why matched, tier, "verified
+  N items" count), and support agents (auditor, judge, tier advisor). Clicking a
+  panelist card filters the issue list to items they raised.
+- Issue cards: each action item with severity chip (color-coded), confidence bar,
+  epistemic label badge, verdict badge — click to expand full evidence. Expanded
+  panel shows verification agent persona chip (e.g. "Statistical Expert") that
+  links back to that agent's card in the Panel Gallery.
+- Filter bar: filter by severity, tier, verdict, epistemic label simultaneously
+- Sort controls: by severity, confidence, tier
+- Inline CSS/JS; Tailwind CSS and Chart.js loaded via CDN
+
+See `references/prompt-templates.md` for the Phase 6.3 agent prompt.
+
+---
+
+After all three files are written, tell user:
+- Paths to all three output files
+- Verdict + score (from primary report)
+- Counts: consensus points, disagreements, action items, verification verdicts
+- Top P0 action item (if any)
+- Note: HTML report requires internet connection for Tailwind CSS + Chart.js CDN
+- HTML footer should read "Agent Review Panel v2.13"
 
 ---
 
 ## Implementation Notes
 
 - **Parallel execution:** Phases 2, 2.5, 3, 4 use single message with multiple
-  Agent tool calls. Phases 4.5, 4.55, 4.6, 4.7, 5 are sequential (4.55 is
-  orchestrator-driven via Bash, not a subagent).
+  Agent tool calls. Phases 4.5, 4.55, 4.6, 4.7, 4.8 are sequential (4.55 is
+  orchestrator-driven via Bash, not a subagent). Phase 4.8a is orchestrator
+  logic (no agent). Phase 4.8b is a single Opus agent. Phase 4.9 agents launch
+  in parallel (single message with one Agent call per dispute point). Phase 6.1
+  runs first; Phases 6.2 (orchestrator-assembled, no agent) and 6.3 (single
+  Opus agent) run in parallel after 6.1 completes.
 - **Context management:** Full content in Phases 2, 4.5, 5. Phase 3.5 summaries
   with source excerpts in debate rounds for long works (>500 lines).
 - **Error handling:** Retry failed agents once. Proceed with minimum 2 reviewers.
@@ -639,6 +904,7 @@ disagreements count, audit findings count, top action item.
 - **Binary/image files:** Skip. Note in report: "Binary files excluded from review."
 - **Single tiny file (<20 lines):** Reduce to 2 reviewers (minimum). Full panel is overkill.
 - **No P0/P1 findings:** Skip Phases 4.55 and 4.7. Proceed directly to claim verification.
+- **No unresolved disputes or unverified action items:** Skip Phases 4.8 and 4.9. Proceed directly to Phase 5.
 - **All reviewers agree (score spread < 2):** Flag correlated-bias warning in report. Do NOT skip debate — unanimous agreement is the most dangerous failure mode.
 
 For full prompt templates, see `references/prompt-templates.md`.
