@@ -226,18 +226,27 @@ describe("Manifest consistency", () => {
       );
     });
 
-    it("root SKILL.md contains all 6 phases", () => {
+    it("root SKILL.md contains all 16 phases (v2.14 integer renumbering)", () => {
       const phases = [
-        "## Phase 1",
-        "## Phase 2:",
-        "## Phase 2.5",
-        "## Phase 3:",
-        "## Phase 4:",
-        "## Phase 4.5",
-        "## Phase 4.6",
-        "## Phase 4.7",
-        "## Phase 5:",
-        "## Phase 6:",
+        "## Phase 1:",
+        "## Phase 2:",    // Data Flow Trace (v2.14)
+        "## Phase 3:",    // Independent Review
+        "## Phase 4:",    // Private Reflection
+        "## Phase 5:",    // Debate
+        "### Phase 6:",   // Round Summarization (sub-section of Phase 5)
+        "## Phase 7:",    // Blind Final
+        "## Phase 8:",    // Completeness Audit
+        "## Phase 9:",    // Verify Commands
+        "## Phase 10:",   // Claim Verification
+        "## Phase 11:",   // Severity Verification
+        "## Phase 12:",   // Verification Tier Assignment
+        "## Phase 13:",   // Targeted Verification Agents
+        "## Phase 14:",   // Supreme Judge
+        "## Phase 15:",   // Output Generation (parent with sub-phases 15.1/15.2/15.3)
+        "### Phase 15.1:",// Primary Markdown Report
+        "### Phase 15.2:",// Process History
+        "### Phase 15.3:",// Interactive HTML Report
+        "## Phase 16:",   // Merge (v2.14, multi-run only)
       ];
       for (const phase of phases) {
         assert.ok(
@@ -245,6 +254,50 @@ describe("Manifest consistency", () => {
           `SKILL.md must contain "${phase}"`
         );
       }
+    });
+
+    it("every subagent_type launch specifies model: opus (v2.14)", () => {
+      // A real launch command looks like: subagent_type: "name"
+      // followed by model: "opus" in the same line or table cell.
+      // Table headers, prose references, and fallback docs don't match this pattern.
+      const launchPattern = /subagent_type:\s*["`]?[\w:-]+["`]?/g;
+
+      const lines = rootSkillMd.split("\n");
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const matches = line.match(launchPattern);
+        if (!matches) continue;
+
+        // For each real launch command on this line, require model: "opus"
+        for (const match of matches) {
+          // Skip if this is a plain reference to "subagent_type" (no value after the colon)
+          if (!/["`][\w:-]+["`]/.test(match)) continue;
+
+          // Require "opus" to appear in the same line as the launch
+          assert.ok(
+            /model:\s*["`]?opus["`]?/i.test(line),
+            `subagent_type launch missing model: "opus" override on line ${i + 1}: ${line.trim()}`
+          );
+        }
+      }
+    });
+
+    it("root SKILL.md only contains allowed decimal phase refs (v2.14 renumbering)", () => {
+      // After integer renumbering, the only decimal phase references allowed are:
+      //   - Phase 15.1, 15.2, 15.3 (parallel output generation sub-phases)
+      //   - Phase 12a, 12b (two-step tier assignment pipeline)
+      // Any other decimal phase (e.g., "Phase 4.5") indicates stale numbering.
+      const decimalPhasePattern = /Phase [0-9]+\.[0-9]+[a-z]?/g;
+      const matches = rootSkillMd.match(decimalPhasePattern) || [];
+      const allowedPrefixes = ["Phase 15.1", "Phase 15.2", "Phase 15.3"];
+      const disallowed = matches.filter(
+        (m) => !allowedPrefixes.some((allowed) => m.startsWith(allowed))
+      );
+      assert.equal(
+        disallowed.length,
+        0,
+        `SKILL.md must not contain disallowed decimal phase references. Found: ${JSON.stringify(disallowed)}`
+      );
     });
 
     it("SKILL.md documents all content types for persona selection", () => {
