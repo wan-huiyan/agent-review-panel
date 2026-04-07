@@ -219,6 +219,18 @@ describe("Manifest consistency", () => {
         );
       });
 
+      it("version matches plugin.json version", () => {
+        // Prevents silent drift where plugin.json is bumped (e.g. by a
+        // plugin-restructure PR) but eval-suite.json is forgotten. Caught
+        // by PR #20's dogfooding after PR #18 left eval-suite at 2.15.0
+        // while plugin.json was already at 2.16.0.
+        assert.equal(
+          files.evalSuite.version,
+          files.pluginJson.version,
+          `eval-suite.json version "${files.evalSuite.version}" must match plugin.json version "${files.pluginJson.version}"`
+        );
+      });
+
       if (files.evalSuite.triggers) {
         it("has triggers array with entries", () => {
           assert.ok(files.evalSuite.triggers.length > 0, "triggers must not be empty");
@@ -287,6 +299,22 @@ describe("Manifest consistency", () => {
           "package.json must have a test script"
         );
       });
+
+      if (files.packageJson.version) {
+        it("version matches plugin.json version", () => {
+          // Prevents silent drift where plugin.json is bumped (e.g. by a
+          // plugin-restructure PR) but package.json is forgotten. Caught
+          // during PR #20's dogfooding after PR #18 left package.json at
+          // 2.15.0 while plugin.json was already at 2.16.0. This test only
+          // fires if package.json has a version field at all (some internal
+          // tooling repos omit it).
+          assert.equal(
+            files.packageJson.version,
+            files.pluginJson.version,
+            `package.json version "${files.packageJson.version}" must match plugin.json version "${files.pluginJson.version}"`
+          );
+        });
+      }
     });
   }
 
@@ -301,6 +329,62 @@ describe("Manifest consistency", () => {
         const fm = extractFrontmatter(files.rootSkillMd);
         assert.equal(fm.name, SKILL_NAME);
       });
+
+      // ---------------------------------------------------------------------
+      // Cross-version consistency: SKILL.md body version references must
+      // match plugin.json version. Catches the silent drift documented in
+      // PR #20 where PR #18 bumped plugin.json to 2.16.0 but SKILL.md
+      // still read "# Agent Review Panel v2.15" and the HTML footer
+      // instruction still said "Agent Review Panel v2.15".
+      //
+      // Convention: version references in SKILL.md body use v<major>.<minor>
+      // format (no patch segment). We parse plugin.json's semver and
+      // assert that every "Agent Review Panel v<major>.<minor>" string in
+      // SKILL.md matches plugin.json's major.minor.
+      // ---------------------------------------------------------------------
+      const semverMatch = files.pluginJson?.version?.match(/^(\d+)\.(\d+)\.\d+/);
+      if (semverMatch) {
+        const [, pluginMajor, pluginMinor] = semverMatch;
+        const expectedVersionTag = `v${pluginMajor}.${pluginMinor}`;
+
+        it("H1 header version matches plugin.json major.minor", () => {
+          // Extract the first line matching "# Agent Review Panel v<X>.<Y>"
+          const headerMatch = files.rootSkillMd.match(
+            /^# Agent Review Panel v(\d+)\.(\d+)/m
+          );
+          assert.ok(
+            headerMatch,
+            "SKILL.md must contain an H1 header matching '# Agent Review Panel v<major>.<minor>'"
+          );
+          const [, headerMajor, headerMinor] = headerMatch;
+          assert.equal(
+            `${headerMajor}.${headerMinor}`,
+            `${pluginMajor}.${pluginMinor}`,
+            `SKILL.md H1 header reads "v${headerMajor}.${headerMinor}" but plugin.json is "${files.pluginJson.version}" — expected "${expectedVersionTag}"`
+          );
+        });
+
+        it("HTML footer instruction version matches plugin.json major.minor", () => {
+          // The Phase 15.3 HTML report agent is instructed to render a
+          // footer with the product version. This string must track
+          // plugin.json so users' rendered reports show a truthful
+          // version number and stale skills can be diagnosed by
+          // comparing footer against plugin.json.
+          const footerMatch = files.rootSkillMd.match(
+            /HTML footer should read "Agent Review Panel v(\d+)\.(\d+)/
+          );
+          assert.ok(
+            footerMatch,
+            "SKILL.md must contain a Phase 15.3 footer instruction matching 'HTML footer should read \"Agent Review Panel v<major>.<minor>'"
+          );
+          const [, footerMajor, footerMinor] = footerMatch;
+          assert.equal(
+            `${footerMajor}.${footerMinor}`,
+            `${pluginMajor}.${pluginMinor}`,
+            `SKILL.md HTML footer instruction reads "v${footerMajor}.${footerMinor}" but plugin.json is "${files.pluginJson.version}" — expected "${expectedVersionTag}"`
+          );
+        });
+      }
 
       if (files.nestedSkillMd) {
         it("nested skills/ SKILL.md has matching frontmatter name", () => {
