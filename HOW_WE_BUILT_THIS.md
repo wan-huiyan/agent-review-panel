@@ -576,29 +576,173 @@ Every agent now has a structured persona profile surfaced in both output files:
 
 ---
 
+## Step 17: Data Flow Trace + Multi-Run Union + Force Opus (v2.14, 2026-04-07)
+
+### Motivation
+
+Two identical panel runs on the same Schuh webapp (v2.10, `epic-poincare` and `thirsty-nobel` worktrees) produced only ~30% finding overlap. Each run missed a different P0 bug the other caught. A consistency analysis identified four root causes:
+
+1. **LLM-driven content classification produces different persona compositions across runs.** The same "webapp + methodology" scope was classified differently in each run, cascading into entirely different finding profiles (Correctness Hawk vs Code Quality Auditor as the lead reviewer).
+2. **Single-run coverage catches only ~60-70% of discoverable issues.** Research on independent code review (Dunsmore et al., 2000) puts the inter-reviewer overlap at 20-40% — consistent with our observation.
+3. **Composition/seam bugs require dedicated tracing.** The `apply_date_mask` + `prep_df` bug — where function A correctly removes masked Nov-Jan rows and function B correctly reindexes with `fillna(0)`, silently reintroducing the masked rows as zero-revenue days — is structurally invisible to reviewers who read each function in isolation. No prior phase targeted this bug class.
+4. **Silent model mixing via VoltAgent.** The skill said "all agents use opus" at lines 60 and 422 of SKILL.md, but the VoltAgent Step 4 launch instructions at lines 410-412 omitted `model: "opus"`, causing reviewers to fall through to the VoltAgent agent's default model (potentially sonnet or haiku). Reasoning depth varies by model, so this introduced invisible cross-run variance on top of persona variation. This was a latent bug introduced in v2.9 and went undetected for 6 minor releases.
+
+### Implementation
+
+**Phase 2: Data Flow Trace.** A dedicated agent traces data through critical path(s) BEFORE reviewers begin, producing a structured Data Flow Map injected into every reviewer's Phase 3 prompt. Uses Meta's semi-formal certificate prompting (arXiv:2603.01896, 2026, 78%→93% accuracy gain): at each function boundary, the agent produces
+
+```
+FUNCTION: {name} ({file}:{line})
+INPUT_SCHEMA: {types, constraints, tainted fields}
+TRANSFORM: {what the function does + external calls}
+OUTPUT_SCHEMA: {return type, derived fields, invariants}
+COMPOSITION_CHECK: {does OUTPUT_SCHEMA satisfy next INPUT_SCHEMA?}
+INVARIANT_STATUS: {preserved or violated — violations flagged as P0 candidates}
+```
+
+Five mandatory invariant checks at every boundary: schema preservation, transform/back-transform completeness, row count stability, null semantics, temporal consistency. Three user-selectable tiers: Standard (default, single top-ranked path, ~5 min), Thorough (top 3 paths + transform completeness, ~15 min), Exhaustive (all paths, no token limit — aims to catch all bugs). Skipped for pure docs/plans or code with no detectable transforms.
+
+**Multi-Run Union Protocol + Phase 16: Merge.** User invokes `--runs N` or "run 3 times and merge" to execute the panel N times with rotated persona compositions:
+
+- **Run 1:** Standard content-type base set + signal specialists
+- **Run 2:** Complementary set (Code Quality Auditor, Performance Specialist, Methodology Analyst, DA)
+- **Run 3:** Adversarial-heavy (3 Devil's Advocates with different reasoning strategies — analogical, adversarial simulation, failure mode enumeration — plus 1 Correctness Hawk)
+- **Run 4+:** Cycle through 1-3 with shuffled signal specialists
+
+**Key rule:** content classification runs ONCE in Run 1 and is FIXED for all subsequent runs. Phase 2 also runs once and is cached. This eliminates the primary source of cross-run non-determinism (LLM-driven classification) while preserving the benefits of persona rotation.
+
+Phase 16 Merge Agent deduplicates findings by location + bug class (same file + same function OR lines within 10, AND same bug class), scores stability as `[K/N RUNS]`, uses HIGHEST severity when runs disagree (conservative), resolves judge divergence (>2 point spread) with independent assessment. Single-run findings are NOT demoted — they often represent unique persona insights.
+
+**Force `model: "opus"` on all launches.** Three edits to SKILL.md (Dependencies section, Phase 1 VoltAgent Step 4, Core Persona Mapping intro) plus one to `references/prompt-templates.md`. New manifest-consistency test greps all `subagent_type:` occurrences and asserts `model: "opus"` co-occurs on the same line.
+
+**Integer phase renumbering.** All phases renumbered from decimal hierarchy (1, 2, 2.5, 3, 3.5, 4, 4.5, 4.55, 4.6, 4.7, 4.8, 4.8a, 4.8b, 4.9, 5, 6, 6.1, 6.2, 6.3) to sequential integers (1–16). Phase 15 retains sub-phases 15.1/15.2/15.3 as parent "Output Generation" (parallel output generation, not sequential pipeline steps). Phase 12 retains sub-parts 12a and 12b (two-step tier assignment pipeline — confidence-based draft + judge-advised refinement).
+
+### Testing
+
+All 380 tests pass (up from 363) — 13 new tests for v2.14 coverage:
+
+- **4 new manifest-consistency tests:** 16 integer phases present, `subagent_type` + `model: "opus"` co-occurrence on every real launch, no decimal phases remain (except allowed 15.x), SKILL.md mentions v2.14 features
+- **v2.14 category validation** in eval-suite-integrity (positive-v214, negative-v214, edge-v214)
+- **v2.14 coverage describe block** (3 tests: positive triggers exist, negative triggers exist, triggers cover both multi-run and data flow trace features)
+- **6 new eval-suite triggers** (4 positive, 2 negative)
+
+### Lessons
+
+30. **Independent test coverage lags silently.** The v2.9 VoltAgent integration omitted `model: "opus"` from launch calls, and this went undetected for 6 minor releases because there was no test covering the invariant. The fix was a ~20-line regex-based test that would have caught the bug in v2.9. **Rule:** when adding new launch syntax (subagents, specialist agents, etc.), add a test that asserts the invariant you intend — not just that the launch syntax works.
+
+31. **Composition bugs live at function boundaries.** The entire class of bugs where two individually-correct functions produce incorrect results together is structurally invisible to per-function review. Dedicated data flow tracing catches them; adversarial debate does not. The Data Flow Tracer is the biggest coverage improvement since the Completeness Auditor (v2.0).
+
+32. **Content classification non-determinism cascades.** One LLM decision at Phase 1 ("is this pure code or mixed content?") cascades through the entire pipeline because persona selection depends on it. Multi-Run Union mitigates by rotating personas directly (no classification per run). A future v2.16+ could eliminate this entirely with rule-based classification.
+
+33. **Hand-in-hand data enrichment + rendering spec is required to prevent agent compliance drift.** The v2.13 HTML prompt already specified expandable issue cards with a "▶ View evidence" button. But the schema only populated `fullEvidence` for verified findings, so for the other 19 findings the HTML agent had nothing to expand — and it silently omitted the expand button entirely. When requiring agents to render rich UI, the DATA must also be required (required fields, empty placeholders OK) so agents can't shortcut the spec. This lesson directly motivated v2.15's "all 10 sections always present, empty ones show placeholders" rule.
+
+---
+
+## Step 18: Expandable Issue Cards in Phase 15.3 HTML Report (v2.15, 2026-04-07)
+
+### Motivation
+
+A sample v2.13 HTML output (`review_panel_report_consolidated.html` in the nice-shtern worktree) rendered 22 flat issue cards with no expand mechanism. The prompt already specified `▶ View evidence` — but the agent omitted it because the schema lacked rich data for non-verified findings (see lesson 33 above).
+
+Process history (`review_panel_process.md`) had ~600 lines of full narratives, debate transcripts, and VR agent outputs per review — all of which was available in the skill's output but NEVER passed to the HTML agent. The HTML was rendering from the summarized `review_panel_report.md` only.
+
+### Implementation
+
+**Schema extension.** 8 new REQUIRED fields per action item in the Phase 15.3 prompt:
+
+- `narrative` — full multi-paragraph reviewer reasoning (verbatim, not summarized)
+- `codeEvidence` — array of `{file, lineRange, language, snippet, caption}`
+- `reviewerRatings` — per-reviewer severity + reasoning
+- `debateTranscript` — round-by-round Phase 5 exchanges
+- `judgeRuling` — full Phase 14 reasoning + severity-change explanation
+- `fixRecommendation` — proposed change + before/after code + regression test + blast radius + effort
+- `crossRefs` — related findings with relationship labels (root-cause, same-class, depends-on, blocks)
+- `priorRuns` — meta-review comparison across prior runs
+
+Critical rule: fields are required-but-possibly-empty. Empty arrays or null values are acceptable, but the field must be present. The HTML renderer shows "No {section} data" placeholders for empty sections so every card has consistent structure. This prevents the v2.13 compliance gap from recurring — agents can't skip sections with no data because the spec demands the placeholder.
+
+**Phase 15.2 as Reference Input.** The HTML agent now receives the full Phase 15.2 process history (`review_panel_process.md` content) alongside the structured summary. It extracts verbatim narratives, debate exchanges, and judge rulings per finding. Token cost: ~10–20KB per review. This is the critical bridge — the data was always generated, just never passed to the HTML agent.
+
+**10-section accordion layout.** Each card is a native `<details>` element. The `<summary>` contains the collapsed card header. Expanding reveals a nested accordion of 10 `<details>` sections (open by default):
+
+1. 📖 Narrative
+2. 📄 Code Evidence (Prism.js-highlighted with file:line headers)
+3. 👥 Raised by (per-reviewer rating + reasoning grid)
+4. 🔍 Verification Trail (full VR agent output if verified)
+5. 💬 Debate (round-by-round transcript if disputed)
+6. ⚖️ Judge Ruling (full reasoning + severity-change explanation)
+7. 🛠️ Fix Recommendation (proposed + before/after + test + blast radius + effort)
+8. 🔗 Cross-references (clickable scroll-to-target with pulse highlight)
+9. 🏷️ Epistemic Tags (hover tooltips explaining each label)
+10. 📊 Prior Runs (meta-review comparison table)
+
+**Card-level UX features.** Deep-link support (`#issue-A1` auto-opens), keyboard navigation (↑/↓/Enter/Home/End/`/`), expand-all / collapse-all buttons, print-friendly `@media print` CSS (forces all details open, inverts theme, hides charts), soft 500KB size cap with optional slim mode.
+
+**New CDN dependency:** Prism.js (prism-tomorrow theme + autoloader plugin) for code syntax highlighting. Third CDN alongside Tailwind and Chart.js. Graceful fallback to unstyled `<pre>` if unreachable.
+
+### Testing
+
+All 393 tests pass (up from 380) — 13 new tests for v2.15 coverage:
+
+- **4 new manifest-consistency tests:** Phase 15.3 spec documents all 10 expandable card sections, 8 new schema fields present, Prism.js CDN documented, SKILL.md mentions v2.15 features
+- **v2.15 category validation** in eval-suite-integrity (positive-v215, negative-v215, edge-v215)
+- **v2.15 coverage describe block** (3 tests: positive triggers exist, negative triggers exist, triggers mention expandable/deep-detail features)
+- **3 new eval-suite triggers** (2 positive, 1 negative — the negative catches "expand my code" debugging context, not expandable cards)
+
+### Sample regenerated output
+
+Hand-rendered a new demo HTML at `review_panel_report_consolidated_v215.html` (190KB, 2370 lines — up from 51KB, 821 lines for v2.13) with 25 expandable cards:
+
+- 3 fully populated (A1, B1, C1) with all 10 accordion sections showing real extracted content from the process history
+- 22 with placeholder accordion content demonstrating consistent structure even when source data is absent
+- All v2.15 features wired up: Prism.js, deep-linking, keyboard navigation, expand/collapse all, print styles, cross-references
+
+### Lessons
+
+34. **Required-but-possibly-empty fields beat optional fields for forcing compliance.** When a rendering agent has a choice between "populate rich UI with empty data" and "skip the rich UI entirely", agents reliably choose "skip". Making fields required with empty-placeholder rendering removes the choice — the agent must produce the structure, even if the data is empty. This is the architectural fix for lesson 33.
+
+35. **Cross-phase data routing is an underappreciated fix.** Phase 15.2 generates verbatim agent reasoning. Phase 15.3 renders HTML. For 3 versions (v2.12–v2.14), the two phases ran in isolation — Phase 15.3 never saw Phase 15.2's verbatim content. The fix was not to regenerate data or rewrite agents, but simply to route Phase 15.2's output into Phase 15.3's input. Before assuming you need new data generation, check whether existing data is being thrown away at phase boundaries.
+
+36. **Native `<details>` is the right primitive for expandable UI in self-contained HTML.** It requires zero JavaScript for the expand/collapse behavior, works in print media queries (with `details > *:not(summary)` forced open), keyboard-accessible by default (Tab + Enter/Space), and nests cleanly for accordion patterns. The alternative — JS-driven toggle state — adds framework dependencies and print-unfriendly state management.
+
+---
+
 ## File Inventory
 
 ```
-├── SKILL.md                           # The skill itself (v2.13, ~800 lines)
+├── SKILL.md                           # The skill itself (v2.15, ~1220 lines — 16 phases + sub-phases)
 ├── skills/agent-review-panel/
-│   └── SKILL.md                       # Plugin copy (synced with root)
+│   └── SKILL.md                       # Plugin copy (byte-identical to root; enforced by manifest test)
 ├── references/
-│   ├── signals-and-checklists.md      # 9 signal groups + domain checklists
-│   ├── prompt-templates.md            # All phase prompt templates (incl. 4.8/4.9/6.2/6.3)
-│   ├── changelog.md                   # Version history (v2–v2.13)
-│   └── research-v28.md               # 19-source v2.8 research compilation
+│   ├── signals-and-checklists.md      # 11 signal groups + domain checklists (includes v2.14 Transform + Data Flow Invariants checklists)
+│   ├── prompt-templates.md            # All phase prompt templates (incl. Phase 2 Data Flow Tracer + Phase 16 Merge + Phase 15.3 10-section expandable cards)
+│   ├── changelog.md                   # Version history (v2–v2.15)
+│   └── research-v28.md                # 19-source v2.8 research compilation
+├── tests/
+│   ├── trigger-classification.test.mjs  # Trigger phrase classification (55+ prompts)
+│   ├── manifest-consistency.test.mjs    # 16 phases, opus enforcement, 10-section spec coverage
+│   ├── eval-suite-integrity.test.mjs    # Category validation + v2.9/v2.14/v2.15 coverage blocks
+│   ├── report-structure.test.mjs        # Report format validation
+│   ├── behavioral-assertions.test.mjs   # Fixture-based behavioral assertions
+│   ├── golden-file.test.mjs             # Golden fingerprint snapshots
+│   ├── fixtures/                        # Sample reports (valid, minimal, low-confidence)
+│   └── golden/                          # Golden JSON fingerprints
 ├── docs/
-│   ├── demo-flow.png                  # Architecture diagram (referenced by README)
+│   ├── research-foundations.md        # Full research foundations breakdown (9+ papers)
+│   ├── hero-flow.svg                  # Pipeline architecture diagram
+│   ├── demo.gif                       # Animated demo
 │   └── archive/                       # Historical artifacts
 │       ├── SKILL.v2.md, SKILL.v2.1.md # Old skill versions
 │       ├── review_panel_report.md     # v2.8 roadmap panel review
 │       └── v25-vs-v26-comparison.md   # A/B test results
 ├── .claude-plugin/
-│   ├── plugin.json                    # Plugin metadata
-│   └── marketplace.json               # Marketplace listing
-├── README.md                          # User-facing documentation
-├── HOW_WE_BUILT_THIS.md               # This file
-├── ROADMAP.md                         # Unified research + trust roadmap (17+ papers, 14 projects)
-├── eval-suite.json                    # Schliff eval suite (triggers + assertions)
+│   ├── plugin.json                    # Plugin metadata (name, version 2.15.0, repo)
+│   └── marketplace.json               # Marketplace listing (v2.15.0, author, tags)
+├── README.md                          # User-facing documentation (install via /plugin marketplace add)
+├── HOW_WE_BUILT_THIS.md               # This file (Steps 1–18 chronicling v1–v2.15)
+├── ROADMAP.md                         # Unified research + trust roadmap (22+ papers, 14 projects)
+├── CHANGELOG.md                       # Top-level changelog (v1.0 → v2.15)
+├── eval-suite.json                    # Schliff eval suite (triggers + assertions, 60+ entries)
+├── package.json                       # Node.js test runner config (version 2.15.0)
 └── LICENSE                            # MIT
 ```

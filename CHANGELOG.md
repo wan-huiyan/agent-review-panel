@@ -2,6 +2,63 @@
 
 All notable changes to Agent Review Panel.
 
+## [2.15.0] — 2026-04-07
+
+### Added
+- **Expandable 10-section issue cards in Phase 15.3 HTML report.** Each issue card is a native `<details>` element that expands to reveal a nested accordion with 10 sections: 📖 Narrative (full reviewer reasoning, verbatim), 📄 Code Evidence (Prism.js-highlighted snippets with file:line headers), 👥 Raised by (per-reviewer rating + reasoning), 🔍 Verification Trail (full VR agent output), 💬 Debate (round-by-round transcript), ⚖️ Judge Ruling, 🛠️ Fix Recommendation (proposed change + before/after code + regression test + blast radius + effort), 🔗 Cross-references (related findings with relationship labels), 🏷️ Epistemic Tags (hover tooltips), 📊 Prior Runs (meta-review comparison).
+- **8 new REQUIRED fields** in the Phase 15.3 schema per action item: `narrative`, `codeEvidence`, `reviewerRatings`, `debateTranscript`, `judgeRuling`, `fixRecommendation`, `crossRefs`, `priorRuns`. Empty arrays/null acceptable but the field must be present. Empty sections render "No {section} data" placeholders so every card has consistent structure.
+- **Phase 15.2 process history passed as Reference Input to Phase 15.3** — the HTML agent now receives the verbatim process history alongside the summarized report, enabling it to extract real narratives, debate exchanges, and judge rulings per finding. Token cost: ~10–20KB per review.
+- **Deep-link support** — `report.html#issue-A1` auto-opens the matching card, scrolls to it, and pulses a highlight ring.
+- **Keyboard navigation** — ↑/↓ between cards, Enter/Space expands, Home/End jump to first/last, `/` focuses search.
+- **Expand all / Collapse all** buttons at the top of the Issues tab (operates on visible cards only).
+- **Print-friendly `@media print` CSS** — forces all details open, inverts dark theme, hides charts and filters, sets `page-break-inside: avoid` per card.
+- **Prism.js CDN dependency** (new) — `https://cdn.jsdelivr.net/npm/prismjs@1.29.0` for syntax highlighting. Uses prism-tomorrow theme + autoloader plugin. Graceful fallback to unstyled `<pre>` if CDN unreachable.
+- **Soft 500KB size cap** with optional slim mode that drops verbatim `fullEvidence` and `debateTranscript` when exceeded.
+- 4 new manifest-consistency tests: 10-section spec coverage, 8 new schema fields present, Prism.js documented, SKILL.md mentions v2.15 features.
+- v2.15 eval-suite category + coverage describe block + 3 new triggers.
+
+### Motivation
+A compliance gap in the v2.13 nice-shtern sample: the Phase 15.3 HTML rendered 22 flat issue cards with no expand mechanism, even though the prompt template already specified a "▶ View evidence" button. Root cause: the schema only populated rich evidence fields for findings that went through Phase 13 verification. For non-verified findings, the HTML agent had nothing to expand, so it silently omitted the expand button entirely — degrading the whole UX to one-liner cards. v2.15 fixes this by making all 8 deep-detail fields required (with empty-placeholder rendering) and routing Phase 15.2 content into Phase 15.3.
+
+## [2.14.0] — 2026-04-07
+
+### Added
+- **Phase 2: Data Flow Trace** — a dedicated agent traces data through the critical path(s) of the work BEFORE reviewers begin, targeting composition defects (two individually-correct functions producing incorrect results together — the `apply_date_mask` + `prep_df` class of bug). Uses Meta's semi-formal certificate prompting (2026, 78%→93% accuracy): at each function boundary, produce INPUT_SCHEMA → TRANSFORM → OUTPUT_SCHEMA → COMPOSITION_CHECK → INVARIANT_STATUS. Five mandatory invariant checks: schema preservation, transform/back-transform completeness, row count stability, null semantics, temporal consistency. Three user-selectable tiers: **Standard** (default, single path, ~5 min), **Thorough** (top 3 paths + completeness checks, ~15 min), **Exhaustive** (all paths, no token limit, aims to catch all bugs). Skipped for pure docs/plans or code with no data transforms.
+- **Multi-Run Union Protocol + Phase 16: Merge** — invoke `--runs N` or "run 3 times and merge" to execute the panel N times with rotated persona compositions, then merge via Phase 16. Rotation: Run 1 = standard base, Run 2 = complementary (Code Quality Auditor + Performance Specialist + Methodology Analyst + DA), Run 3 = adversarial-heavy (3 DAs with different reasoning strategies + Correctness Hawk), Run 4+ cycles. **Key rule:** content classification runs ONCE (Run 1) and is reused — eliminates the primary source of cross-run variance documented in the v2.10 consistency analysis. Phase 16 deduplicates by location + bug class, scores stability as `[K/N RUNS]`, uses highest severity when runs disagree, resolves judge divergence.
+- **Force `model: "opus"` on all launches** — fixes a silent bug introduced in v2.9: the skill said "all agents use opus" but the VoltAgent Step 4 launch instructions omitted the model parameter, causing agents to fall through to their frontmatter-declared default model (potentially sonnet or haiku). Now ALWAYS pass `model: "opus"` explicitly alongside `subagent_type`. New `manifest-consistency` test greps all `subagent_type:` launches and asserts `model: "opus"` on the same line.
+- **Two new checklists** in `references/signals-and-checklists.md`: Transform/Back-Transform Completeness (8 items) + Data Flow Invariants (8 items). Used by the Phase 2 Data Flow Tracer.
+- **Two new prompt templates** in `references/prompt-templates.md`: Phase 2 Data Flow Tracer (~90 lines), Phase 16 Merge Agent (~60 lines).
+
+### Changed
+- **Integer phase renumbering** — all phases renumbered from decimal hierarchy (1, 2, 2.5, 3, 3.5, 4, 4.5, 4.55, 4.6, 4.7, 4.8, 4.8a, 4.8b, 4.9, 5, 6, 6.1, 6.2, 6.3) to sequential integers (1–16). Phase 15 retains sub-phases 15.1/15.2/15.3 as parent "Output Generation" because those represent parallel output generation. Phase 12 retains sub-parts 12a and 12b (two-step tier assignment pipeline).
+
+### Motivation
+Two identical panel runs on the same Schuh webapp (v2.10) produced only ~30% finding overlap, each missing a different P0 bug. Root causes: (1) LLM-driven content classification produces different persona compositions, (2) single-run coverage catches only ~60-70% of discoverable issues, (3) composition/seam bugs require dedicated tracing — no prior phase targeted this bug class, (4) silent model mixing via VoltAgent `subagent_type` without explicit `model: "opus"` override.
+
+## [2.13.0] — 2026-04-03
+
+### Added
+- **Persona profiles surfaced in both process history and HTML dashboard.** Every agent now has a structured profile: role, agreement intensity (panelists), reasoning strategy, domain focus, agent type (VoltAgent or generic), matched-claim-type (Phase 13 agents), phases active.
+- **Phase 15.2 (Process History):** Persona Profiles Registry at the top listing all agents, plus inline profile blocks immediately before each agent's first output.
+- **Phase 15.3 (HTML):** Panel Gallery section with three sub-groups — Panel Reviewers (avatar cards, click to filter issues), Verification Specialists (linked to dispute points), Support Agents (compact cards with phase badges). Issue cards show "Raised by" avatar chips and verification agent persona in the expanded evidence panel. Cross-linking: clicking a persona chip scrolls to and highlights that agent's card in the Panel Gallery.
+
+## [2.12.0] — 2026-04-03
+
+### Added
+- **Triple output format.** Phase 6 restructured from 1 → 3 output files:
+  1. **`review_panel_report.md`** — existing primary report (unchanged)
+  2. **`review_panel_process.md`** — verbatim "director's cut" of every agent's output in chronological order. Orchestrator-assembled, no new agent needed.
+  3. **`review_panel_report.html`** — interactive dashboard generated by a dedicated Opus agent. Tailwind CSS + Chart.js via CDN. Stats row, three charts (confidence distribution, tier breakdown, verdict breakdown), filterable/sortable issue cards with expandable evidence panels, collapsible consensus/disagreement sections.
+- Phase 6.1 runs first; 6.2 (orchestrator write) and 6.3 (Opus agent) run in parallel.
+
+## [2.11.0] — 2026-04-03
+
+### Added
+- **Phase 4.8: Verification Tier Assignment** — a two-step pipeline. 4.8a (no agent): orchestrator derives initial tiers from Phase 2.5 confidence ratings + debate round signals. Low-confidence or multi-round unresolved → Deep; mixed → Standard; all-high + simple fact → Light. 4.8b (Opus agent): reviews the draft and overrides where signals are misleading.
+- **Phase 4.9: Targeted Verification Agents** — one agent per dispute, launched in parallel. Persona-matched to claim type (statistical → Data Scientist, code correctness → Code Reviewer, security → Security Auditor). VoltAgent specialists preferred when available. Tiered budgets: Light ~2k tokens (read-only), Standard ~8k (multi-file), Deep ~32k (web search). Verdicts: `[VR_CONFIRMED]`, `[VR_REFUTED]`, `[VR_PARTIAL]`, `[VR_INCONCLUSIVE]`, `[VR_NEW_FINDING]`.
+- **Phase 5 judge updated** to receive the Verification Round Summary as 8th input. Step 2 ("Rule on Each Disagreement") now gives significant weight to VR verdicts.
+- Inspired by [MiroFish](https://github.com/666ghj/MiroFish)'s heterogeneous agent architecture — distinct agent personalities matched to tasks based on the task's domain characteristics.
+
 ## [2.10.0] — 2026-03-30
 
 ### Added
