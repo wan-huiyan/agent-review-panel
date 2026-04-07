@@ -1,6 +1,6 @@
 {
   "name": "agent-review-panel",
-  "version": "2.14.0",
+  "version": "2.15.0",
   "private": true,
   "description": "Multi-agent adversarial review panel for Claude Code",
   "scripts": {

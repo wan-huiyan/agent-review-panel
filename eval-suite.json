@@ -1,6 +1,6 @@
 {
   "skill_name": "agent-review-panel",
-  "version": "2.14.0",
+  "version": "2.15.0",
   "created_by": "manual",
   "updated": "2026-04-07",
   "triggers": [
@@ -171,6 +171,27 @@
       "should_trigger": false,
       "category": "negative-v214",
       "notes": "v2.14 negative: 'run twice' is test execution, not multi-run review"
+    },
+    {
+      "id": "pos-23",
+      "prompt": "Do a review panel with the new expandable HTML cards — I want to see the full narrative and code evidence for every finding",
+      "should_trigger": true,
+      "category": "positive-v215",
+      "notes": "v2.15 expandable issue cards: review panel + explicit deep-detail request"
+    },
+    {
+      "id": "pos-24",
+      "prompt": "Review panel please, and make sure the HTML report has the expandable accordion so I can click through to see debate transcripts and judge rulings per finding",
+      "should_trigger": true,
+      "category": "positive-v215",
+      "notes": "v2.15 expandable issue cards: review panel + 10-section accordion request"
+    },
+    {
+      "id": "neg-17",
+      "prompt": "Can you expand my code with more comments? It needs better documentation",
+      "should_trigger": false,
+      "category": "negative-v215",
+      "notes": "v2.15 negative: 'expand' is code-doc context, not review panel expandable cards"
     },
     {
       "id": "neg-1",

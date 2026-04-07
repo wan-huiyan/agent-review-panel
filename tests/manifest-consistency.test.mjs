@@ -314,5 +314,84 @@ describe("Manifest consistency", () => {
         );
       }
     });
+
+    it("Phase 15.3 spec documents all 10 expandable card sections (v2.15)", () => {
+      // Load the prompt-templates.md where the Phase 15.3 10-section accordion spec lives
+      const promptTemplates = readFileSync(
+        resolve(ROOT, "references/prompt-templates.md"),
+        "utf-8"
+      );
+
+      // The 10 sections of the expandable card accordion
+      const sections = [
+        "Narrative",
+        "Code Evidence",
+        "Raised by",
+        "Verification Trail",
+        "Debate",
+        "Judge Ruling",
+        "Fix Recommendation",
+        "Cross-references",
+        "Epistemic Tags",
+        "Prior Runs",
+      ];
+
+      for (const section of sections) {
+        assert.ok(
+          promptTemplates.includes(section),
+          `prompt-templates.md must document Phase 15.3 section: "${section}"`
+        );
+      }
+    });
+
+    it("Phase 15.3 spec mentions the 8 new v2.15 schema fields", () => {
+      const promptTemplates = readFileSync(
+        resolve(ROOT, "references/prompt-templates.md"),
+        "utf-8"
+      );
+
+      const v215Fields = [
+        "narrative:",
+        "codeEvidence:",
+        "reviewerRatings:",
+        "debateTranscript:",
+        "judgeRuling:",
+        "fixRecommendation:",
+        "crossRefs:",
+        "priorRuns:",
+      ];
+
+      for (const field of v215Fields) {
+        assert.ok(
+          promptTemplates.includes(field),
+          `prompt-templates.md must document v2.15 schema field: "${field}"`
+        );
+      }
+    });
+
+    it("Phase 15.3 spec documents Prism.js CDN dependency (v2.15)", () => {
+      const promptTemplates = readFileSync(
+        resolve(ROOT, "references/prompt-templates.md"),
+        "utf-8"
+      );
+      assert.ok(
+        /prismjs|Prism\.js/i.test(promptTemplates),
+        "prompt-templates.md must document Prism.js as a v2.15 dependency"
+      );
+    });
+
+    it("SKILL.md mentions v2.15 expandable card features", () => {
+      const v215Features = [
+        "Expandable",
+        "10-section accordion",
+        "Deep-link",
+      ];
+      for (const feature of v215Features) {
+        assert.ok(
+          rootSkillMd.includes(feature),
+          `SKILL.md must mention v2.15 feature: "${feature}"`
+        );
+      }
+    });
   });
 });

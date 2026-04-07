@@ -827,14 +827,30 @@ Repeat the block below for each Phase 13 agent:
 You are an expert web developer and data visualization specialist. Your task is
 to write a single self-contained HTML file (`review_panel_report.html`) that
 presents the results of a multi-agent adversarial review panel as a polished,
-interactive dashboard.
+interactive dashboard with EXPANDABLE issue cards that reveal a 10-section
+accordion of deep per-finding detail (new in v2.15).
 
 The HTML file must work when opened directly in a browser. Use:
 - Tailwind CSS (CDN: https://cdn.tailwindcss.com) for styling
 - Chart.js (CDN: https://cdn.jsdelivr.net/npm/chart.js) for charts
+- Prism.js (CDN: https://cdn.jsdelivr.net/npm/prismjs@1.29.0) for code syntax
+  highlighting in the Code Evidence sections of expanded cards
 - Vanilla JavaScript only (no other frameworks)
 
-The file must be fully functional offline except for those two CDN stylesheets.
+The file must be fully functional offline except for those three CDN dependencies.
+
+## Reference Inputs (v2.15)
+
+In addition to the structured review data below, you receive the full Phase 15.2
+process history as reference context. Use it to extract verbatim reviewer
+narratives, debate exchanges, and judge rulings when populating the per-finding
+schema fields (`narrative`, `debateTranscript`, `judgeRuling`). Do NOT copy the
+entire process history into the HTML — extract only the relevant passages per
+finding. The process history is the authoritative source for the verbatim
+content; the Phase 15.1 summary report is a condensed view.
+
+{Phase 15.2 process history content, injected by orchestrator — the full
+contents of `review_panel_process.md`}
 
 ## Structured Review Data
 
@@ -853,18 +869,128 @@ The file must be fully functional offline except for those two CDN stylesheets.
 {reviewer, persona, initial score, final score, recommendation — one row per reviewer}
 
 ### Action Items
-{For each action item, provide:
-- ID: AI-{N}
-- Summary: {one sentence}
-- Severity: P0 | P1 | P2 | P3
-- Epistemic label: [VERIFIED] | [CONSENSUS] | [SINGLE-SOURCE] | [UNVERIFIED] | [DISPUTED]
-- Defect type: [EXISTING_DEFECT] | [PLAN_RISK] | null
-- Source: which reviewer(s) raised it
-- Verification tier: Light | Standard | Deep | null (if Phase 13 not triggered)
-- Verification verdict: VR_CONFIRMED | VR_REFUTED | VR_PARTIAL | VR_INCONCLUSIVE | VR_NEW_FINDING | null
-- Verification confidence: High | Medium | Low | null
-- Evidence summary: {1-3 sentences of key evidence}
-- Full evidence: {complete verification agent output for expand panel}
+{For each action item, provide the structured record below. ALL fields marked
+REQUIRED must be present — use empty arrays `[]`, empty strings `""`, or `null`
+for fields with no data, but DO NOT omit the field. The HTML renderer displays
+a "No {section} data" placeholder for empty sections so that all issue cards
+have consistent structure (v2.15).
+
+REQUIRED identity and classification fields (unchanged from v2.14):
+- id: "AI-{N}"
+- summary: {one sentence}
+- severity: "P0" | "P1" | "P2" | "P3"
+- epistemicLabel: "[VERIFIED]" | "[CONSENSUS]" | "[SINGLE-SOURCE]" | "[UNVERIFIED]" | "[DISPUTED]"
+- defectType: "[EXISTING_DEFECT]" | "[PLAN_RISK]" | null
+- sourceReviewers: [{persona names who raised this, e.g. "Correctness Hawk"}]
+- verificationTier: "Light" | "Standard" | "Deep" | null
+- verificationVerdict: "VR_CONFIRMED" | "VR_REFUTED" | "VR_PARTIAL" | "VR_INCONCLUSIVE" | "VR_NEW_FINDING" | null
+- verificationConfidence: "High" | "Medium" | "Low" | null
+- evidenceSummary: "{1-3 sentences of key evidence}"
+- fullEvidence: "{complete verification agent output for expand panel, or empty string if not verified}"
+
+REQUIRED v2.15 deep-detail fields (extracted from Phase 15.2 process history):
+
+- narrative: "{The full multi-paragraph reviewer reasoning in original voice,
+  preserving all technical details. Extract verbatim from the Phase 15.2
+  reviewer report section for this finding. Do NOT summarize. Preserve
+  paragraph breaks, lists, inline code references. 100-500 words typical.}"
+
+- codeEvidence: [
+    {
+      file: "webapp/views/public.py",
+      lineRange: "28-30",
+      language: "python",
+      snippet: "tok = token_data.copy()\ntok[\"client_secret\"] = os.getenv(\"GOOGLE_CLIENT_SECRET\")\nflask.session[\"oauth_token\"] = tok",
+      caption: "Cookie payload storing the OAuth client secret in plaintext"
+    },
+    ...
+  ]
+  {Array of code snippets cited by the reviewer. Extract file paths and line
+  ranges from the reviewer's evidence. Use language codes Prism.js understands:
+  python, javascript, typescript, bash, sql, yaml, json, html, css, go, rust,
+  java, ruby, php, swift, kotlin, etc. Empty array `[]` if no code evidence.}
+
+- reviewerRatings: [
+    {
+      reviewerId: "p-1",
+      reviewerName: "Correctness Hawk",
+      rating: "P0",
+      reasoning: "One sentence per-reviewer rationale — why THIS reviewer rated it at this severity"
+    },
+    ...
+  ]
+  {One entry per reviewer who raised this finding. May differ from the final
+  severity (e.g., a reviewer may have rated P0 but the judge downgraded to P1).
+  Use `reviewerId` matching the Panel Profiles section for cross-referencing
+  to the Panel Gallery.}
+
+- debateTranscript: [
+    {
+      round: 1,
+      reviewer: "Correctness Hawk",
+      content: "Full verbatim exchange text from the Phase 5 debate round"
+    },
+    ...
+  ]
+  {Extract from Phase 15.2's "Phase 5: Debate" section, filtered to exchanges
+  about this specific finding. Empty array `[]` if this finding was not debated
+  (most findings aren't — debate only happens when reviewers disagree).}
+
+- judgeRuling: {
+    disputed: true | false,
+    reasoning: "Full multi-paragraph judge reasoning extracted from Phase 14 Supreme Judge output for this finding",
+    finalSeverity: "P1",
+    severityChangeReason: "Downgraded from P0 because the Flask webapp is local-only and the attack vector requires local shell access"
+  } | null
+  {Extract from Phase 15.2's "Phase 14: Supreme Judge" section. Use `null` if
+  this finding was not arbitrated by the judge (no dispute). If `disputed` is
+  true, `reasoning` and `severityChangeReason` should be populated.}
+
+- fixRecommendation: {
+    summary: "One-line fix hint (same as the existing fix one-liner)",
+    proposedChange: "Multi-paragraph description of the proposed fix. What changes, where, and why.",
+    beforeCode: "def _creds():\n    client_secret = session['oauth_token']['client_secret']\n    return Credentials(..., client_secret=client_secret)",
+    afterCode: "def _creds():\n    client_secret = os.getenv('GOOGLE_CLIENT_SECRET')\n    return Credentials(..., client_secret=client_secret)",
+    regressionTest: "Add webapp/tests/test_oauth.py::test_session_does_not_contain_client_secret that asserts 'client_secret' not in flask.session after OAuth callback",
+    blastRadius: "Low — single function change, no API surface change, only affects OAuth flow",
+    estimatedEffort: "30 min"
+  }
+  {`beforeCode` / `afterCode` / `regressionTest` are optional but REQUIRED when
+  the fix involves a concrete code change. `blastRadius` should be one of
+  Low/Medium/High with a one-line explanation. `estimatedEffort` is a rough
+  time estimate: 15 min / 1 hr / 4 hr / 1 day / multi-day.}
+
+- crossRefs: [
+    {
+      targetId: "A5",
+      relationship: "root-cause" | "same-class" | "depends-on" | "blocks",
+      note: "B1 is a symptom of A5's architectural divergence — fixing A5 eliminates the entire class"
+    },
+    ...
+  ]
+  {Array of links to related findings. Empty `[]` if no related findings.
+  Relationships: "root-cause" (this finding is caused by target), "same-class"
+  (both are instances of the same underlying issue), "depends-on" (fixing this
+  requires fixing target first), "blocks" (this finding blocks target).}
+
+- priorRuns: [
+    {
+      runLabel: "epic-poincare",
+      severity: "P0",
+      rating: "REJECT",
+      note: "Flagged as blocking deployment"
+    },
+    {
+      runLabel: "thirsty-nobel",
+      severity: "P1",
+      rating: "APPROVE_WITH_CONDITIONS",
+      note: "Downgraded because of local-only threat model"
+    },
+    ...
+  ]
+  {Meta-review comparison — prior panel runs that evaluated the same codebase
+  and rated this finding. Empty `[]` for single-run reviews. Useful for
+  consistency-check reports that explicitly compare runs.}
 }
 
 ### Consensus Points
@@ -1025,17 +1151,154 @@ avatar chips for each panelist who raised this item (colored circles with initia
 matching their avatar_color from Panel Gallery). Clicking a chip activates the
 reviewer filter for that panelist.
 
-Expand button ("▶ View evidence" / "▼ Hide evidence"):
-Expanded panel shows in a slightly indented, lightly shaded box:
-- Verification agent persona banner: a small card with the agent's colored avatar,
-  name ("Statistical Expert"), role, tier, and a "View agent profile ↑" link that
-  scrolls to the Panel Gallery and highlights that agent's card
-- "What was investigated: {brief}"
-- "Key evidence:" followed by the evidence summary in a monospace-styled blockquote
-- Full evidence details in a scrollable pre block (max-height 400px, overflow-y scroll)
-- If VR_REFUTED: a red banner "⚠ Claim was refuted — recommend downgrading or removing this action item"
-- If VR_CONFIRMED: a green banner "✓ Claim independently confirmed by verification agent"
-- If VR_NEW_FINDING: a purple banner "🔍 Verification revealed an additional issue"
+**Expandable Card Structure (v2.15 — 10-section accordion):**
+
+Each issue card is wrapped in a native `<details>` element with `id="issue-{id}"`
+(e.g., `id="issue-A1"`) for deep-linking. The `<summary>` element contains the
+always-visible card header (severity chip, ID, summary, epistemic tags,
+confidence bar, raised-by chips, chevron icon).
+
+When expanded, the card reveals a nested accordion (`section-accordion` class)
+of 10 sub-sections. Each sub-section is ITSELF a `<details>` element with
+`open` attribute set by default — so expanding the outer card reveals
+everything immediately, but the user can collapse individual sections.
+
+The 10 sections render in this fixed order:
+
+**1. 📖 Narrative** — Full `narrative` text in prose (preserves paragraph
+breaks, lists, inline code). Font: sans-serif, text-sm. If the narrative
+contains `` `backticks` ``, render them as inline `<code>` with
+`bg-slate-800 px-1 rounded` styling. If `narrative` is empty: render the
+placeholder "No narrative captured for this finding."
+
+**2. 📄 Code Evidence** — For each entry in `codeEvidence`:
+  - Header bar: `<div class="flex items-center gap-2 text-xs text-slate-400 mb-1">`
+    containing file path (monospace), line range badge, and caption (italic).
+  - Code block: `<pre><code class="language-{language}">{escaped snippet}</code></pre>`
+    with Prism.js `prism-tomorrow` theme styling.
+  - Separate entries by `mt-3` vertical margin.
+  - Code blocks must use `max-h-96 overflow-y-auto` for long snippets.
+  - ESCAPE the snippet content: replace `<` with `&lt;`, `>` with `&gt;`,
+    `&` with `&amp;` before inserting into the `<code>` element.
+  - If `codeEvidence` is empty: "No code evidence captured for this finding.
+    The reviewer may have raised this as a design/framing concern rather than
+    a concrete code defect."
+
+**3. 👥 Raised by** — Grid (`grid grid-cols-1 md:grid-cols-2 gap-3`) with one
+card per `reviewerRatings` entry. Each card:
+  - Flex row: avatar circle (colored by `reviewerId` lookup to Panel Profiles)
+    with initials, then reviewer name (font-semibold), then per-reviewer
+    severity badge (same color scheme as main severity chips).
+  - Below the header row: italic reasoning text (text-sm text-slate-300).
+  - If the per-reviewer rating differs from the final rating, show a small
+    annotation "Rated {X}, final {Y}" in text-xs text-yellow-400.
+  - If `reviewerRatings` is empty: fall back to the `sourceReviewers` list
+    (legacy v2.14 behavior) — render as avatar chips without per-reviewer
+    reasoning.
+
+**4. 🔍 Verification Trail** — Shown if `verificationTier` is set (finding
+went through Phase 13):
+  - Verification agent persona banner: a small card with the agent's colored
+    avatar, name ("Statistical Expert"), role, tier chip, and a "View agent
+    profile ↑" link that scrolls to the Panel Gallery and highlights that
+    agent's card for 2 seconds.
+  - "What was investigated:" followed by the evidence summary.
+  - "Key evidence:" followed by `evidenceSummary` in a
+    `blockquote border-l-4 border-blue-500 pl-3 italic` block.
+  - "Full investigation trail:" followed by `fullEvidence` in a scrollable
+    `<pre class="max-h-96 overflow-y-auto text-xs bg-slate-950 p-3 rounded">`.
+  - Verdict banner at the bottom:
+    * VR_CONFIRMED: green banner "✓ Claim independently confirmed by verification agent"
+    * VR_REFUTED: red banner "⚠ Claim was refuted — recommend downgrading or removing this action item"
+    * VR_PARTIAL: amber banner "◐ Claim partially confirmed — some details verified, others refuted"
+    * VR_INCONCLUSIVE: gray banner "? Verification was inconclusive — needs further investigation"
+    * VR_NEW_FINDING: purple banner "🔍 Verification revealed an additional issue"
+  - If `verificationTier` is null: "This finding was not dispatched to a
+    verification agent (Phase 13 was skipped or this finding was not disputed)."
+
+**5. 💬 Debate** — Shown if `debateTranscript` is non-empty:
+  - Render each exchange as a chat-bubble-style block:
+    `<div class="flex gap-3 mb-3">` containing a small colored avatar (matched
+    to reviewer persona color), then a content bubble
+    `<div class="flex-1 bg-slate-800/50 rounded-lg p-3">` with:
+    - Header: reviewer name (font-semibold text-sm) + Round N badge (text-xs bg-slate-700 px-2 py-0.5 rounded-full)
+    - Content: the verbatim `content` text in text-sm
+  - If `debateTranscript` is empty: "This finding was not debated in Phase 5
+    (no open dispute between reviewers)."
+
+**6. ⚖️ Judge Ruling** — Shown if `judgeRuling` is non-null:
+  - `reasoning` rendered as prose (multi-paragraph, text-sm).
+  - If `severityChangeReason` is non-empty, a highlighted callout box:
+    `<div class="mt-3 p-3 border-l-4 border-yellow-500 bg-yellow-950/20 rounded-r-lg">`
+    containing a "Severity adjusted:" label and the `severityChangeReason` text.
+  - Judge avatar (slate color) + "Supreme Judge" label at the top for visual
+    consistency with the Raised-by section.
+  - If `judgeRuling` is null: "The Supreme Judge did not arbitrate this finding
+    (no dispute required resolution)."
+
+**7. 🛠️ Fix Recommendation** — Structured layout:
+  - `proposedChange` in prose at the top (text-sm).
+  - If `beforeCode` AND `afterCode` are both present: a side-by-side layout
+    (grid-cols-1 md:grid-cols-2 gap-3) with:
+    * Left panel: "Before" label + `<pre><code class="language-{language}">`
+      with `bg-red-950/30 border border-red-800/50` tint
+    * Right panel: "After" label + `<pre><code class="language-{language}">`
+      with `bg-green-950/30 border border-green-800/50` tint
+    * Both code blocks use Prism.js highlighting (remember to escape HTML).
+  - If only one of `beforeCode` or `afterCode` is present: a single full-width
+    code block with an appropriate label.
+  - `regressionTest` in a dedicated section below the diff:
+    "🧪 Regression test to add:" label, followed by the text in
+    `bg-slate-900 p-3 rounded text-xs font-mono`.
+  - At the bottom, a horizontal row of chips showing:
+    * Blast radius: chip colored by Low (green) / Medium (yellow) / High (red)
+    * Estimated effort: chip in blue
+    * e.g., `<span class="chip-low">Blast: Low</span> <span class="chip-blue">Effort: 30 min</span>`
+  - If the entire `fixRecommendation` object only has a `summary` (no
+    proposed change / code / test / blast radius): render the summary as a
+    simple callout and show "Fix details not specified — see Narrative section
+    for reviewer's recommendation."
+
+**8. 🔗 Cross-references** — Shown if `crossRefs` is non-empty:
+  - List of clickable links, one per entry:
+    `<a href="#issue-{targetId}" class="xref-link">{targetId}: {relationship}</a>`
+    followed by the `note` in italic.
+  - Clicking scrolls to the target card, auto-opens its `<details>`, and adds
+    a 2-second `issue-highlight` CSS animation (yellow ring pulse).
+  - Relationship labels render as color-coded chips:
+    * root-cause: red (this is a symptom)
+    * same-class: blue (both are instances of same issue)
+    * depends-on: amber (fix this first)
+    * blocks: purple (this blocks target)
+  - If `crossRefs` is empty: "No related findings. This finding stands alone."
+
+**9. 🏷️ Epistemic Tags** — Row of chips with tooltips:
+  - `[VERIFIED]` — green chip, tooltip: "Confirmed by claim verification AND at least 2 reviewers independently"
+  - `[CONSENSUS]` — blue chip, tooltip: "3+ reviewers agreed, not independently verified"
+  - `[SINGLE-SOURCE]` — yellow chip, tooltip: "Only one reviewer raised this, unverified"
+  - `[UNVERIFIED]` — gray chip, tooltip: "Cited but not confirmed against source material"
+  - `[DISPUTED]` — red chip, tooltip: "Reviewers explicitly disagreed, resolution was forced"
+  - `[VR_CONFIRMED]` — emerald chip, tooltip: "Verification agent independently confirmed the claim"
+  - `[VR_REFUTED]` — red chip, tooltip: "Verification agent found the claim to be incorrect"
+  - `[VR_NEW_FINDING]` — purple chip, tooltip: "Verification revealed an additional issue"
+  - `[EXISTING_DEFECT]` — red chip, tooltip: "This bug exists in the current running code"
+  - `[PLAN_RISK]` — amber chip, tooltip: "This is a risk that would materialize if the plan is implemented as written"
+  - Each chip: native `title` attribute for hover tooltip on desktop; also a
+    small info icon (ℹ️) that reveals a popover on click for touch devices.
+
+**10. 📊 Prior Runs** — Shown if `priorRuns` is non-empty:
+  - Table with columns: Run | Severity | Rating | Note
+  - Severity cells color-coded by badge style
+  - Rating cells use a small chip
+  - Table styling: `bg-slate-900/50 rounded-lg overflow-hidden text-sm`
+  - If `priorRuns` is empty: "No prior-run data available (this is a
+    single-run review, not a meta-comparison)."
+
+**Placeholder rule:** If any of the 10 sections has no data, render the
+placeholder text for that section — do NOT omit the section entirely. Every
+expanded card must show all 10 sections in the same order. This ensures
+consistent card structure across all findings and makes the report
+predictable for readers.
 
 ### 7. Consensus & Disagreements Section
 Two collapsible sub-sections:
@@ -1044,18 +1307,160 @@ Two collapsible sub-sections:
   the verification result (if any) as a highlighted box, then the judge's ruling
 
 ### 8. Footer
-"Generated by Agent Review Panel v2.13 · {date} · {N} reviewers · {work title}"
-CDN dependency note: "Charts and styling require internet connection."
+"Generated by Agent Review Panel v2.15 · {date} · {N} reviewers · {work title}"
+CDN dependency note: "Charts, styling, and code highlighting require internet connection."
 
 ## Implementation Instructions
 
+### Required CSS block (v2.15 additions)
+
+Include this `<style>` block in the `<head>`, extending any existing custom CSS:
+
+```css
+/* v2.15 — expandable card styles */
+.section-accordion { margin-top: 1rem; }
+.section-accordion > details {
+  background: rgba(15, 23, 42, 0.5);
+  border: 1px solid rgba(51, 65, 85, 0.5);
+  border-radius: 0.5rem;
+  margin-bottom: 0.5rem;
+  padding: 0.75rem 1rem;
+}
+.section-accordion > details > summary {
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  list-style: none;
+}
+.section-accordion > details > summary::-webkit-details-marker { display: none; }
+.section-accordion > details[open] > summary {
+  margin-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(100, 116, 139, 0.3);
+  padding-bottom: 0.5rem;
+}
+.section-accordion > details > summary::after {
+  content: "▾";
+  margin-left: auto;
+  color: #64748b;
+  transition: transform 0.15s;
+}
+.section-accordion > details[open] > summary::after {
+  transform: rotate(180deg);
+}
+
+/* Highlight pulse for deep-link navigation and cross-reference clicks */
+.issue-highlight {
+  animation: highlight-pulse 2s ease-out;
+}
+@keyframes highlight-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(250, 204, 21, 0.7); }
+  100% { box-shadow: 0 0 0 12px rgba(250, 204, 21, 0); }
+}
+
+/* Code evidence styling */
+.code-evidence-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin-bottom: 0.25rem;
+}
+.code-evidence-header .file-path {
+  font-family: ui-monospace, monospace;
+  color: #cbd5e1;
+}
+.code-evidence-header .line-range {
+  background: rgba(51, 65, 85, 0.5);
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  font-family: ui-monospace, monospace;
+}
+.code-evidence-header .caption {
+  font-style: italic;
+  color: #94a3b8;
+}
+
+/* Chat-bubble styling for debate transcript */
+.debate-bubble {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+.debate-bubble .avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 9999px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: white;
+}
+.debate-bubble .content-box {
+  flex: 1;
+  background: rgba(30, 41, 59, 0.5);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+}
+
+/* Cross-reference link chips */
+.xref-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  text-decoration: none;
+  transition: transform 0.1s;
+}
+.xref-link:hover { transform: translateY(-1px); }
+.xref-root-cause    { background: rgba(127, 29, 29, 0.5); color: #fca5a5; }
+.xref-same-class    { background: rgba(30, 58, 138, 0.5); color: #93c5fd; }
+.xref-depends-on    { background: rgba(120, 53, 15, 0.5); color: #fcd34d; }
+.xref-blocks        { background: rgba(88, 28, 135, 0.5); color: #d8b4fe; }
+
+/* Print styles — v2.15 print-friendly expanded view */
+@media print {
+  body { background: white !important; color: black !important; }
+  /* Force all details open when printing */
+  details { display: block !important; }
+  details > *:not(summary) { display: block !important; }
+  summary { list-style: none; }
+  /* Hide non-essential UI */
+  canvas, #panel-gallery, .filter-bar, .tab-btn, #expand-all, #collapse-all { display: none !important; }
+  /* Prevent issue cards from splitting across pages */
+  .issue-card {
+    page-break-inside: avoid;
+    break-inside: avoid;
+    margin-bottom: 1rem;
+    border: 1px solid #ccc !important;
+    background: white !important;
+    color: black !important;
+  }
+  .card { background: white !important; border: 1px solid #ccc !important; }
+  pre, code { background: #f5f5f5 !important; color: #000 !important; }
+  /* Page numbers (browser support varies) */
+  @page { margin: 1in; }
+}
+```
+
+### Core architecture
 - Use Tailwind utility classes throughout; no custom CSS unless Tailwind can't
   cover it (in which case use a single <style> block at the top)
 - All JavaScript in a single <script> block at the bottom of <body>
 - Store all review data as a JavaScript object `const reviewData = {...}` at the
   top of the script block; include `reviewData.personas` (panelists array),
-  `reviewData.verificationAgents` (one per Phase 13 agent), and
-  `reviewData.supportAgents` (auditor, judge, tier advisor, etc.)
+  `reviewData.verificationAgents` (one per Phase 13 agent),
+  `reviewData.supportAgents` (auditor, judge, tier advisor, etc.), and
+  `reviewData.actionItems` (array with the full v2.15 schema including
+  `narrative`, `codeEvidence`, `reviewerRatings`, `debateTranscript`,
+  `judgeRuling`, `fixRecommendation`, `crossRefs`, `priorRuns`)
 - Implement filtering state as a plain JS object:
   `let filters = { severity: 'all', tier: 'all', verdict: 'all', epistemic: 'all', reviewer: null }`
   Re-render on any change with `renderItems(applyFilters())`
@@ -1073,11 +1478,96 @@ CDN dependency note: "Charts and styling require internet connection."
   action items expanded, consensus collapsed
 - Apply `transition-all duration-200` to expand/collapse animations
 - The file must be valid HTML5 with a proper <!DOCTYPE html> declaration
-- Test mentally that the filter logic handles edge cases:
-  - All dropdowns active → intersection of all filters (AND logic, not OR)
-  - Reviewer filter + other filters → reviewer filter is additive (AND)
-  - No results → "No items match the current filters. Clear filters ✕"
-  - Reviewer filter active → dismissible banner above action items
+
+### Filter logic edge cases
+- All dropdowns active → intersection of all filters (AND logic, not OR)
+- Reviewer filter + other filters → reviewer filter is additive (AND)
+- No results → "No items match the current filters. Clear filters ✕"
+- Reviewer filter active → dismissible banner above action items
+
+### Expandable card features (v2.15)
+
+**a. Native `<details>` elements for every issue card.**
+- Outer wrapper: `<details class="issue-card card" id="issue-{id}" tabindex="0">`
+- `<summary>` contains the collapsed card header (severity chip, ID, summary,
+  tags, chevron, raised-by chips)
+- After `<summary>`, the 10-section accordion (see section 6 of Required
+  HTML Structure above)
+- Nested `<details>` for each of the 10 accordion sections, all with `open`
+  attribute by default
+
+**b. Deep-link support.**
+- On `DOMContentLoaded`, check `window.location.hash`. If it matches
+  `#issue-{id}` where {id} exists in `reviewData.actionItems`:
+  1. Auto-open that outer `<details>` element (set `open` attribute)
+  2. Scroll it into view with `element.scrollIntoView({ behavior: 'smooth', block: 'start' })`
+  3. Add the `issue-highlight` CSS class for 2 seconds, then remove it
+- When a user expands or collapses an issue card, update the URL hash via
+  `history.replaceState(null, '', '#issue-' + id)` (does NOT pollute browser
+  history). Use an event listener on the `toggle` event of each outer
+  `<details>` element.
+
+**c. Keyboard navigation.**
+- Every issue card has `tabindex="0"` so it's keyboard-focusable.
+- `keydown` listener on the issues container:
+  - `ArrowDown` / `ArrowUp`: move focus to next/previous visible (non-hidden)
+    issue card
+  - `Home` / `End`: jump to first/last visible issue card
+  - `Enter` / `Space`: native `<details>` handles this automatically — no
+    custom code needed for expand/collapse
+  - `/` (slash): focus the search box at the top of the issues tab
+- Use `document.querySelectorAll('.issue-card:not(.hidden)')` to get the
+  current visible card list.
+
+**d. Expand-all / Collapse-all controls.**
+- Two buttons at the top of the Issues tab, next to the filter bar:
+  `<button id="expand-all">Expand all</button>` and
+  `<button id="collapse-all">Collapse all</button>`
+- `expand-all` handler: `document.querySelectorAll('.issue-card:not(.hidden)').forEach(d => d.open = true)`
+- `collapse-all` handler: same, but `d.open = false`
+- Operates only on VISIBLE cards (after filters), not on all cards
+- Does not update the URL hash (only single-card clicks do)
+
+**e. Print-friendly `@media print`.**
+- Force all `<details>` open: `details[open] { display: block; } details > *:not(summary) { display: block !important; }`
+- Actually, simpler: `details { display: block; } summary + * { display: block !important; }`
+- Invert dark theme: `body { background: white !important; color: black !important; }`
+- Hide non-essential UI: `canvas, .panel-gallery, .filter-bar, .tab-btn { display: none !important; }`
+- Each issue card: `.issue-card { page-break-inside: avoid; break-inside: avoid; margin-bottom: 1rem; border: 1px solid #ccc !important; background: white !important; }`
+- Footer shows page numbers via `@page { margin: 1in; @bottom-center { content: "Page " counter(page); } }` (if supported)
+
+**f. Prism.js initialization.**
+- Load Prism core + autoloader + tomorrow theme from CDN in the `<head>`:
+  ```html
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+  ```
+- Set autoloader path: `Prism.plugins.autoloader.languages_path = 'https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/';`
+- Call `Prism.highlightAll()` once on `DOMContentLoaded` AND every time
+  `renderItems()` is called (since filtering may re-insert cards).
+- Wrap Prism calls in `try/catch` so a CDN failure doesn't break the page.
+  Graceful fallback: unstyled `<pre><code>` blocks still render readably.
+
+**g. HTML escaping for code snippets.**
+- When inserting `snippet`, `beforeCode`, or `afterCode` into `<code>` elements,
+  escape the content:
+  ```javascript
+  function escapeHtml(str) {
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+  ```
+- Do NOT use `innerHTML` with unescaped code — this is both a rendering bug
+  AND a potential XSS vector if the data originated from a reviewer's output.
+
+**h. Size budget.**
+- Target: 150–250KB for a typical review (22 findings).
+- Soft cap: 500KB. If the combined data exceeds this, the orchestrator SHOULD
+  offer a "slim" output that drops the verbatim `fullEvidence` and
+  `debateTranscript` content, replacing with summaries. Logged as "Slim mode:
+  full evidence truncated due to size constraint" at the top of the report.
+- Check during generation: `JSON.stringify(reviewData).length` — if > 400KB,
+  warn the user and suggest slim mode.
 
 Generate the complete HTML file. Do not truncate or use placeholders — write
 every element fully. The output should be copy-pasteable into a browser.

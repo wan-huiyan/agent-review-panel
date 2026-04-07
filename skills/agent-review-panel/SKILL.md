@@ -31,7 +31,7 @@ description: >
   composition/seam bugs.
 ---
 
-# Agent Review Panel v2.14
+# Agent Review Panel v2.15
 
 A multi-agent adversarial review system based on nine research foundations:
 ChatEval (ICLR 2024), AutoGen, Du et al. (ICML 2024), MachineSoM (ACL 2024),
@@ -71,6 +71,13 @@ the launched agent to fall through to its own frontmatter-declared model
 (which may be sonnet or haiku), introducing cross-run reasoning variance.
 Knowledge mining reads from memory paths if they exist; if not available,
 it degrades gracefully — no hard dependency.
+
+**HTML report CDN dependencies (Phase 15.3 output file only):** The generated
+`review_panel_report.html` loads Tailwind CSS, Chart.js, and — new in v2.15 —
+Prism.js from CDN for syntax highlighting in the Code Evidence sections of
+expandable issue cards. If the CDNs are unreachable, the HTML degrades
+gracefully: layout and text remain readable, charts show a placeholder, code
+blocks render as unstyled monospace.
 
 **Optional enhancement:** When VoltAgent specialist agents are installed, the
 panel can use them instead of generic persona-prompted agents for stronger
@@ -407,7 +414,7 @@ All launches below MUST pass `model: "opus"` explicitly (v2.14).
 | Tier Refinement Advisor (Phase 12b) | Generic, `model: "opus"` | (must be domain-neutral to refine tiers) |
 | Verification Agents (Phase 13) | Persona-matched — see Phase 13 table, `model: "opus"` | Each agent matched to claim type |
 | Supreme Judge (Phase 14) | Generic, `model: "opus"` | (judge must be domain-neutral) |
-| HTML Report Agent (Phase 15.3) | `voltagent-lang:javascript-pro`, `model: "opus"` | Generate interactive HTML dashboard |
+| HTML Report Agent (Phase 15.3) | `voltagent-lang:javascript-pro`, `model: "opus"` | Generate interactive HTML dashboard with expandable issue cards (v2.15). Receives structured data + Phase 15.2 process history. Loads Tailwind, Chart.js, and Prism.js via CDN. |
 | Merge Agent (Phase 16) | `voltagent-meta:knowledge-synthesizer`, `model: "opus"` | Deduplicate + score stability in multi-run mode (v2.14) |
 
 **Step 3: Suggest installation when beneficial.** If a selected persona would
@@ -1016,8 +1023,9 @@ See `references/prompt-templates.md` for the Phase 15.2 assembly spec.
 ### Phase 15.3: Interactive HTML Report
 
 Launch a single Opus agent to write `review_panel_report.html` — a polished,
-self-contained single-file interactive dashboard. The agent receives the full
-structured data from all prior phases.
+self-contained single-file interactive dashboard with **expandable issue
+cards** (v2.15). The agent receives the full structured data from all prior
+phases AND the Phase 15.2 process history as reference context.
 
 **Features:**
 - Dashboard overview: verdict, score, panel composition at a glance
@@ -1027,18 +1035,35 @@ structured data from all prior phases.
   (horizontal bar), pipeline flow (issues entering/surviving each verification phase)
 - **Panel Gallery**: collapsible section with avatar cards for every agent —
   panelists (role, agreement intensity, reasoning strategy, phase badges), Phase
-  4.9 verification specialists (matched claim type, why matched, tier, "verified
+  13 verification specialists (matched claim type, why matched, tier, "verified
   N items" count), and support agents (auditor, judge, tier advisor). Clicking a
   panelist card filters the issue list to items they raised.
-- Issue cards: each action item with severity chip (color-coded), confidence bar,
-  epistemic label badge, verdict badge — click to expand full evidence. Expanded
-  panel shows verification agent persona chip (e.g. "Statistical Expert") that
-  links back to that agent's card in the Panel Gallery.
+- **Expandable issue cards (v2.15)**: each card is a native `<details>` element.
+  The collapsed state shows the one-line summary; the expanded state reveals a
+  10-section accordion (each section is its own nested `<details>`):
+  1. 📖 **Narrative** — full reviewer reasoning (verbatim, not summarized)
+  2. 📄 **Code Evidence** — file:line snippets with Prism.js syntax highlighting
+  3. 👥 **Raised by** — per-reviewer severity + reasoning grid
+  4. 🔍 **Verification Trail** — full VR agent output (if verified)
+  5. 💬 **Debate** — round-by-round transcript (if disputed)
+  6. ⚖️ **Judge Ruling** — full reasoning + severity-change explanation
+  7. 🛠️ **Fix Recommendation** — proposed change + before/after code + regression test + blast radius + effort
+  8. 🔗 **Cross-references** — related findings with relationship labels
+  9. 🏷️ **Epistemic Tags** — hover tooltips explaining each label
+  10. 📊 **Prior Runs** — meta-review comparison (if multi-run)
+
+  Empty sections render "No {section} data" placeholders — all 10 sections
+  always present for consistent card structure.
+- **Deep-link support**: `report.html#issue-A1` auto-opens that card and scrolls
+- **Keyboard navigation**: ↑/↓ between cards, Enter expands, Home/End jump to first/last, `/` focuses search
+- **Expand all / Collapse all** controls at the top of the Issues tab
+- **Print-friendly**: `@media print` forces all details open, inverts theme, hides charts
 - Filter bar: filter by severity, tier, verdict, epistemic label simultaneously
 - Sort controls: by severity, confidence, tier
-- Inline CSS/JS; Tailwind CSS and Chart.js loaded via CDN
+- Inline CSS/JS; Tailwind CSS, Chart.js, and **Prism.js** (v2.15, new) loaded via CDN
 
-See `references/prompt-templates.md` for the Phase 15.3 agent prompt.
+See `references/prompt-templates.md` for the Phase 15.3 agent prompt with the
+full 10-section schema and rendering spec.
 
 ---
 
@@ -1047,8 +1072,8 @@ After all three files are written, tell user:
 - Verdict + score (from primary report)
 - Counts: consensus points, disagreements, action items, verification verdicts
 - Top P0 action item (if any)
-- Note: HTML report requires internet connection for Tailwind CSS + Chart.js CDN
-- HTML footer should read "Agent Review Panel v2.14"
+- Note: HTML report requires internet connection for Tailwind CSS, Chart.js, and Prism.js CDNs
+- HTML footer should read "Agent Review Panel v2.15"
 
 ---
 
@@ -1215,6 +1240,9 @@ See `references/prompt-templates.md` for the full Phase 16 Merge Agent prompt.
 - **Multi-run with N > 3 (v2.14):** Persona rotation cycles through Runs 1/2/3 schedule with shuffled signal specialists. N > 4 has diminishing returns — warn the user that marginal finding discovery drops sharply after Run 3.
 - **Multi-run judge divergence (v2.14):** If per-run judge scores span > 2 points, Phase 16 flags `[JUDGE_DIVERGENCE]` and provides an independent merged assessment rather than averaging.
 - **Exhaustive trace on very large codebases (v2.14):** No token budget limit. If the file is > 20k lines, Phase 2 may take > 30 min. Warn the user and offer Thorough tier as alternative.
+- **HTML report soft size cap (v2.15):** Target 150–250KB, soft cap 500KB. If the combined structured data (all 10 expandable sections across all findings) exceeds 500KB, the Phase 15.3 agent SHOULD offer a "slim" mode that drops verbatim `fullEvidence` and `debateTranscript` content (replacing with summaries). Slim mode is indicated in the report header and footer.
+- **Prism.js CDN unreachable (v2.15):** If the Prism.js CDN fails to load, code evidence blocks render as unstyled `<pre><code>` elements (still readable, just without syntax colors). Wrap Prism calls in `try/catch` to prevent a CDN failure from breaking the page. This is consistent with the existing graceful-degradation approach for Tailwind and Chart.js CDN failures.
+- **Empty expandable sections (v2.15):** When a finding lacks data for any of the 10 accordion sections (e.g., no debate, no prior runs), render a "No {section} data" placeholder instead of omitting the section. Every expanded card must show all 10 sections in the same order for consistent structure. This prevents the v2.13 nice-shtern compliance gap where agents silently omitted the expand button when evidence fields were empty.
 
 For full prompt templates, see `references/prompt-templates.md`.
 For version history, see `references/changelog.md`.
