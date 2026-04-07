@@ -111,9 +111,9 @@ claude plugin update agent-review-panel@wan-huiyan-agent-review-panel
 
 **Verify the update worked:**
 ```bash
-cat ~/.claude/plugins/cache/wan-huiyan-agent-review-panel/plugins/agent-review-panel/.claude-plugin/plugin.json | grep version
+cat ~/.claude/plugins/cache/wan-huiyan-agent-review-panel/agent-review-panel/*/.claude-plugin/plugin.json | grep version
 ```
-The version should match the latest entry in the [Version History](#version-history) table below.
+The version should match the latest entry in the [Version History](#version-history) table below. (The cache layout is `cache/<marketplace-name>/<plugin-name>/<version>/` — note that the `plugins/` intermediate directory from the repo is flattened out during install, and a version segment is added. The `*` glob above matches whatever version is installed so you don't have to look it up first.)
 
 **If the update appears to work but you're still getting old behavior** (e.g. missing the v2.12 HTML report, missing the v2.15 expandable cards, or missing the v2.14 data-flow trace phase), check for a **stale local clone** that shadows the marketplace install:
 
