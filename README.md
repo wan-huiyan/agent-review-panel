@@ -10,7 +10,11 @@ A [Claude Code](https://claude.ai/code) skill that orchestrates multi-agent adve
 
 [![Agent Review Panel — pipeline architecture](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/hero-flow.svg?v=1)](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/hero-flow.svg?v=1)
 
-[![Agent Review Panel demo](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/demo.gif?v=1)](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/demo.gif?v=1)
+[![Agent Review Panel — terminal demo](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/demo.gif?v=1)](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/demo.gif?v=1)
+
+[![Agent Review Panel — interactive HTML dashboard with expandable issue cards](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/html-demo.gif?v=1)](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/html-demo.gif?v=1)
+
+*The v2.15 HTML report: expandable 10-section issue cards with narrative, code evidence (Prism.js highlighted), debate transcripts, judge rulings, fix recommendations, and cross-references — all deep-linkable, keyboard-navigable, and print-friendly.*
 
 ## Quick Start
 
