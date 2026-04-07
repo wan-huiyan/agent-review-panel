@@ -1,0 +1,1493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agent Review Panel Report — ExampleApp Payment Service</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css">
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+<style>
+  body { font-family: 'Inter', system-ui, sans-serif; background: #0f172a; color: #e2e8f0; }
+  .card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; }
+  .badge-p0 { background: #7f1d1d; color: #fca5a5; border: 1px solid #ef4444; }
+  .badge-p1 { background: #78350f; color: #fcd34d; border: 1px solid #f59e0b; }
+  .badge-p2 { background: #1e3a5f; color: #93c5fd; border: 1px solid #3b82f6; }
+  .badge-pos { background: #14532d; color: #86efac; border: 1px solid #22c55e; }
+  .issue-card { transition: all 0.2s; }
+  .issue-card:hover { border-color: #64748b; }
+  .issue-card.hidden { display: none; }
+  .issue-card summary { cursor: pointer; user-select: none; list-style: none; padding: 1rem; }
+  .issue-card summary::-webkit-details-marker { display: none; }
+  .issue-card summary::after { content: "▸"; color: #64748b; margin-left: 0.5rem; transition: transform 0.2s; display: inline-block; }
+  .issue-card[open] > summary::after { transform: rotate(90deg); }
+  .issue-card[open] { box-shadow: 0 0 0 1px #475569; }
+  .issue-card:focus { outline: 2px solid #3b82f6; outline-offset: 2px; }
+  .issue-body { padding: 0 1rem 1rem 1rem; border-top: 1px solid #334155; }
+  .reviewer-card { border-left: 4px solid; }
+  .reviewer-ch { border-color: #ef4444; }
+  .reviewer-ac { border-color: #f59e0b; }
+  .reviewer-mr { border-color: #22c55e; }
+  .reviewer-sa { border-color: #3b82f6; }
+  .reviewer-da { border-color: #a855f7; }
+  .reviewer-vr1 { border-color: #14b8a6; }
+  .reviewer-vr2 { border-color: #8b5cf6; }
+  .reviewer-judge { border-color: #f59e0b; background: linear-gradient(135deg, #1e293b, #1a2744); }
+  .tab-btn { transition: all 0.2s; }
+  .tab-btn.active { background: #3b82f6; color: white; }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+  .filter-btn { transition: all 0.15s; }
+  .filter-btn.active { box-shadow: 0 0 0 2px white; }
+  .confirmed-badge { font-size: 0.65rem; background: #166534; color: #86efac; padding: 1px 5px; border-radius: 4px; }
+  .vr-confirmed { background: #052e16; border: 1px solid #15803d; border-radius: 6px; padding: 8px 12px; font-size: 0.8rem; }
+
+  /* v2.15 — expandable card styles */
+  .section-accordion { margin-top: 1rem; }
+  .section-accordion > details {
+    background: rgba(15, 23, 42, 0.5);
+    border: 1px solid rgba(51, 65, 85, 0.5);
+    border-radius: 0.5rem;
+    margin-bottom: 0.5rem;
+    padding: 0.75rem 1rem;
+  }
+  .section-accordion > details > summary {
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    list-style: none;
+    font-size: 0.9rem;
+    color: #cbd5e1;
+  }
+  .section-accordion > details > summary::-webkit-details-marker { display: none; }
+  .section-accordion > details[open] > summary {
+    margin-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(100, 116, 139, 0.3);
+    padding-bottom: 0.5rem;
+  }
+  .section-accordion > details > summary::after {
+    content: "▾";
+    margin-left: auto;
+    color: #64748b;
+    transition: transform 0.15s;
+  }
+  .section-accordion > details[open] > summary::after {
+    transform: rotate(180deg);
+  }
+  .section-accordion .placeholder-text {
+    font-style: italic;
+    color: #64748b;
+    font-size: 0.8rem;
+  }
+  .section-accordion .section-body {
+    font-size: 0.85rem;
+    color: #cbd5e1;
+    line-height: 1.55;
+  }
+
+  .issue-highlight { animation: highlight-pulse 2s ease-out; }
+  @keyframes highlight-pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(250, 204, 21, 0.7); }
+    100% { box-shadow: 0 0 0 12px rgba(250, 204, 21, 0); }
+  }
+
+  .code-evidence-header {
+    display: flex; align-items: center; gap: 0.5rem;
+    font-size: 0.75rem; color: #94a3b8;
+    margin-bottom: 0.25rem; flex-wrap: wrap;
+  }
+  .code-evidence-header .file-path { font-family: ui-monospace, 'SF Mono', Consolas, monospace; color: #cbd5e1; }
+  .code-evidence-header .line-range {
+    background: rgba(51, 65, 85, 0.5);
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+    font-family: ui-monospace, monospace;
+  }
+  .code-evidence-header .caption { font-style: italic; color: #94a3b8; }
+  .section-accordion pre {
+    max-height: 24rem; overflow-y: auto;
+    font-size: 0.78rem; border-radius: 0.375rem; margin: 0.25rem 0;
+  }
+  .section-accordion pre code { font-size: 0.78rem; }
+
+  .debate-bubble { display: flex; gap: 0.75rem; margin-bottom: 0.75rem; }
+  .debate-bubble .avatar {
+    width: 32px; height: 32px; border-radius: 9999px;
+    flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    font-size: 0.75rem; font-weight: 600; color: white;
+  }
+  .debate-bubble .content-box {
+    flex: 1; background: rgba(30, 41, 59, 0.5);
+    border-radius: 0.5rem; padding: 0.75rem; font-size: 0.83rem;
+  }
+  .debate-bubble .round-badge {
+    font-size: 0.7rem; background: #334155; color: #cbd5e1;
+    padding: 0.125rem 0.5rem; border-radius: 9999px; margin-left: 0.5rem;
+  }
+
+  .xref-link {
+    display: inline-flex; align-items: center; gap: 0.25rem;
+    padding: 0.25rem 0.625rem; border-radius: 0.375rem;
+    font-size: 0.75rem; text-decoration: none;
+    transition: transform 0.1s; margin-right: 0.5rem;
+  }
+  .xref-link:hover { transform: translateY(-1px); }
+  .xref-root-cause    { background: rgba(127, 29, 29, 0.5); color: #fca5a5; }
+  .xref-same-class    { background: rgba(30, 58, 138, 0.5); color: #93c5fd; }
+  .xref-depends-on    { background: rgba(120, 53, 15, 0.5); color: #fcd34d; }
+  .xref-blocks        { background: rgba(88, 28, 135, 0.5); color: #d8b4fe; }
+
+  .rb-avatar {
+    width: 28px; height: 28px; border-radius: 9999px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 0.7rem; font-weight: 700; color: white; margin-right: 4px;
+  }
+  .rb-ch { background: #dc2626; }
+  .rb-ac { background: #d97706; }
+  .rb-mr { background: #16a34a; }
+  .rb-sa { background: #2563eb; }
+  .rb-da { background: #9333ea; }
+  .rb-vr1 { background: #14b8a6; }
+  .rb-vr2 { background: #8b5cf6; }
+  .rb-judge { background: #64748b; }
+
+  .fix-before pre { background: rgba(127, 29, 29, 0.25) !important; border: 1px solid rgba(239, 68, 68, 0.4); }
+  .fix-after pre { background: rgba(20, 83, 45, 0.25) !important; border: 1px solid rgba(34, 197, 94, 0.4); }
+
+  .etag {
+    display: inline-block; padding: 0.25rem 0.625rem;
+    border-radius: 9999px; font-size: 0.7rem; font-weight: 600;
+    margin-right: 0.375rem; margin-bottom: 0.375rem; cursor: help;
+  }
+  .etag-verified { background: #14532d; color: #86efac; border: 1px solid #22c55e; }
+  .etag-consensus { background: #1e3a5f; color: #93c5fd; border: 1px solid #3b82f6; }
+  .etag-vrconfirmed { background: #064e3b; color: #6ee7b7; border: 1px solid #10b981; }
+  .etag-existing { background: #7f1d1d; color: #fca5a5; border: 1px solid #ef4444; }
+
+  .prior-runs-table { width: 100%; background: rgba(15, 23, 42, 0.5); border-radius: 0.5rem; overflow: hidden; font-size: 0.8rem; border-collapse: collapse; }
+  .prior-runs-table th, .prior-runs-table td { padding: 0.5rem 0.75rem; text-align: left; border-bottom: 1px solid rgba(51, 65, 85, 0.5); }
+  .prior-runs-table th { background: rgba(51, 65, 85, 0.4); font-weight: 600; color: #cbd5e1; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .prior-runs-table tr:last-child td { border-bottom: none; }
+
+  .verdict-banner { padding: 0.625rem 0.875rem; border-radius: 0.5rem; font-size: 0.8rem; font-weight: 600; margin-top: 0.75rem; }
+  .verdict-confirmed { background: rgba(20, 83, 45, 0.4); color: #86efac; border: 1px solid #22c55e; }
+
+  .chip-low { background: rgba(20, 83, 45, 0.5); color: #86efac; padding: 0.25rem 0.625rem; border-radius: 9999px; font-size: 0.72rem; }
+  .chip-medium { background: rgba(120, 53, 15, 0.5); color: #fcd34d; padding: 0.25rem 0.625rem; border-radius: 9999px; font-size: 0.72rem; }
+  .chip-blue { background: rgba(30, 58, 138, 0.5); color: #93c5fd; padding: 0.25rem 0.625rem; border-radius: 9999px; font-size: 0.72rem; }
+
+  .ec-btn {
+    background: #334155; color: #e2e8f0;
+    padding: 0.375rem 0.875rem; border-radius: 0.5rem;
+    font-size: 0.8rem; border: 1px solid #475569; transition: all 0.15s;
+  }
+  .ec-btn:hover { background: #475569; }
+
+  /* Circular gauge for judge score */
+  .gauge {
+    position: relative;
+    width: 110px;
+    height: 110px;
+  }
+  .gauge svg { transform: rotate(-90deg); }
+  .gauge-value {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.75rem; font-weight: 900; color: #fbbf24;
+  }
+
+  /* Print styles — v2.15 print-friendly expanded view */
+  @media print {
+    body { background: white !important; color: black !important; }
+    details { display: block !important; }
+    details > *:not(summary) { display: block !important; }
+    summary { list-style: none; }
+    canvas, #panel-gallery, .filter-bar, .tab-btn, #expand-all, #collapse-all { display: none !important; }
+    .tab-content { display: block !important; }
+    .issue-card {
+      page-break-inside: avoid; break-inside: avoid;
+      margin-bottom: 1rem;
+      border: 1px solid #ccc !important;
+      background: white !important; color: black !important;
+    }
+    .card { background: white !important; border: 1px solid #ccc !important; color: black !important; }
+    pre, code { background: #f5f5f5 !important; color: #000 !important; }
+    .section-accordion > details {
+      background: #fafafa !important;
+      border: 1px solid #ddd !important;
+    }
+    .section-accordion > details > summary { color: #000 !important; }
+    .issue-card summary::after, .section-accordion > details > summary::after { display: none !important; }
+    h1, h2, h3 { color: #000 !important; }
+    .text-slate-300, .text-slate-400, .section-body { color: #333 !important; }
+    @page { margin: 1in; }
+  }
+</style>
+</head>
+<body class="min-h-screen p-4 md:p-8">
+
+<div class="max-w-7xl mx-auto">
+
+<!-- Header -->
+<div class="card p-6 mb-6">
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div>
+      <div class="text-xs text-slate-400 mb-1">agent-review-panel v2.15 · 2026-04-07 · Expandable issue cards with 10-section accordion</div>
+      <h1 class="text-2xl font-bold text-white">Agent Review Panel Report</h1>
+      <h2 class="text-lg text-slate-300">ExampleApp Payment Service — Code Review</h2>
+      <div class="mt-2 text-sm text-slate-400">5 reviewers · 2 VR agents · Supreme Judge · Review mode: Precise (auto-detected: pure code)</div>
+    </div>
+    <div class="flex items-center gap-5">
+      <div class="gauge">
+        <svg width="110" height="110" viewBox="0 0 110 110">
+          <circle cx="55" cy="55" r="47" fill="none" stroke="#334155" stroke-width="10"/>
+          <circle cx="55" cy="55" r="47" fill="none" stroke="#fbbf24" stroke-width="10"
+                  stroke-dasharray="295.3" stroke-dashoffset="147.7" stroke-linecap="round"/>
+        </svg>
+        <div class="gauge-value">5<span class="text-sm text-slate-400 font-medium">/10</span></div>
+      </div>
+      <div class="flex flex-col items-center gap-2">
+        <div class="px-4 py-1.5 rounded-full text-sm font-semibold bg-yellow-900 text-yellow-300 border border-yellow-600">APPROVE WITH CONDITIONS</div>
+        <div class="text-xs text-slate-400">Judge: opus (domain-neutral)</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Stats row (5 cards) -->
+<div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
+  <div class="card p-4 text-center">
+    <div class="text-3xl font-black text-white">8</div>
+    <div class="text-xs text-slate-400 mt-1">Total action items</div>
+  </div>
+  <div class="card p-4 text-center">
+    <div class="flex justify-center gap-2 items-baseline">
+      <span class="text-xl font-bold text-red-400">1</span>
+      <span class="text-xs text-slate-400">P0</span>
+      <span class="text-xl font-bold text-orange-400">3</span>
+      <span class="text-xs text-slate-400">P1</span>
+      <span class="text-xl font-bold text-blue-400">3</span>
+      <span class="text-xs text-slate-400">P2</span>
+      <span class="text-xl font-bold text-green-400">1</span>
+      <span class="text-xs text-slate-400">+</span>
+    </div>
+    <div class="text-xs text-slate-400 mt-1">By severity</div>
+  </div>
+  <div class="card p-4 text-center">
+    <div class="flex justify-center gap-2 items-baseline">
+      <span class="text-xl font-bold text-sky-400">1</span>
+      <span class="text-xs text-slate-400">Light</span>
+      <span class="text-xl font-bold text-blue-400">1</span>
+      <span class="text-xs text-slate-400">Std</span>
+      <span class="text-xl font-bold text-indigo-400">0</span>
+      <span class="text-xs text-slate-400">Deep</span>
+    </div>
+    <div class="text-xs text-slate-400 mt-1">2 VR agents dispatched</div>
+  </div>
+  <div class="card p-4 text-center">
+    <div class="flex justify-center gap-2 items-baseline">
+      <span class="text-xl font-bold text-green-400">2</span>
+      <span class="text-xs text-slate-400">CONF</span>
+      <span class="text-xl font-bold text-red-400">0</span>
+      <span class="text-xs text-slate-400">REF</span>
+    </div>
+    <div class="text-xs text-slate-400 mt-1">Verification verdicts</div>
+  </div>
+  <div class="card p-4 text-center">
+    <div class="text-3xl font-black text-yellow-400">5<span class="text-lg text-slate-500">/10</span></div>
+    <div class="text-xs text-slate-400 mt-1">Judge score</div>
+  </div>
+</div>
+
+<!-- Tabs -->
+<div class="flex gap-2 mb-4 flex-wrap">
+  <button onclick="switchTab('issues')" class="tab-btn active px-4 py-2 rounded-lg text-sm font-medium bg-slate-700 text-slate-200" id="tab-issues">Issues (8)</button>
+  <button onclick="switchTab('panel')" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium bg-slate-700 text-slate-200" id="tab-panel">Panel Gallery</button>
+  <button onclick="switchTab('judge')" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium bg-slate-700 text-slate-200" id="tab-judge">Supreme Judge</button>
+</div>
+
+<!-- Issues Tab -->
+<div id="tab-content-issues" class="tab-content active">
+  <div class="card p-4 mb-4 filter-bar">
+    <div class="flex flex-wrap gap-2 items-center mb-3">
+      <button id="expand-all" class="ec-btn">Expand all</button>
+      <button id="collapse-all" class="ec-btn">Collapse all</button>
+      <div class="text-xs text-slate-400 ml-2">Keyboard: ↑↓ navigate · Enter expand · / search · Home/End jump</div>
+    </div>
+    <div class="flex flex-wrap gap-2 items-center">
+      <span class="text-xs text-slate-400 mr-2">Filter:</span>
+      <button onclick="filterIssues('all')" class="filter-btn active px-3 py-1 rounded-full text-xs bg-slate-600 text-white" id="filter-all">All</button>
+      <button onclick="filterIssues('P0')" class="filter-btn px-3 py-1 rounded-full text-xs badge-p0" id="filter-P0">P0</button>
+      <button onclick="filterIssues('P1')" class="filter-btn px-3 py-1 rounded-full text-xs badge-p1" id="filter-P1">P1</button>
+      <button onclick="filterIssues('P2')" class="filter-btn px-3 py-1 rounded-full text-xs badge-p2" id="filter-P2">P2</button>
+      <button onclick="filterIssues('POS')" class="filter-btn px-3 py-1 rounded-full text-xs badge-pos" id="filter-POS">Positive</button>
+      <input id="search-box" type="text" oninput="searchIssues(this.value)" placeholder="Search... (press /)" class="ml-auto w-48 md:w-64 px-3 py-1.5 rounded-lg text-sm bg-slate-700 text-white placeholder-slate-400 border border-slate-600 focus:outline-none focus:border-blue-500">
+    </div>
+  </div>
+
+  <div id="issues-grid" class="grid gap-3">
+
+    <!-- ============================================================ -->
+    <!-- A1 — FULLY POPULATED (P0 Security, VR_CONFIRMED)              -->
+    <!-- ============================================================ -->
+    <details class="issue-card card" id="issue-A1" tabindex="0" data-severity="P0" data-text="a1 client_secret session cookie oauth flask itsdangerous encrypt">
+      <summary>
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="font-mono text-slate-400 text-sm">A1</span>
+          <span class="badge-p0 px-2 py-0.5 rounded text-xs font-bold">P0</span>
+          <span class="confirmed-badge">VR_CONFIRMED</span>
+          <span class="text-white font-medium">client_secret stored in session cookie without encryption</span>
+        </div>
+        <div class="mt-2 text-sm text-slate-300">
+          <code class="text-red-300 text-xs bg-slate-900 px-1 rounded">src/auth/session.py:28-32</code> — Flask's <code class="text-xs">itsdangerous</code> signs but does not encrypt the session cookie. The OAuth <code class="text-xs">client_secret</code> is readable in browser devtools as plaintext base64 JSON.
+        </div>
+        <div class="mt-2 text-xs text-slate-400">
+          <span>Raised by:</span>
+          <span class="rb-avatar rb-sa" title="Security Auditor">SA</span>
+          <span class="rb-avatar rb-ch" title="Correctness Hawk">CH</span>
+          <span class="rb-avatar rb-da" title="Devil's Advocate">DA</span>
+          <span class="ml-1">3 reviewers · DA upgraded P1→P0 after debate</span>
+        </div>
+      </summary>
+      <div class="issue-body">
+        <div class="section-accordion">
+
+          <details open>
+            <summary>📖 Narrative</summary>
+            <div class="section-body">
+              <p>The ExampleApp Payment Service uses Flask's default signed session cookie to persist OAuth state across redirects. At <code class="bg-slate-800 px-1 rounded">src/auth/session.py:28</code>, the code writes the full token payload into <code class="bg-slate-800 px-1 rounded">session['oauth_token']</code> — including <code class="bg-slate-800 px-1 rounded">client_secret</code>, which it pulls from <code class="bg-slate-800 px-1 rounded">os.getenv('OAUTH_CLIENT_SECRET')</code>. Flask's <code class="bg-slate-800 px-1 rounded">itsdangerous</code> layer signs the cookie for integrity but does NOT encrypt it. The payload is base64-encoded JSON that any client can decode without knowing the signing key.</p>
+              <p class="mt-2">This is a classic Flask default that catches security-inexperienced developers repeatedly: if you need confidentiality for session contents, you need server-side session storage (Flask-Session with Redis) or an encrypted cookie implementation. The signing layer protects against cookie <em>modification</em>, not <em>reading</em>. Any user running the app in Chrome can open DevTools → Application → Cookies and read <code class="bg-slate-800 px-1 rounded">client_secret</code> in plain text within two clicks.</p>
+              <p class="mt-2">The blast radius is the full OAuth 2.0 client credential, which alongside the client_id allows an attacker to impersonate the application against the OAuth provider's token endpoint. For a payment service backed by third-party processor credentials, this is equivalent to exposing the merchant API key.</p>
+            </div>
+          </details>
+
+          <details open>
+            <summary>📄 Code Evidence</summary>
+            <div class="section-body">
+              <div class="code-evidence-header">
+                <span class="file-path">src/auth/session.py</span>
+                <span class="line-range">28-32</span>
+                <span class="caption">Cookie payload storing OAuth client secret in plaintext</span>
+              </div>
+              <pre><code class="language-python">def persist_oauth_token(token_data: dict) -&gt; None:
+    tok = token_data.copy()
+    tok['client_secret'] = os.getenv('OAUTH_CLIENT_SECRET')
+    session['oauth_token'] = tok
+    session.permanent = True</code></pre>
+              <div class="code-evidence-header mt-3">
+                <span class="file-path">src/auth/credentials.py</span>
+                <span class="line-range">14-22</span>
+                <span class="caption">The mirror side — credentials rebuilt from the cookie on every request</span>
+              </div>
+              <pre><code class="language-python">def build_credentials() -&gt; OAuthCredentials:
+    tok = session.get('oauth_token') or {}
+    return OAuthCredentials(
+        access_token=tok.get('access_token'),
+        refresh_token=tok.get('refresh_token'),
+        client_id=os.getenv('OAUTH_CLIENT_ID'),
+        client_secret=tok.get('client_secret'),  # read from cookie
+        token_uri='https://oauth.example.com/token',
+    )</code></pre>
+            </div>
+          </details>
+
+          <details open>
+            <summary>👥 Raised by</summary>
+            <div class="section-body">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div class="bg-slate-900/40 rounded-lg p-3 border border-slate-700">
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="rb-avatar rb-sa">SA</span>
+                    <span class="font-semibold text-white text-sm">Security Auditor</span>
+                    <span class="badge-p0 px-1.5 py-0.5 rounded text-xs font-bold ml-auto">P0</span>
+                  </div>
+                  <div class="italic text-slate-300 text-xs">Primary source — flagged as a credential exposure. Walked through the decode attack in the devtools console during debate. Noted that itsdangerous signs but does not encrypt.</div>
+                </div>
+                <div class="bg-slate-900/40 rounded-lg p-3 border border-slate-700">
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="rb-avatar rb-ch">CH</span>
+                    <span class="font-semibold text-white text-sm">Correctness Hawk</span>
+                    <span class="badge-p0 px-1.5 py-0.5 rounded text-xs font-bold ml-auto">P0</span>
+                  </div>
+                  <div class="italic text-slate-300 text-xs">Concurred independently in blind Phase 4 rating. Traced the call chain from session.py → credentials.py and confirmed the secret round-trips through the cookie.</div>
+                </div>
+                <div class="bg-slate-900/40 rounded-lg p-3 border border-slate-700 md:col-span-2">
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="rb-avatar rb-da">DA</span>
+                    <span class="font-semibold text-white text-sm">Devil's Advocate</span>
+                    <span class="badge-p1 px-1.5 py-0.5 rounded text-xs font-bold ml-auto mr-1">P1</span>
+                    <span class="text-xs text-slate-400">→</span>
+                    <span class="badge-p0 px-1.5 py-0.5 rounded text-xs font-bold ml-1">P0</span>
+                  </div>
+                  <div class="italic text-slate-300 text-xs">Initially rated P1 ("attacker already needs cookie access") but updated to P0 in Round 2 after Security Auditor demonstrated the devtools attack and pointed out the client_secret persists beyond session lifetime — it's a reusable credential, not a session artifact.</div>
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <details open>
+            <summary>🔍 Verification Trail</summary>
+            <div class="section-body">
+              <div class="flex items-center gap-2 mb-2">
+                <span class="rb-avatar rb-vr1">V1</span>
+                <div>
+                  <div class="font-semibold text-white text-sm">Security Specialist (VR1) · Light tier</div>
+                  <div class="text-xs text-slate-400">voltagent-qa-sec:security-auditor</div>
+                </div>
+              </div>
+              <p><strong>What was investigated:</strong> Whether <code class="bg-slate-800 px-1 rounded">session.py:28</code> actually writes <code class="bg-slate-800 px-1 rounded">client_secret</code> into the Flask session cookie, and whether decoded cookie output confirms readability without the signing key.</p>
+              <blockquote class="border-l-4 border-blue-500 pl-3 italic mt-2 text-slate-300">
+                Confirmed. Reproduced the attack by extracting a sample cookie, base64-decoding the payload (no signing key required), and reading the client_secret field directly. itsdangerous signs for integrity only; the Flask default session interface provides zero confidentiality for cookie contents.
+              </blockquote>
+              <div class="verdict-banner verdict-confirmed">✓ Claim independently confirmed by verification agent — exploitability demonstrated</div>
+            </div>
+          </details>
+
+          <details open>
+            <summary>💬 Debate</summary>
+            <div class="section-body">
+              <div class="debate-bubble">
+                <div class="avatar rb-da">DA</div>
+                <div class="content-box">
+                  <div class="flex items-center gap-1">
+                    <span class="font-semibold text-white">Devil's Advocate</span>
+                    <span class="round-badge">Round 1 — severity challenge</span>
+                  </div>
+                  <div class="text-slate-300 mt-1">A1 is mitigated by the requirement to already have access to a valid session cookie. If an attacker has the cookie, they already have OAuth access — extracting client_secret is redundant. I'd rate this P1 at most.</div>
+                </div>
+              </div>
+              <div class="debate-bubble">
+                <div class="avatar rb-sa">SA</div>
+                <div class="content-box">
+                  <div class="flex items-center gap-1">
+                    <span class="font-semibold text-white">Security Auditor</span>
+                    <span class="round-badge">Round 1 — response</span>
+                  </div>
+                  <div class="text-slate-300 mt-1">Rejected. The session cookie is a short-lived artifact that expires; the client_secret is a long-lived OAuth credential. Once extracted, an attacker can use it independently against the OAuth token endpoint to mint new tokens indefinitely — they don't need the original session. Far more durable blast radius than the cookie itself.</div>
+                </div>
+              </div>
+              <div class="debate-bubble">
+                <div class="avatar rb-da">DA</div>
+                <div class="content-box">
+                  <div class="flex items-center gap-1">
+                    <span class="font-semibold text-white">Devil's Advocate</span>
+                    <span class="round-badge">Round 2 — accepted</span>
+                  </div>
+                  <div class="text-slate-300 mt-1">Accepted. I missed that client_secret durability is independent of session lifetime. P0 is correct — this is credential exposure, not session exposure. Withdrawing the mitigation argument.</div>
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <details open>
+            <summary>⚖️ Judge Ruling</summary>
+            <div class="section-body">
+              <div class="flex items-center gap-2 mb-2">
+                <span class="rb-avatar rb-judge">SJ</span>
+                <span class="font-semibold text-white">Supreme Judge</span>
+              </div>
+              <p>A1 is upheld at P0. The OAuth client_secret is a long-lived credential whose blast radius extends well beyond the current browser session. Any user who runs the payment service in their browser can extract the secret through DevTools in seconds — no network attack required. Once extracted, the credential can be used to impersonate the application against the OAuth provider's token endpoint until the secret is rotated.</p>
+              <p class="mt-2">The fix is structurally simple: the session cookie must not carry the client_secret at all. Rebuild credentials from the environment variable at the call site in <code class="bg-slate-800 px-1 rounded">build_credentials()</code>, so the secret never crosses the cookie boundary.</p>
+              <div class="mt-3 p-3 border-l-4 border-yellow-500 bg-yellow-950/20 rounded-r-lg">
+                <div class="text-yellow-300 text-xs font-semibold">Severity confirmed at P0 — credential exposure, not session exposure</div>
+              </div>
+            </div>
+          </details>
+
+          <details open>
+            <summary>🛠️ Fix Recommendation</summary>
+            <div class="section-body">
+              <p>Remove <code class="bg-slate-800 px-1 rounded">client_secret</code> from the session payload entirely. Retrieve it from the environment variable at credential construction time instead. The cookie should only carry the access_token and refresh_token, which are per-user and can be safely rotated.</p>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+                <div class="fix-before">
+                  <div class="text-xs text-red-300 font-semibold mb-1">Before</div>
+                  <pre><code class="language-python">def persist_oauth_token(token_data):
+    tok = token_data.copy()
+    tok['client_secret'] = os.getenv(
+        'OAUTH_CLIENT_SECRET')
+    session['oauth_token'] = tok</code></pre>
+                </div>
+                <div class="fix-after">
+                  <div class="text-xs text-green-300 font-semibold mb-1">After</div>
+                  <pre><code class="language-python">def persist_oauth_token(token_data):
+    # Never store client_secret in session cookie
+    session['oauth_token'] = {
+        'access_token': token_data['access_token'],
+        'refresh_token': token_data['refresh_token'],
+    }</code></pre>
+                </div>
+              </div>
+              <div class="mt-3 text-xs text-slate-400">🧪 <strong>Regression test to add:</strong> <code class="bg-slate-900 px-1 rounded">tests/test_session_security.py::test_oauth_cookie_has_no_client_secret</code> — decodes the session cookie after the OAuth callback and asserts that <code class="bg-slate-900 px-1 rounded">'client_secret' not in decoded_payload</code>.</div>
+              <div class="mt-3 flex gap-2 flex-wrap">
+                <span class="chip-low">Blast: Low</span>
+                <span class="chip-blue">Effort: 30 min</span>
+              </div>
+            </div>
+          </details>
+
+          <details open>
+            <summary>🔗 Cross-references</summary>
+            <div class="section-body">
+              <p class="placeholder-text">No related findings. This finding stands alone as a credential-exposure defect — the mechanism (cookie payload readability) is independent of the other issues in this review.</p>
+            </div>
+          </details>
+
+          <details open>
+            <summary>🏷️ Epistemic Tags</summary>
+            <div class="section-body">
+              <span class="etag etag-verified" title="Confirmed by claim verification AND at least 2 reviewers">[VERIFIED]</span>
+              <span class="etag etag-consensus" title="3+ reviewers agreed, not independently verified">[CONSENSUS]</span>
+              <span class="etag etag-vrconfirmed" title="Verification agent independently confirmed the claim">[VR_CONFIRMED]</span>
+              <span class="etag etag-existing" title="This bug exists in the current running code">[EXISTING_DEFECT]</span>
+            </div>
+          </details>
+
+          <details open>
+            <summary>📊 Prior Runs</summary>
+            <div class="section-body">
+              <p class="placeholder-text">No prior-run data available (this is a single-run review, not a meta-comparison).</p>
+            </div>
+          </details>
+
+        </div>
+      </div>
+    </details>
+
+    <!-- ============================================================ -->
+    <!-- B1 — FULLY POPULATED (P1 Correctness, VR_CONFIRMED)           -->
+    <!-- ============================================================ -->
+    <details class="issue-card card" id="issue-B1" tabindex="0" data-severity="P1" data-text="b1 mask reindex fillna composition bug anti-conservative bias prep_df">
+      <summary>
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="font-mono text-slate-400 text-sm">B1</span>
+          <span class="badge-p1 px-2 py-0.5 rounded text-xs font-bold">P1</span>
+          <span class="confirmed-badge">VR_CONFIRMED</span>
+          <span class="text-white font-medium">data mask + reindex silently reintroduces filtered rows as zero-revenue days</span>
+        </div>
+        <div class="mt-2 text-sm text-slate-300">
+          <code class="text-red-300 text-xs bg-slate-900 px-1 rounded">src/analytics/pipeline.py:915-918</code> — <code class="text-xs">apply_date_mask</code> removes rows; downstream <code class="text-xs">prep_df</code> calls <code class="text-xs">reindex(full_date_range).fillna(0)</code> which reintroduces them as zero values. Anti-conservative bias (inflates estimated lift).
+        </div>
+        <div class="mt-2 text-xs text-slate-400">
+          <span>Raised by:</span>
+          <span class="rb-avatar rb-ch" title="Correctness Hawk">CH</span>
+          <span class="rb-avatar rb-ac" title="Architecture Critic">AC</span>
+          <span class="rb-avatar rb-da" title="Devil's Advocate">DA</span>
+          <span class="ml-1">3 reviewers · 3-round debate on bias direction</span>
+        </div>
+      </summary>
+      <div class="issue-body">
+        <div class="section-accordion">
+
+          <details open>
+            <summary>📖 Narrative</summary>
+            <div class="section-body">
+              <p>This is a <strong>composition bug</strong>: <code class="bg-slate-800 px-1 rounded">apply_date_mask</code> and <code class="bg-slate-800 px-1 rounded">prep_df</code> are each individually correct, but the two functions fail together when composed. <code class="bg-slate-800 px-1 rounded">apply_date_mask</code> removes rows for dates outside the analysis window (returning a sparse DataFrame). <code class="bg-slate-800 px-1 rounded">prep_df</code> then calls <code class="bg-slate-800 px-1 rounded">reindex(full_date_range)</code> to align the index to a complete date range, and <code class="bg-slate-800 px-1 rounded">fillna(0)</code> to clean up missing values for downstream arithmetic. The intent of each step is fine in isolation.</p>
+              <p class="mt-2">The problem: the filtered rows removed by <code class="bg-slate-800 px-1 rounded">apply_date_mask</code> become NaNs after reindex, and <code class="bg-slate-800 px-1 rounded">fillna(0)</code> converts them to zero-revenue days. The downstream lift estimator then treats these fake zero-days as real observations in the control period, artificially suppressing the control baseline. Since the lift is computed as <code class="bg-slate-800 px-1 rounded">(treatment - control) / control</code>, a suppressed control baseline <strong>inflates</strong> the reported lift.</p>
+              <p class="mt-2">This is an <strong>anti-conservative bias</strong> — exactly the kind most dangerous in campaign-lift analytics, because it pushes results in the direction that users (and stakeholders) are hoping to see. A conservative bias would make findings harder to publish; an anti-conservative bias makes them easier. The magnitude depends on the ratio of masked days to kept days; for the default mask this is roughly 15% inflation of the reported lift.</p>
+            </div>
+          </details>
+
+          <details open>
+            <summary>📄 Code Evidence</summary>
+            <div class="section-body">
+              <div class="code-evidence-header">
+                <span class="file-path">src/analytics/pipeline.py</span>
+                <span class="line-range">915-918</span>
+                <span class="caption">The reindex + fillna pattern that reintroduces filtered rows as zeros</span>
+              </div>
+              <pre><code class="language-python">def prep_df(df: pd.DataFrame, full_idx: pd.DatetimeIndex) -&gt; pd.DataFrame:
+    df = df.reindex(full_idx)
+    df['revenue'] = df['revenue'].fillna(0)
+    df['orders'] = df['orders'].fillna(0)
+    return df</code></pre>
+              <div class="code-evidence-header mt-3">
+                <span class="file-path">src/analytics/pipeline.py</span>
+                <span class="line-range">842-851</span>
+                <span class="caption">The upstream apply_date_mask function — correct in isolation</span>
+              </div>
+              <pre><code class="language-python">def apply_date_mask(df: pd.DataFrame, mask_start, mask_end) -&gt; pd.DataFrame:
+    """Remove rows in the masked interval (e.g. holiday dead-zone)."""
+    mask = (df.index &gt;= mask_start) &amp; (df.index &lt;= mask_end)
+    return df.loc[~mask]</code></pre>
+            </div>
+          </details>
+
+          <details open>
+            <summary>👥 Raised by</summary>
+            <div class="section-body">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div class="bg-slate-900/40 rounded-lg p-3 border border-slate-700">
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="rb-avatar rb-ch">CH</span>
+                    <span class="font-semibold text-white text-sm">Correctness Hawk</span>
+                    <span class="badge-p1 px-1.5 py-0.5 rounded text-xs font-bold ml-auto">P1</span>
+                  </div>
+                  <div class="italic text-slate-300 text-xs">Primary source — caught the composition bug by tracing the data flow through apply_date_mask → prep_df. Walked through the arithmetic showing the anti-conservative direction with a worked numerical example.</div>
+                </div>
+                <div class="bg-slate-900/40 rounded-lg p-3 border border-slate-700">
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="rb-avatar rb-ac">AC</span>
+                    <span class="font-semibold text-white text-sm">Architecture Critic</span>
+                    <span class="badge-p1 px-1.5 py-0.5 rounded text-xs font-bold ml-auto">P1</span>
+                  </div>
+                  <div class="italic text-slate-300 text-xs">Concurred — noted this is a symptom of missing schema contracts between pipeline stages. Each function is locally correct but the composition has no invariant guarantee.</div>
+                </div>
+                <div class="bg-slate-900/40 rounded-lg p-3 border border-slate-700 md:col-span-2">
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="rb-avatar rb-da">DA</span>
+                    <span class="font-semibold text-white text-sm">Devil's Advocate</span>
+                    <span class="badge-p1 px-1.5 py-0.5 rounded text-xs font-bold ml-auto">P1</span>
+                  </div>
+                  <div class="italic text-slate-300 text-xs">Initially argued "conservative bias" (thought zero-days would suppress the treatment effect). Corrected by CH in Round 2 with explicit arithmetic showing the control denominator is what gets suppressed, not the treatment numerator.</div>
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <details open>
+            <summary>🔍 Verification Trail</summary>
+            <div class="section-body">
+              <div class="flex items-center gap-2 mb-2">
+                <span class="rb-avatar rb-vr2">V2</span>
+                <div>
+                  <div class="font-semibold text-white text-sm">Data Flow Tracer (VR2) · Standard tier</div>
+                  <div class="text-xs text-slate-400">voltagent-data-ai:data-engineer</div>
+                </div>
+              </div>
+              <p><strong>What was investigated:</strong> Trace the data flow through <code class="bg-slate-800 px-1 rounded">apply_date_mask</code> → <code class="bg-slate-800 px-1 rounded">prep_df</code> → lift estimator, verify that filtered rows reappear as zero values in the control period, and confirm the bias direction (anti-conservative vs conservative).</p>
+              <blockquote class="border-l-4 border-blue-500 pl-3 italic mt-2 text-slate-300">
+                Confirmed. Traced with a synthetic input (100-day window, 15 days masked). After apply_date_mask the DataFrame has 85 rows. After prep_df.reindex(full_idx).fillna(0) it has 100 rows with the 15 masked days reintroduced as revenue=0. Lift estimator output on this synthetic data differed by 14.8% from the correctly-filtered version — matches CH's predicted magnitude. Bias direction confirmed anti-conservative: suppressed control baseline → inflated lift.
+              </blockquote>
+              <div class="verdict-banner verdict-confirmed">✓ Claim independently confirmed by verification agent — bias direction and magnitude reproduced</div>
+            </div>
+          </details>
+
+          <details open>
+            <summary>💬 Debate</summary>
+            <div class="section-body">
+              <div class="debate-bubble">
+                <div class="avatar rb-da">DA</div>
+                <div class="content-box">
+                  <div class="flex items-center gap-1">
+                    <span class="font-semibold text-white">Devil's Advocate</span>
+                    <span class="round-badge">Round 1 — bias direction</span>
+                  </div>
+                  <div class="text-slate-300 mt-1">Wouldn't this be a <em>conservative</em> bias? Zero-days in the control period would suppress both treatment and control means, making the effect harder to detect, not easier.</div>
+                </div>
+              </div>
+              <div class="debate-bubble">
+                <div class="avatar rb-ch">CH</div>
+                <div class="content-box">
+                  <div class="flex items-center gap-1">
+                    <span class="font-semibold text-white">Correctness Hawk</span>
+                    <span class="round-badge">Round 2 — correction</span>
+                  </div>
+                  <div class="text-slate-300 mt-1">No — the zeros only reappear in the control period because the mask only applied there (pre-campaign window). Treatment days were not masked. So the treatment mean is unaffected, but the control denominator is suppressed by the zero-days. Lift = (T - C) / C becomes larger when C shrinks. Worked example: real C=100, masked=15% → padded C=85, T=120. True lift = 20%, reported lift = (120-85)/85 = 41%. That's the anti-conservative direction.</div>
+                </div>
+              </div>
+              <div class="debate-bubble">
+                <div class="avatar rb-da">DA</div>
+                <div class="content-box">
+                  <div class="flex items-center gap-1">
+                    <span class="font-semibold text-white">Devil's Advocate</span>
+                    <span class="round-badge">Round 3 — accepted</span>
+                  </div>
+                  <div class="text-slate-300 mt-1">Accepted. I was conflating "zero days dilute everything" with "zero days dilute the specific mean used as the baseline denominator." The asymmetric mask is the key — masking only hits control, so only control gets inflated downwards. P1 stands.</div>
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <details open>
+            <summary>⚖️ Judge Ruling</summary>
+            <div class="section-body">
+              <div class="flex items-center gap-2 mb-2">
+                <span class="rb-avatar rb-judge">SJ</span>
+                <span class="font-semibold text-white">Supreme Judge</span>
+              </div>
+              <p>B1 is confirmed at P1. This is exactly the class of <strong>composition bug</strong> that Phase 2 Data Flow Trace is designed to catch — both <code class="bg-slate-800 px-1 rounded">apply_date_mask</code> and <code class="bg-slate-800 px-1 rounded">prep_df</code> are individually correct. The bug lives in the invariant gap <em>between</em> them: one function removes rows, the other fills missing indexes, and neither function knows about the other's semantics.</p>
+              <p class="mt-2">The anti-conservative bias direction makes this a P1 rather than a P2. Numerical bugs that push results toward favorable outcomes are more dangerous than those pushing away, because stakeholders have no incentive to question a pleasant-looking number. The magnitude (14.8% on the synthetic test case) is meaningful but not catastrophic — hence P1 not P0.</p>
+              <div class="mt-3 p-3 border-l-4 border-yellow-500 bg-yellow-950/20 rounded-r-lg">
+                <div class="text-yellow-300 text-xs font-semibold">Severity confirmed at P1. Noted: this is a textbook composition bug — the failure mode only appears when both functions run in sequence.</div>
+              </div>
+            </div>
+          </details>
+
+          <details open>
+            <summary>🛠️ Fix Recommendation</summary>
+            <div class="section-body">
+              <p>Fix <code class="bg-slate-800 px-1 rounded">prep_df</code> to respect the mask bounds. The function needs to know which index positions are genuinely missing (should be filled with zero) versus intentionally masked (should be dropped from the output). Pass the mask metadata through the call chain.</p>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+                <div class="fix-before">
+                  <div class="text-xs text-red-300 font-semibold mb-1">Before</div>
+                  <pre><code class="language-python">def prep_df(df, full_idx):
+    df = df.reindex(full_idx)
+    df['revenue'] = df['revenue'].fillna(0)
+    return df</code></pre>
+                </div>
+                <div class="fix-after">
+                  <div class="text-xs text-green-300 font-semibold mb-1">After</div>
+                  <pre><code class="language-python">def prep_df(df, full_idx, mask_bounds=None):
+    if mask_bounds:
+        full_idx = full_idx[
+            (full_idx &lt; mask_bounds[0]) |
+            (full_idx &gt; mask_bounds[1])]
+    df = df.reindex(full_idx)
+    df['revenue'] = df['revenue'].fillna(0)
+    return df</code></pre>
+                </div>
+              </div>
+              <div class="mt-3 text-xs text-slate-400">🧪 <strong>Regression test to add:</strong> <code class="bg-slate-900 px-1 rounded">tests/test_pipeline.py::test_prep_df_respects_mask_bounds</code> — builds a synthetic DataFrame with a known mask, runs the full pipeline, and asserts that the output DataFrame does NOT contain zero-revenue rows in the masked date range.</div>
+              <div class="mt-3 flex gap-2 flex-wrap">
+                <span class="chip-medium">Blast: Medium</span>
+                <span class="chip-blue">Effort: 2 hours</span>
+              </div>
+            </div>
+          </details>
+
+          <details open>
+            <summary>🔗 Cross-references</summary>
+            <div class="section-body">
+              <a href="#issue-A5" class="xref-link xref-root-cause">B1 → A5</a>
+              <span class="italic text-xs text-slate-300">root-cause: B1 is a symptom of A5's pipeline divergence — multiple pipeline implementations lack a shared schema contract, so composition gaps like this one are structurally inevitable until A5 is resolved.</span>
+            </div>
+          </details>
+
+          <details open>
+            <summary>🏷️ Epistemic Tags</summary>
+            <div class="section-body">
+              <span class="etag etag-verified" title="Confirmed by verification AND 2+ reviewers">[VERIFIED]</span>
+              <span class="etag etag-consensus" title="3+ reviewers agreed">[CONSENSUS]</span>
+              <span class="etag etag-vrconfirmed" title="Verification agent confirmed the claim">[VR_CONFIRMED]</span>
+              <span class="etag etag-existing" title="Bug exists in current running code">[EXISTING_DEFECT]</span>
+            </div>
+          </details>
+
+          <details open>
+            <summary>📊 Prior Runs</summary>
+            <div class="section-body">
+              <table class="prior-runs-table">
+                <thead>
+                  <tr><th>Run</th><th>Severity</th><th>Rating</th><th>Note</th></tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code>run-1</code></td>
+                    <td><span class="badge-p0 px-1.5 py-0.5 rounded text-xs">P0</span></td>
+                    <td><span class="chip-blue">REJECT</span></td>
+                    <td>Initially flagged as deployment-blocking</td>
+                  </tr>
+                  <tr>
+                    <td><code>run-2 (current)</code></td>
+                    <td><span class="badge-p1 px-1.5 py-0.5 rounded text-xs">P1</span></td>
+                    <td><span class="chip-medium">APPROVE_WITH_CONDITIONS</span></td>
+                    <td>Downgraded after VR2 confirmed isolated impact (14.8% magnitude, fixable)</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </details>
+
+        </div>
+      </div>
+    </details>
+
+    <!-- ============================================================ -->
+    <!-- C1 — FULLY POPULATED (P1 Performance, not verified)           -->
+    <!-- ============================================================ -->
+    <details class="issue-card card" id="issue-C1" tabindex="0" data-severity="P1" data-text="c1 n+1 query order history endpoint prisma typescript performance">
+      <summary>
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="font-mono text-slate-400 text-sm">C1</span>
+          <span class="badge-p1 px-2 py-0.5 rounded text-xs font-bold">P1</span>
+          <span class="text-white font-medium">N+1 query pattern in order history endpoint</span>
+        </div>
+        <div class="mt-2 text-sm text-slate-300">
+          <code class="text-red-300 text-xs bg-slate-900 px-1 rounded">src/api/routes.ts:142-156</code> — <code class="text-xs">/api/orders/history</code> loads orders in a loop, then fetches line items individually per order. For 50+ orders, this produces 51 DB queries per page load (O(N) scaling).
+        </div>
+        <div class="mt-2 text-xs text-slate-400">
+          <span>Raised by:</span>
+          <span class="rb-avatar rb-ac" title="Architecture Critic">AC</span>
+          <span class="rb-avatar rb-ch" title="Correctness Hawk">CH</span>
+          <span class="ml-1">2 reviewers · 1 round on severity</span>
+        </div>
+      </summary>
+      <div class="issue-body">
+        <div class="section-accordion">
+
+          <details open>
+            <summary>📖 Narrative</summary>
+            <div class="section-body">
+              <p>The <code class="bg-slate-800 px-1 rounded">/api/orders/history</code> endpoint implements pagination by loading a page of orders, then looping over each order and fetching its line items with a separate <code class="bg-slate-800 px-1 rounded">db.lineItems.findMany</code> call. This is a textbook N+1 query pattern: for a user with 50 orders on their history page, the endpoint issues 51 database queries per request (1 for the orders, 50 for the line items).</p>
+              <p class="mt-2">The impact is bounded — it doesn't corrupt data or break correctness — but it scales linearly with order history, and the order history page is the most-visited customer-facing route after checkout. At 50 orders the p95 latency is already 1.2 seconds. For power users with 200+ orders (wholesale buyers, resellers), this becomes visibly slow and generates unnecessary DB load that cascades to connection-pool pressure during peak traffic.</p>
+            </div>
+          </details>
+
+          <details open>
+            <summary>📄 Code Evidence</summary>
+            <div class="section-body">
+              <div class="code-evidence-header">
+                <span class="file-path">src/api/routes.ts</span>
+                <span class="line-range">142-156</span>
+                <span class="caption">The classic N+1 loop — one findMany call per order</span>
+              </div>
+              <pre><code class="language-typescript">router.get('/api/orders/history', async (req, res) =&gt; {
+  const orders = await db.orders.findMany({
+    where: { userId: req.user.id },
+    orderBy: { createdAt: 'desc' },
+    take: 50,
+  });
+
+  const enriched = [];
+  for (const order of orders) {
+    const items = await db.lineItems.findMany({
+      where: { orderId: order.id },
+    });
+    enriched.push({ ...order, items });
+  }
+
+  res.json(enriched);
+});</code></pre>
+            </div>
+          </details>
+
+          <details open>
+            <summary>👥 Raised by</summary>
+            <div class="section-body">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div class="bg-slate-900/40 rounded-lg p-3 border border-slate-700">
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="rb-avatar rb-ac">AC</span>
+                    <span class="font-semibold text-white text-sm">Architecture Critic</span>
+                    <span class="badge-p1 px-1.5 py-0.5 rounded text-xs font-bold ml-auto">P1</span>
+                  </div>
+                  <div class="italic text-slate-300 text-xs">Primary source — identified as a classic N+1 anti-pattern. Rated P1 because it affects every authenticated user with order history (not a corner case).</div>
+                </div>
+                <div class="bg-slate-900/40 rounded-lg p-3 border border-slate-700">
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="rb-avatar rb-ch">CH</span>
+                    <span class="font-semibold text-white text-sm">Correctness Hawk</span>
+                    <span class="badge-p2 px-1.5 py-0.5 rounded text-xs font-bold ml-auto mr-1">P2</span>
+                    <span class="text-xs text-slate-400">→</span>
+                    <span class="badge-p1 px-1.5 py-0.5 rounded text-xs font-bold ml-1">P1</span>
+                  </div>
+                  <div class="italic text-slate-300 text-xs">Initially P2 ("technically works, just slow"). Agreed to P1 after AC's point about scale — this affects every logged-in user, and connection-pool cascade is a real production risk.</div>
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <details open>
+            <summary>🔍 Verification Trail</summary>
+            <div class="section-body">
+              <p class="placeholder-text">This finding was not dispatched to a verification agent. Both reviewers agreed on the facts (the code visibly implements N+1); only the severity was disputed, and a one-round discussion resolved it without external verification. Verification was reserved for claims where the panel had substantive disagreement about whether a bug existed at all.</p>
+            </div>
+          </details>
+
+          <details open>
+            <summary>💬 Debate</summary>
+            <div class="section-body">
+              <div class="debate-bubble">
+                <div class="avatar rb-ch">CH</div>
+                <div class="content-box">
+                  <div class="flex items-center gap-1">
+                    <span class="font-semibold text-white">Correctness Hawk</span>
+                    <span class="round-badge">Round 1 — severity</span>
+                  </div>
+                  <div class="text-slate-300 mt-1">I'd rate this P2 — it's functionally correct, just inefficient. The system works; it's not a bug in the correctness sense.</div>
+                </div>
+              </div>
+              <div class="debate-bubble">
+                <div class="avatar rb-ac">AC</div>
+                <div class="content-box">
+                  <div class="flex items-center gap-1">
+                    <span class="font-semibold text-white">Architecture Critic</span>
+                    <span class="round-badge">Round 1 — response</span>
+                  </div>
+                  <div class="text-slate-300 mt-1">The order-history route is hit by every logged-in user. O(N) query scaling on a universal route is a P1 in my book — any user with 200+ orders will see visible delay, and connection-pool pressure during peak hours will cascade into unrelated endpoints. Agreed?</div>
+                </div>
+              </div>
+              <div class="debate-bubble">
+                <div class="avatar rb-ch">CH</div>
+                <div class="content-box">
+                  <div class="flex items-center gap-1">
+                    <span class="font-semibold text-white">Correctness Hawk</span>
+                    <span class="round-badge">Round 1 — accepted</span>
+                  </div>
+                  <div class="text-slate-300 mt-1">Agreed — universal-route scaling is the right frame. P1 it is.</div>
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <details open>
+            <summary>⚖️ Judge Ruling</summary>
+            <div class="section-body">
+              <div class="flex items-center gap-2 mb-2">
+                <span class="rb-avatar rb-judge">SJ</span>
+                <span class="font-semibold text-white">Supreme Judge</span>
+              </div>
+              <p>C1 is confirmed at P1. Performance bugs on universal routes (as opposed to edge-case routes) deserve P1 classification because the cost scales with user count, not with the rarity of the bug-triggering path. The AC/CH debate resolved cleanly on this framing.</p>
+              <p class="mt-2">The fix is a standard SQL JOIN — the ORM (Prisma) supports it via <code class="bg-slate-800 px-1 rounded">include</code>. The one-query replacement is a direct substitution with no architectural change.</p>
+            </div>
+          </details>
+
+          <details open>
+            <summary>🛠️ Fix Recommendation</summary>
+            <div class="section-body">
+              <p>Replace the loop with a single query using Prisma's <code class="bg-slate-800 px-1 rounded">include</code> option to eagerly load related line items. This collapses the 51-query pattern into a single JOIN query (one SELECT with a LEFT JOIN under the hood).</p>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+                <div class="fix-before">
+                  <div class="text-xs text-red-300 font-semibold mb-1">Before (51 queries)</div>
+                  <pre><code class="language-typescript">const orders = await db.orders.findMany({
+  where: { userId: req.user.id },
+  take: 50,
+});
+const enriched = [];
+for (const order of orders) {
+  const items = await db.lineItems.findMany({
+    where: { orderId: order.id },
+  });
+  enriched.push({ ...order, items });
+}</code></pre>
+                </div>
+                <div class="fix-after">
+                  <div class="text-xs text-green-300 font-semibold mb-1">After (1 query)</div>
+                  <pre><code class="language-typescript">const enriched = await db.orders.findMany({
+  where: { userId: req.user.id },
+  orderBy: { createdAt: 'desc' },
+  take: 50,
+  include: {
+    items: true,
+  },
+});</code></pre>
+                </div>
+              </div>
+              <div class="mt-3 text-xs text-slate-400">🧪 <strong>Regression test to add:</strong> <code class="bg-slate-900 px-1 rounded">tests/perf/test_orders_history.ts::test_n_plus_one_guard</code> — wraps the Prisma client with a query counter, loads a user with 50 orders, and asserts that the endpoint issues exactly 1 database query (not 51).</div>
+              <div class="mt-3 flex gap-2 flex-wrap">
+                <span class="chip-low">Blast: Low</span>
+                <span class="chip-blue">Effort: 1 hour</span>
+              </div>
+            </div>
+          </details>
+
+          <details open>
+            <summary>🔗 Cross-references</summary>
+            <div class="section-body">
+              <p class="placeholder-text">No related findings. This finding stands alone.</p>
+            </div>
+          </details>
+
+          <details open>
+            <summary>🏷️ Epistemic Tags</summary>
+            <div class="section-body">
+              <span class="etag etag-consensus" title="2+ reviewers agreed">[CONSENSUS]</span>
+              <span class="etag etag-existing" title="Bug exists in current running code">[EXISTING_DEFECT]</span>
+            </div>
+          </details>
+
+          <details open>
+            <summary>📊 Prior Runs</summary>
+            <div class="section-body">
+              <p class="placeholder-text">No prior-run data available (this is a single-run review, not a meta-comparison).</p>
+            </div>
+          </details>
+
+        </div>
+      </div>
+    </details>
+
+    <!-- ============================================================ -->
+    <!-- A2 — LIGHTLY POPULATED (P1 Security)                          -->
+    <!-- ============================================================ -->
+    <details class="issue-card card" id="issue-A2" tabindex="0" data-severity="P1" data-text="a2 session cookie secure flag not set">
+      <summary>
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="font-mono text-slate-400 text-sm">A2</span>
+          <span class="badge-p1 px-2 py-0.5 rounded text-xs font-bold">P1</span>
+          <span class="text-white font-medium">SESSION_COOKIE_SECURE not set — session cookie transmitted over HTTP</span>
+        </div>
+        <div class="mt-2 text-sm text-slate-300">
+          <code class="text-red-300 text-xs bg-slate-900 px-1 rounded">src/config/flask_config.py</code> — <code class="text-xs">SESSION_COOKIE_SECURE=False</code> allows the session cookie to flow over plain HTTP, exposing it to network-level observers.
+        </div>
+        <div class="mt-2 text-xs text-slate-400">
+          <span>Raised by:</span>
+          <span class="rb-avatar rb-sa" title="Security Auditor">SA</span>
+          <span class="ml-1">1 reviewer</span>
+        </div>
+      </summary>
+      <div class="issue-body">
+        <div class="section-accordion">
+          <details open><summary>📖 Narrative</summary><div class="section-body"><p>Flask's <code class="bg-slate-800 px-1 rounded">SESSION_COOKIE_SECURE</code> flag defaults to <code class="bg-slate-800 px-1 rounded">False</code> and the payment service config never sets it explicitly. Behind a reverse proxy this is typically handled at the proxy level, but the application itself provides no guarantee, and any misconfiguration of the proxy layer leaks the session cookie.</p></div></details>
+          <details open><summary>📄 Code Evidence</summary><div class="section-body"><p class="placeholder-text">No code evidence data captured for this finding. The config line is referenced inline in the Narrative.</p></div></details>
+          <details open><summary>👥 Raised by</summary><div class="section-body"><p class="placeholder-text">Raised by Security Auditor as a routine hardening recommendation. Per-reviewer detailed ratings not captured in process history.</p></div></details>
+          <details open><summary>🔍 Verification Trail</summary><div class="section-body"><p class="placeholder-text">This finding was not dispatched to a verification agent (no substantive dispute about the facts).</p></div></details>
+          <details open><summary>💬 Debate</summary><div class="section-body"><p class="placeholder-text">No debate data captured for this finding. No open dispute between reviewers.</p></div></details>
+          <details open><summary>⚖️ Judge Ruling</summary><div class="section-body"><p class="placeholder-text">No judge ruling data captured for this finding. The Supreme Judge did not arbitrate (no dispute required resolution).</p></div></details>
+          <details open><summary>🛠️ Fix Recommendation</summary><div class="section-body"><p>Set <code class="bg-slate-800 px-1 rounded">SESSION_COOKIE_SECURE = True</code> in <code class="bg-slate-800 px-1 rounded">flask_config.py</code>. Also set <code class="bg-slate-800 px-1 rounded">SESSION_COOKIE_HTTPONLY = True</code> and <code class="bg-slate-800 px-1 rounded">SESSION_COOKIE_SAMESITE = 'Lax'</code>.</p><div class="mt-3 flex gap-2 flex-wrap"><span class="chip-low">Blast: Low</span><span class="chip-blue">Effort: 15 min</span></div></div></details>
+          <details open><summary>🔗 Cross-references</summary><div class="section-body"><p class="placeholder-text">No cross-references data captured for this finding.</p></div></details>
+          <details open><summary>🏷️ Epistemic Tags</summary><div class="section-body"><span class="etag etag-existing" title="Bug exists in current running code">[EXISTING_DEFECT]</span></div></details>
+          <details open><summary>📊 Prior Runs</summary><div class="section-body"><p class="placeholder-text">No prior-runs data captured for this finding.</p></div></details>
+        </div>
+      </div>
+    </details>
+
+    <!-- ============================================================ -->
+    <!-- B2 — LIGHTLY POPULATED (P1 Code Quality)                      -->
+    <!-- ============================================================ -->
+    <details class="issue-card card" id="issue-B2" tabindex="0" data-severity="P1" data-text="b2 bare except clauses exception handling">
+      <summary>
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="font-mono text-slate-400 text-sm">B2</span>
+          <span class="badge-p1 px-2 py-0.5 rounded text-xs font-bold">P1</span>
+          <span class="text-white font-medium">Bare <code class="text-xs">except:</code> clauses in 3 payment-critical locations</span>
+        </div>
+        <div class="mt-2 text-sm text-slate-300">
+          <code class="text-red-300 text-xs bg-slate-900 px-1 rounded">src/payment/processor.py:89,141,203</code> — three bare except clauses that swallow all exceptions including <code class="text-xs">KeyboardInterrupt</code> and <code class="text-xs">SystemExit</code>, masking real payment failures as silent no-ops.
+        </div>
+        <div class="mt-2 text-xs text-slate-400">
+          <span>Raised by:</span>
+          <span class="rb-avatar rb-ac" title="Architecture Critic">AC</span>
+          <span class="rb-avatar rb-ch" title="Correctness Hawk">CH</span>
+          <span class="ml-1">2 reviewers</span>
+        </div>
+      </summary>
+      <div class="issue-body">
+        <div class="section-accordion">
+          <details open><summary>📖 Narrative</summary><div class="section-body"><p>Three bare <code class="bg-slate-800 px-1 rounded">except:</code> clauses in <code class="bg-slate-800 px-1 rounded">payment/processor.py</code> catch every exception type and log a generic "payment processing failed" message. Critically, this includes <code class="bg-slate-800 px-1 rounded">KeyboardInterrupt</code>, <code class="bg-slate-800 px-1 rounded">SystemExit</code>, and <code class="bg-slate-800 px-1 rounded">MemoryError</code> — conditions that should propagate, not be suppressed.</p></div></details>
+          <details open><summary>📄 Code Evidence</summary><div class="section-body"><p class="placeholder-text">No code evidence data captured for this finding. File and line references inline in Narrative.</p></div></details>
+          <details open><summary>👥 Raised by</summary><div class="section-body"><p class="placeholder-text">Raised by Architecture Critic (primary) and Correctness Hawk. Per-reviewer detailed ratings not captured in process history.</p></div></details>
+          <details open><summary>🔍 Verification Trail</summary><div class="section-body"><p class="placeholder-text">This finding was not dispatched to a verification agent.</p></div></details>
+          <details open><summary>💬 Debate</summary><div class="section-body"><p class="placeholder-text">No debate data captured for this finding.</p></div></details>
+          <details open><summary>⚖️ Judge Ruling</summary><div class="section-body"><p class="placeholder-text">No judge ruling data captured for this finding.</p></div></details>
+          <details open><summary>🛠️ Fix Recommendation</summary><div class="section-body"><p>Replace each bare <code class="bg-slate-800 px-1 rounded">except:</code> with explicit exception types: <code class="bg-slate-800 px-1 rounded">except (PaymentGatewayError, ConnectionError) as e:</code>. Let unexpected exceptions propagate.</p><div class="mt-3 flex gap-2 flex-wrap"><span class="chip-low">Blast: Low</span><span class="chip-blue">Effort: 30 min</span></div></div></details>
+          <details open><summary>🔗 Cross-references</summary><div class="section-body"><p class="placeholder-text">No cross-references data captured for this finding.</p></div></details>
+          <details open><summary>🏷️ Epistemic Tags</summary><div class="section-body"><span class="etag etag-consensus" title="2+ reviewers agreed">[CONSENSUS]</span><span class="etag etag-existing" title="Bug exists in current running code">[EXISTING_DEFECT]</span></div></details>
+          <details open><summary>📊 Prior Runs</summary><div class="section-body"><p class="placeholder-text">No prior-runs data captured for this finding.</p></div></details>
+        </div>
+      </div>
+    </details>
+
+    <!-- ============================================================ -->
+    <!-- A3 — LIGHTLY POPULATED (P2 Security)                          -->
+    <!-- ============================================================ -->
+    <details class="issue-card card" id="issue-A3" tabindex="0" data-severity="P2" data-text="a3 csrf tokens post routes state mutating">
+      <summary>
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="font-mono text-slate-400 text-sm">A3</span>
+          <span class="badge-p2 px-2 py-0.5 rounded text-xs font-bold">P2</span>
+          <span class="text-white font-medium">No CSRF tokens on state-mutating POST routes</span>
+        </div>
+        <div class="mt-2 text-sm text-slate-300">
+          The <code class="text-xs">/api/orders</code>, <code class="text-xs">/api/refund</code>, and <code class="text-xs">/api/settings</code> POST routes accept form submissions without CSRF token validation. Flask-WTF or an equivalent CSRF middleware should guard these endpoints.
+        </div>
+        <div class="mt-2 text-xs text-slate-400">
+          <span>Raised by:</span>
+          <span class="rb-avatar rb-sa" title="Security Auditor">SA</span>
+          <span class="ml-1">1 reviewer</span>
+        </div>
+      </summary>
+      <div class="issue-body">
+        <div class="section-accordion">
+          <details open><summary>📖 Narrative</summary><div class="section-body"><p>The payment service exposes several POST routes that mutate state (create orders, issue refunds, update settings) without CSRF protection. An attacker who can get an authenticated user to visit a malicious page can forge requests on their behalf. Downgraded to P2 because the service runs behind an authentication layer that reduces the exposure surface, but still needs addressing before any public-internet deployment.</p></div></details>
+          <details open><summary>📄 Code Evidence</summary><div class="section-body"><p class="placeholder-text">No code evidence data captured for this finding.</p></div></details>
+          <details open><summary>👥 Raised by</summary><div class="section-body"><p class="placeholder-text">Raised by Security Auditor as a hardening recommendation.</p></div></details>
+          <details open><summary>🔍 Verification Trail</summary><div class="section-body"><p class="placeholder-text">This finding was not dispatched to a verification agent.</p></div></details>
+          <details open><summary>💬 Debate</summary><div class="section-body"><p class="placeholder-text">No debate data captured for this finding.</p></div></details>
+          <details open><summary>⚖️ Judge Ruling</summary><div class="section-body"><p class="placeholder-text">No judge ruling data captured for this finding.</p></div></details>
+          <details open><summary>🛠️ Fix Recommendation</summary><div class="section-body"><p>Add Flask-WTF CSRFProtect middleware and include the CSRF token in all POST forms. Or, if the service is API-only, enforce strict Origin header checking.</p><div class="mt-3 flex gap-2 flex-wrap"><span class="chip-medium">Blast: Medium</span><span class="chip-blue">Effort: 2 hours</span></div></div></details>
+          <details open><summary>🔗 Cross-references</summary><div class="section-body"><p class="placeholder-text">No cross-references data captured for this finding.</p></div></details>
+          <details open><summary>🏷️ Epistemic Tags</summary><div class="section-body"><span class="etag etag-existing" title="Bug exists in current running code">[EXISTING_DEFECT]</span></div></details>
+          <details open><summary>📊 Prior Runs</summary><div class="section-body"><p class="placeholder-text">No prior-runs data captured for this finding.</p></div></details>
+        </div>
+      </div>
+    </details>
+
+    <!-- ============================================================ -->
+    <!-- B3 — LIGHTLY POPULATED (P2 Architecture)                      -->
+    <!-- ============================================================ -->
+    <details class="issue-card card" id="issue-B3" tabindex="0" data-severity="P2" data-text="b3 cloud_runner module-level singleton dict lost on restart">
+      <summary>
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="font-mono text-slate-400 text-sm">B3</span>
+          <span class="badge-p2 px-2 py-0.5 rounded text-xs font-bold">P2</span>
+          <span class="text-white font-medium"><code class="text-xs">cloud_runner.py</code> module-level singleton dict lost on restart</span>
+        </div>
+        <div class="mt-2 text-sm text-slate-300">
+          <code class="text-red-300 text-xs bg-slate-900 px-1 rounded">src/infra/cloud_runner.py:12</code> — <code class="text-xs">_active_jobs: Dict[str, Job] = {}</code> is a module-level dict that tracks in-flight background jobs. Lost whenever the web process restarts, leaving orphaned work.
+        </div>
+        <div class="mt-2 text-xs text-slate-400">
+          <span>Raised by:</span>
+          <span class="rb-avatar rb-ac" title="Architecture Critic">AC</span>
+          <span class="ml-1">1 reviewer</span>
+        </div>
+      </summary>
+      <div class="issue-body">
+        <div class="section-accordion">
+          <details open><summary>📖 Narrative</summary><div class="section-body"><p>The cloud runner tracks in-flight background jobs in a module-level Python dict. The dict lives in the process memory of whichever web worker accepted the job submission. On worker restart (deploy, OOM, scale event) the dict is lost and any job whose status was mid-flight becomes orphaned — no client sees completion, no cleanup runs. Should be persisted to Redis or the database.</p></div></details>
+          <details open><summary>📄 Code Evidence</summary><div class="section-body"><p class="placeholder-text">No code evidence data captured for this finding.</p></div></details>
+          <details open><summary>👥 Raised by</summary><div class="section-body"><p class="placeholder-text">Raised by Architecture Critic as a resilience concern.</p></div></details>
+          <details open><summary>🔍 Verification Trail</summary><div class="section-body"><p class="placeholder-text">This finding was not dispatched to a verification agent.</p></div></details>
+          <details open><summary>💬 Debate</summary><div class="section-body"><p class="placeholder-text">No debate data captured for this finding.</p></div></details>
+          <details open><summary>⚖️ Judge Ruling</summary><div class="section-body"><p class="placeholder-text">No judge ruling data captured for this finding.</p></div></details>
+          <details open><summary>🛠️ Fix Recommendation</summary><div class="section-body"><p>Replace the module-level dict with a Redis-backed job store, or persist job rows in the main database with a status column.</p><div class="mt-3 flex gap-2 flex-wrap"><span class="chip-medium">Blast: Medium</span><span class="chip-blue">Effort: 4 hours</span></div></div></details>
+          <details open><summary>🔗 Cross-references</summary><div class="section-body"><p class="placeholder-text">No cross-references data captured for this finding.</p></div></details>
+          <details open><summary>🏷️ Epistemic Tags</summary><div class="section-body"><span class="etag etag-existing" title="Bug exists in current running code">[EXISTING_DEFECT]</span></div></details>
+          <details open><summary>📊 Prior Runs</summary><div class="section-body"><p class="placeholder-text">No prior-runs data captured for this finding.</p></div></details>
+        </div>
+      </div>
+    </details>
+
+    <!-- ============================================================ -->
+    <!-- POS1 — LIGHTLY POPULATED (Positive finding)                   -->
+    <!-- ============================================================ -->
+    <details class="issue-card card" id="issue-POS1" tabindex="0" data-severity="POS" data-text="pos1 permutation test methodologically sound">
+      <summary>
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="font-mono text-slate-400 text-sm">POS1</span>
+          <span class="badge-pos px-2 py-0.5 rounded text-xs font-bold">POSITIVE</span>
+          <span class="text-white font-medium">Permutation test design is methodologically sound</span>
+        </div>
+        <div class="mt-2 text-sm text-slate-300">
+          <code class="text-green-300 text-xs bg-slate-900 px-1 rounded">src/analytics/permutation.py</code> — The shuffling approach correctly preserves the time-series autocorrelation structure, and the effect-size comparison is immune to the common false-positive rate miscalibration issues seen in naive implementations.
+        </div>
+        <div class="mt-2 text-xs text-slate-400">
+          <span>Noted by:</span>
+          <span class="rb-avatar rb-mr" title="Methodology Reviewer">MR</span>
+          <span class="ml-1">Methodology Reviewer</span>
+        </div>
+      </summary>
+      <div class="issue-body">
+        <div class="section-accordion">
+          <details open><summary>📖 Narrative</summary><div class="section-body"><p>The permutation test implementation in <code class="bg-slate-800 px-1 rounded">permutation.py</code> is methodologically correct. The block-shuffling approach preserves autocorrelation structure (critical for time-series data), and the test statistic is the effect size rather than a t-statistic — which avoids the well-known false-positive rate inflation that naive permutation tests suffer when variance is unequal between groups. Worth calling out explicitly as a strength.</p></div></details>
+          <details open><summary>📄 Code Evidence</summary><div class="section-body"><p class="placeholder-text">No code evidence data captured for this positive finding.</p></div></details>
+          <details open><summary>👥 Raised by</summary><div class="section-body"><p class="placeholder-text">Noted by Methodology Reviewer as a strength to preserve during refactoring.</p></div></details>
+          <details open><summary>🔍 Verification Trail</summary><div class="section-body"><p class="placeholder-text">Positive findings are not dispatched to verification agents.</p></div></details>
+          <details open><summary>💬 Debate</summary><div class="section-body"><p class="placeholder-text">No debate data captured for this finding.</p></div></details>
+          <details open><summary>⚖️ Judge Ruling</summary><div class="section-body"><p class="placeholder-text">No judge ruling data captured for this finding.</p></div></details>
+          <details open><summary>🛠️ Fix Recommendation</summary><div class="section-body"><p class="placeholder-text">No fix required. This is a positive finding — the current implementation is correct and should be preserved.</p></div></details>
+          <details open><summary>🔗 Cross-references</summary><div class="section-body"><p class="placeholder-text">No cross-references data captured for this finding.</p></div></details>
+          <details open><summary>🏷️ Epistemic Tags</summary><div class="section-body"><span class="etag etag-consensus" title="Reviewer consensus on strength">[CONSENSUS]</span></div></details>
+          <details open><summary>📊 Prior Runs</summary><div class="section-body"><p class="placeholder-text">No prior-runs data captured for this finding.</p></div></details>
+        </div>
+      </div>
+    </details>
+
+  </div><!-- end issues-grid -->
+  <div id="no-results" class="hidden text-center text-slate-400 py-8">No issues match current filters.</div>
+</div><!-- end issues tab -->
+
+<!-- Panel Gallery Tab -->
+<div id="tab-content-panel" class="tab-content">
+  <div class="text-sm text-slate-400 mb-4">5 panel reviewers · 2 verification agents · 1 Supreme Judge</div>
+  <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+    <div class="card reviewer-card reviewer-ch p-4">
+      <div class="flex items-center gap-3 mb-2">
+        <div class="rb-avatar rb-ch" style="width:40px;height:40px;font-size:0.85rem;">CH</div>
+        <div class="flex-1">
+          <div class="font-semibold text-white">Correctness Hawk</div>
+          <div class="text-xs text-slate-400">Bugs, logic errors, edge cases</div>
+        </div>
+      </div>
+      <div class="text-xs text-slate-400 space-y-1 mt-3">
+        <div>🎯 Agreement intensity: <strong class="text-slate-200">30%</strong></div>
+        <div>🧠 Strategy: <strong class="text-slate-200">Systematic enumeration</strong></div>
+        <div>📋 Raised: <strong class="text-slate-200">4 items</strong> (A1, B1, B2, C1)</div>
+      </div>
+    </div>
+
+    <div class="card reviewer-card reviewer-ac p-4">
+      <div class="flex items-center gap-3 mb-2">
+        <div class="rb-avatar rb-ac" style="width:40px;height:40px;font-size:0.85rem;">AC</div>
+        <div class="flex-1">
+          <div class="font-semibold text-white">Architecture Critic</div>
+          <div class="text-xs text-slate-400">Design patterns, coupling, extensibility</div>
+        </div>
+      </div>
+      <div class="text-xs text-slate-400 space-y-1 mt-3">
+        <div>🎯 Agreement intensity: <strong class="text-slate-200">50%</strong></div>
+        <div>🧠 Strategy: <strong class="text-slate-200">Backward reasoning</strong></div>
+        <div>📋 Raised: <strong class="text-slate-200">3 items</strong> (B1, B2, B3, C1)</div>
+      </div>
+    </div>
+
+    <div class="card reviewer-card reviewer-sa p-4">
+      <div class="flex items-center gap-3 mb-2">
+        <div class="rb-avatar rb-sa" style="width:40px;height:40px;font-size:0.85rem;">SA</div>
+        <div class="flex-1">
+          <div class="font-semibold text-white">Security Auditor</div>
+          <div class="text-xs text-slate-400">Vulnerabilities, injection, auth gaps</div>
+        </div>
+      </div>
+      <div class="text-xs text-slate-400 space-y-1 mt-3">
+        <div>🎯 Agreement intensity: <strong class="text-slate-200">30%</strong></div>
+        <div>🧠 Strategy: <strong class="text-slate-200">Adversarial simulation</strong></div>
+        <div>📋 Raised: <strong class="text-slate-200">4 items</strong> (A1, A2, A3, A4)</div>
+      </div>
+    </div>
+
+    <div class="card reviewer-card reviewer-mr p-4">
+      <div class="flex items-center gap-3 mb-2">
+        <div class="rb-avatar rb-mr" style="width:40px;height:40px;font-size:0.85rem;">MR</div>
+        <div class="flex-1">
+          <div class="font-semibold text-white">Methodology Reviewer</div>
+          <div class="text-xs text-slate-400">Statistical validity, experiment analysis</div>
+        </div>
+      </div>
+      <div class="text-xs text-slate-400 space-y-1 mt-3">
+        <div>🎯 Agreement intensity: <strong class="text-slate-200">40%</strong></div>
+        <div>🧠 Strategy: <strong class="text-slate-200">Checklist verification</strong></div>
+        <div>📋 Raised: <strong class="text-slate-200">1 item</strong> (POS1)</div>
+      </div>
+    </div>
+
+    <div class="card reviewer-card reviewer-da p-4">
+      <div class="flex items-center gap-3 mb-2">
+        <div class="rb-avatar rb-da" style="width:40px;height:40px;font-size:0.85rem;">DA</div>
+        <div class="flex-1">
+          <div class="font-semibold text-white">Devil's Advocate</div>
+          <div class="text-xs text-slate-400">Challenge everything</div>
+        </div>
+      </div>
+      <div class="text-xs text-slate-400 space-y-1 mt-3">
+        <div>🎯 Agreement intensity: <strong class="text-slate-200">20%</strong></div>
+        <div>🧠 Strategy: <strong class="text-slate-200">Analogical reasoning</strong></div>
+        <div>📋 Raised: <strong class="text-slate-200">2 items</strong> (A1, B1 — debate-driven)</div>
+      </div>
+    </div>
+
+    <div class="card reviewer-card reviewer-vr1 p-4">
+      <div class="flex items-center gap-3 mb-2">
+        <div class="rb-avatar rb-vr1" style="width:40px;height:40px;font-size:0.85rem;">V1</div>
+        <div class="flex-1">
+          <div class="font-semibold text-white">Security Specialist (VR1)</div>
+          <div class="text-xs text-slate-400">Verification agent · Light tier</div>
+        </div>
+      </div>
+      <div class="text-xs text-slate-400 space-y-1 mt-3">
+        <div>🔧 VoltAgent: <code class="text-xs">voltagent-qa-sec:security-auditor</code></div>
+        <div>✅ Verified: <strong class="text-slate-200">A1</strong> (VR_CONFIRMED)</div>
+      </div>
+    </div>
+
+    <div class="card reviewer-card reviewer-vr2 p-4">
+      <div class="flex items-center gap-3 mb-2">
+        <div class="rb-avatar rb-vr2" style="width:40px;height:40px;font-size:0.85rem;">V2</div>
+        <div class="flex-1">
+          <div class="font-semibold text-white">Data Flow Tracer (VR2)</div>
+          <div class="text-xs text-slate-400">Verification agent · Standard tier</div>
+        </div>
+      </div>
+      <div class="text-xs text-slate-400 space-y-1 mt-3">
+        <div>🔧 VoltAgent: <code class="text-xs">voltagent-data-ai:data-engineer</code></div>
+        <div>✅ Verified: <strong class="text-slate-200">B1</strong> (VR_CONFIRMED)</div>
+      </div>
+    </div>
+
+    <div class="card reviewer-card reviewer-judge p-4">
+      <div class="flex items-center gap-3 mb-2">
+        <div class="rb-avatar rb-judge" style="width:40px;height:40px;font-size:0.85rem;">SJ</div>
+        <div class="flex-1">
+          <div class="font-semibold text-yellow-300">Supreme Judge</div>
+          <div class="text-xs text-slate-400">Domain-neutral arbitration</div>
+        </div>
+      </div>
+      <div class="text-xs text-slate-400 space-y-1 mt-3">
+        <div>🔧 Agent: <strong class="text-slate-200">generic + opus</strong></div>
+        <div>⚖️ Verdict: <strong class="text-yellow-300">APPROVE_WITH_CONDITIONS</strong></div>
+        <div>📊 Score: <strong class="text-yellow-300">5/10</strong></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Supreme Judge Tab -->
+<div id="tab-content-judge" class="tab-content">
+  <div class="card reviewer-judge p-6">
+    <div class="flex items-center gap-3 mb-4">
+      <div class="text-3xl font-black text-yellow-400">5/10</div>
+      <div>
+        <div class="text-yellow-300 font-bold text-lg">APPROVE WITH CONDITIONS</div>
+        <div class="text-slate-400 text-sm">Supreme Judge final synthesis · opus (domain-neutral)</div>
+      </div>
+    </div>
+    <div class="space-y-4 text-sm text-slate-300">
+      <div>
+        <div class="text-white font-semibold mb-1">On the strength of the panel</div>
+        <p>The panel caught two high-value defects in the ExampleApp Payment Service: a P0 credential exposure (A1) and a P1 composition bug (B1). Both required verification to resolve cleanly — A1 because of a severity dispute that needed exploitability evidence, and B1 because of a bias-direction disagreement that required synthetic data reproduction. Neither finding would have survived panel adjudication without the verification agents dispatched in Phase 13.</p>
+      </div>
+      <div>
+        <div class="text-white font-semibold mb-1">On B1 and the composition-bug class</div>
+        <p>B1 is exactly the class of defect that Phase 2 Data Flow Trace is designed to catch — both <code class="bg-slate-800 px-1 rounded">apply_date_mask</code> and <code class="bg-slate-800 px-1 rounded">prep_df</code> are individually correct, and each passes its own unit tests in isolation. The bug lives in the invariant gap between them: one function removes rows, the other fills missing indexes, and neither function's contract mentions the other's semantics. Static analysis and unit testing cannot catch this class; only data-flow tracing at the function-boundary level can.</p>
+      </div>
+      <div>
+        <div class="text-white font-semibold mb-1">Verdict: APPROVE WITH CONDITIONS</div>
+        <p>The payment service architecture is sound, the methodology is defensible, and the five positive findings (captured in POS1 and surrounding code review) outweigh the defect count in terms of long-term maintainability. The payment service should move to production once the three conditions below are met.</p>
+      </div>
+      <div class="bg-slate-800 rounded-lg p-4 mt-4">
+        <div class="text-white font-semibold mb-2">Mandatory conditions before deployment</div>
+        <ol class="list-decimal list-inside space-y-1 text-slate-300">
+          <li><strong class="text-red-300">A1:</strong> Remove <code class="bg-slate-900 px-1 rounded">client_secret</code> from the session cookie payload. Rebuild credentials from env on every request.</li>
+          <li><strong class="text-orange-300">B1:</strong> Fix the <code class="bg-slate-900 px-1 rounded">prep_df</code> mask-respect bug. Add the regression test that asserts masked dates don't reappear as zero-revenue rows.</li>
+          <li><strong class="text-orange-300">C1:</strong> Replace the N+1 loop in <code class="bg-slate-900 px-1 rounded">/api/orders/history</code> with a single Prisma <code class="bg-slate-900 px-1 rounded">include</code> query. Add the query-count regression test.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<div class="text-center text-xs text-slate-500 mt-8 mb-4">
+  Generated by Agent Review Panel v2.15 · 2026-04-07 · 5 reviewers · ExampleApp Payment Service
+</div>
+
+</div><!-- end max-w-7xl -->
+
+<script>
+// Tab switching
+function switchTab(name) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-content-' + name).classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+}
+
+// Issue filtering + search
+let activeFilter = 'all';
+let searchText = '';
+
+function filterIssues(severity) {
+  activeFilter = severity;
+  document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+  const btn = document.getElementById('filter-' + severity);
+  if (btn) btn.classList.add('active');
+  applyFilters();
+}
+
+function searchIssues(text) {
+  searchText = text.toLowerCase();
+  applyFilters();
+}
+
+function applyFilters() {
+  let visible = 0;
+  document.querySelectorAll('.issue-card').forEach(card => {
+    const sev = card.dataset.severity;
+    const text = card.dataset.text || '';
+    const cardText = card.innerText.toLowerCase();
+    const sevMatch = activeFilter === 'all' || sev === activeFilter;
+    const searchMatch = !searchText || cardText.includes(searchText) || text.includes(searchText);
+    if (sevMatch && searchMatch) {
+      card.classList.remove('hidden');
+      visible++;
+    } else {
+      card.classList.add('hidden');
+    }
+  });
+  const noRes = document.getElementById('no-results');
+  if (noRes) noRes.classList.toggle('hidden', visible > 0);
+}
+
+// v2.15 — Expand all / Collapse all (only on visible cards)
+document.getElementById('expand-all').addEventListener('click', () => {
+  document.querySelectorAll('.issue-card:not(.hidden)').forEach(d => d.open = true);
+  try { if (typeof Prism !== 'undefined') Prism.highlightAll(); } catch(e) {}
+});
+document.getElementById('collapse-all').addEventListener('click', () => {
+  document.querySelectorAll('.issue-card:not(.hidden)').forEach(d => d.open = false);
+});
+
+// v2.15 — Deep-link support (#issue-XX hash navigation)
+function openAndHighlight(id) {
+  const el = document.getElementById('issue-' + id);
+  if (!el) return;
+  switchTab('issues');
+  el.open = true;
+  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  el.classList.add('issue-highlight');
+  setTimeout(() => el.classList.remove('issue-highlight'), 2000);
+  try { if (typeof Prism !== 'undefined') Prism.highlightAll(); } catch(e) {}
+  history.replaceState(null, '', '#issue-' + id);
+}
+
+document.querySelectorAll('.issue-card').forEach(d => {
+  d.addEventListener('toggle', () => {
+    if (d.open) {
+      const id = d.id.replace('issue-', '');
+      history.replaceState(null, '', '#issue-' + id);
+      try { if (typeof Prism !== 'undefined') Prism.highlightAll(); } catch(e) {}
+    }
+  });
+});
+
+window.addEventListener('DOMContentLoaded', () => {
+  const hash = window.location.hash;
+  if (hash && hash.startsWith('#issue-')) {
+    const id = hash.replace('#issue-', '');
+    setTimeout(() => openAndHighlight(id), 100);
+  }
+  try {
+    if (typeof Prism !== 'undefined' && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path = 'https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/';
+    }
+    if (typeof Prism !== 'undefined') Prism.highlightAll();
+  } catch(e) {
+    console.warn('Prism.js unavailable, falling back to plain code blocks');
+  }
+});
+
+document.querySelectorAll('a[href^="#issue-"]').forEach(a => {
+  a.addEventListener('click', (e) => {
+    const id = a.getAttribute('href').replace('#issue-', '');
+    if (document.getElementById('issue-' + id)) {
+      e.preventDefault();
+      openAndHighlight(id);
+    }
+  });
+});
+
+// v2.15 — Keyboard navigation
+function getVisibleCards() {
+  return Array.from(document.querySelectorAll('.issue-card:not(.hidden)'));
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+    if (e.key === 'Escape') e.target.blur();
+    return;
+  }
+  if (e.key === '/') {
+    e.preventDefault();
+    const sb = document.getElementById('search-box');
+    if (sb) sb.focus();
+    return;
+  }
+  const cards = getVisibleCards();
+  if (cards.length === 0) return;
+  const focused = document.activeElement;
+  const currentIdx = cards.indexOf(focused);
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    const next = currentIdx >= 0 ? Math.min(currentIdx + 1, cards.length - 1) : 0;
+    cards[next].focus();
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    const prev = currentIdx >= 0 ? Math.max(currentIdx - 1, 0) : 0;
+    cards[prev].focus();
+  } else if (e.key === 'Home') {
+    e.preventDefault();
+    cards[0].focus();
+  } else if (e.key === 'End') {
+    e.preventDefault();
+    cards[cards.length - 1].focus();
+  }
+});
+</script>
+</body>
+</html>
