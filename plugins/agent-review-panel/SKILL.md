@@ -31,7 +31,7 @@ description: >
   composition/seam bugs.
 ---
 
-# Agent Review Panel v2.15
+# Agent Review Panel v2.16
 
 A multi-agent adversarial review system based on nine research foundations:
 ChatEval (ICLR 2024), AutoGen, Du et al. (ICML 2024), MachineSoM (ACL 2024),
@@ -1073,7 +1073,7 @@ After all three files are written, tell user:
 - Counts: consensus points, disagreements, action items, verification verdicts
 - Top P0 action item (if any)
 - Note: HTML report requires internet connection for Tailwind CSS, Chart.js, and Prism.js CDNs
-- HTML footer should read "Agent Review Panel v2.15"
+- HTML footer should read "Agent Review Panel v2.16" (match the current product version from `plugin.json`, not the version that introduced the HTML features)
 
 ---
 

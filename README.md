@@ -333,7 +333,7 @@ Manifest tests enforce key invariants introduced in v2.14/v2.15:
 - All 16 phases present in SKILL.md (Phase 1 through Phase 16, no decimal numbering)
 - Every `subagent_type:` launch co-occurs with `model: "opus"` (force-opus enforcement)
 - Phase 15.3 spec documents all 10 expandable-card accordion sections
-- Both `SKILL.md` files (root + `skills/agent-review-panel/`) remain byte-identical
+- The canonical `SKILL.md` lives at `plugins/agent-review-panel/SKILL.md` (v2.16+ plugin layout, see PR #18)
 
 ## Companion Skills
 
