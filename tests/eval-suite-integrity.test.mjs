@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -10,10 +10,19 @@ const ROOT = resolve(__dirname, "..");
 const evalSuite = JSON.parse(
   readFileSync(resolve(ROOT, "eval-suite.json"), "utf-8")
 );
-const skillMd = readFileSync(
-  resolve(ROOT, "skills/agent-review-panel/SKILL.md"),
-  "utf-8"
-);
+
+function findSkillMd() {
+  const candidates = [
+    resolve(ROOT, "plugins/agent-review-panel/SKILL.md"),
+    resolve(ROOT, "skills/agent-review-panel/SKILL.md"),
+    resolve(ROOT, "SKILL.md"),
+  ];
+  for (const c of candidates) {
+    if (existsSync(c)) return c;
+  }
+  throw new Error("SKILL.md not found in any canonical or legacy location");
+}
+const skillMd = readFileSync(findSkillMd(), "utf-8");
 
 // ---------------------------------------------------------------------------
 // Test case assertion validation
