@@ -278,6 +278,41 @@ describe("Eval suite coverage of SKILL.md features", () => {
       assert.ok(hasDataFlow, "v2.14 triggers must cover data flow trace tiers");
     });
   });
+
+  describe("v2.15 Expandable HTML Cards coverage", () => {
+    const v215Triggers = evalSuite.triggers.filter((t) =>
+      t.category.includes("v215")
+    );
+
+    it("has v2.15 positive triggers (expandable HTML cards)", () => {
+      const positives = v215Triggers.filter((t) => t.should_trigger);
+      assert.ok(
+        positives.length >= 2,
+        `Should have at least 2 v2.15 positive triggers (got ${positives.length})`
+      );
+    });
+
+    it("has v2.15 negative triggers (expand disambiguation)", () => {
+      const negatives = v215Triggers.filter((t) => !t.should_trigger);
+      assert.ok(
+        negatives.length >= 1,
+        `Should have at least 1 v2.15 negative trigger (got ${negatives.length})`
+      );
+    });
+
+    it("v2.15 triggers mention expandable or deep-detail HTML features", () => {
+      const prompts = v215Triggers
+        .filter((t) => t.should_trigger)
+        .map((t) => t.prompt.toLowerCase());
+      const hasExpandable = prompts.some(
+        (p) => /expandable|accordion|full narrative|debate transcript|click through|deep detail/.test(p)
+      );
+      assert.ok(
+        hasExpandable,
+        "v2.15 positive triggers must mention expandable card features"
+      );
+    });
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -336,6 +371,10 @@ describe("Eval suite structural integrity", () => {
       "positive-v214",
       "negative-v214",
       "edge-v214",
+      // v2.15 categories (Expandable issue cards in Phase 15.3)
+      "positive-v215",
+      "negative-v215",
+      "edge-v215",
       // Legacy v2.11 category names (may coexist if eval-suite retains history)
       "positive-v211",
       "negative-v211",

@@ -1,5 +1,57 @@
 # Changelog
 
+## v2.15 (2026-04-07) — Expandable Issue Cards in Phase 15.3 HTML Report
+
+Motivated by a real compliance gap in the v2.13 nice-shtern sample: the Phase 15.3 HTML output rendered 22 flat issue cards with no expand mechanism, even though the prompt template already specified a "▶ View evidence" button. The root cause: the schema only populated rich evidence fields (`evidenceSummary`, `fullEvidence`) for the 3 findings that went through Phase 13 verification. For the other 19 findings, the HTML agent had nothing to expand, so it silently omitted the expand button entirely — degrading the whole UX to one-liner cards.
+
+### New Features
+
+- **Phase 15.3 schema extension** — 8 new REQUIRED per-finding fields: `narrative` (full reviewer reasoning), `codeEvidence` (file+line+snippet+language), `reviewerRatings` (per-reviewer severity + reasoning), `debateTranscript` (round-by-round exchanges), `judgeRuling` (full reasoning + severity-change explanation), `fixRecommendation` (proposed change + before/after code + regression test + blast radius + effort), `crossRefs` (related findings + relationship), `priorRuns` (meta-review comparison). All fields are required — empty arrays or null placeholders are acceptable, but the field must be present. This ensures consistent card structure and prevents the nice-shtern compliance gap from recurring.
+
+- **Phase 15.2 passed as reference input to Phase 15.3** — The HTML agent now receives the full Phase 15.2 process history alongside the structured summary, enabling it to extract verbatim narratives, debate exchanges, and judge rulings per finding. Token cost: ~10–20KB per review. This is the critical bridge — the data was already generated, just not passed to the HTML agent.
+
+- **10-section accordion layout for expanded issue cards** — Each card expands to reveal:
+  1. 📖 Narrative (full reviewer reasoning)
+  2. 📄 Code Evidence (Prism.js-highlighted snippets with file:line headers)
+  3. 👥 Raised by (per-reviewer rating + reasoning grid)
+  4. 🔍 Verification Trail (full VR agent output if verified)
+  5. 💬 Debate (round-by-round transcript if disputed)
+  6. ⚖️ Judge Ruling (full reasoning + severity-change explanation)
+  7. 🛠️ Fix Recommendation (proposed + before/after + regression test + blast radius + effort)
+  8. 🔗 Cross-references (related finding IDs with relationship labels)
+  9. 🏷️ Epistemic Tags (with hover tooltips explaining each label)
+  10. 📊 Prior Runs (meta-review comparison table)
+
+  Each section is a nested `<details>` element — individually collapsible, open by default. Empty sections render "No {section} data" placeholders rather than being skipped.
+
+- **Card-level UX features:**
+  - **Deep-link support** — card `id="issue-{id}"` + `window.location.hash` updates on expand; loading `report.html#issue-A1` auto-opens and scrolls
+  - **Keyboard navigation** — ↑/↓ move focus between cards, Enter/Space expands, Home/End jump to first/last, `/` focuses search
+  - **Expand all / Collapse all** controls at top of Issues tab
+  - **Print-friendly** `@media print` CSS: all details forced open, dark theme inverted, charts hidden, page-break-inside per card
+  - **Self-contained** — all data embedded in HTML, only CDN dependencies (Tailwind, Chart.js, Prism.js)
+  - **Soft 500KB size cap** — if exceeded, orchestrator can offer a "slim" output that drops verbatim `fullEvidence` and `debateTranscript` content
+
+### New Dependency
+
+- **Prism.js** (via CDN: `https://cdn.jsdelivr.net/npm/prismjs@1.29.0`) — adds syntax highlighting to code evidence blocks. Uses the `prism-tomorrow` theme and the autoloader plugin (loads language components on demand). Graceful fallback: if CDN unreachable, code blocks render as unstyled `<pre>` elements. Consistent with existing CDN approach for Tailwind and Chart.js.
+
+### Housekeeping
+
+- **Version bumps:** `package.json`, `plugin.json`, `marketplace.json`, `eval-suite.json`, and both SKILL.md headers all bumped to 2.15.0.
+
+- **New tests:** `manifest-consistency.test.mjs` gains a spec-coverage test that greps for all 10 section names in the Phase 15.3 prompt. `eval-suite-integrity.test.mjs` gains `positive-v215`/`negative-v215`/`edge-v215` category validation. `eval-suite.json` adds 2 new triggers (1 positive for rich HTML request, 1 negative for summary-only request).
+
+### Backward Compatibility
+
+The schema adds REQUIRED fields, but since the only consumer is the Phase 15.3 HTML agent (itself in the same repo), this is a minor bump rather than breaking. Old fields are preserved. Orchestrators that haven't been updated to fill the new fields will produce cards with placeholder sections, which is a graceful degradation from the previous flat-card state.
+
+### Expected Impact
+
+The v2.13 nice-shtern sample had 22 findings with ~30 lines of expanded detail available per finding in the process history — none of which was exposed in the HTML. v2.15 exposes all of it: ~600 lines of expandable content per report, fully searchable, deep-linkable, and print-friendly. File size grows from ~50KB to ~150–250KB (still well under the 500KB soft cap), and the HTML becomes the single source of truth for a review (no need to cross-reference the markdown process history).
+
+---
+
 ## v2.14 (2026-04-07) — Data Flow Trace, Multi-Run Union, Force Opus, Integer Phase Renumbering
 
 Motivated by a real consistency gap: two identical panel runs on the same Schuh webapp (v2.10) produced only ~30% finding overlap, each missing a different P0 bug. Root causes identified:
