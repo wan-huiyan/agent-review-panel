@@ -1,27 +1,16 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
-  "name": "agent-review-panel",
-  "description": "Multi-agent adversarial review panel — 4-6 AI reviewers debate your code/plans, then a supreme judge delivers the verdict",
+  "name": "wan-huiyan-agent-review-panel",
+  "description": "Single-plugin marketplace for agent-review-panel — Orchestrate a multi-agent adversarial review panel. 4-6 reviewers with distinct personas independently evaluate work, debate findings across 1-3 rounds, then a supreme judge renders the final verdict. Auto-detected Precise/Exhaustive mode, severity verification, tiered L0/L1/L2 knowledge mining, 10 signal groups with domain checklists. Based on ChatEval, AutoGen, DMAD, CONSENSAGENT, and Trust or Escalate research.",
   "owner": {
-    "name": "Huiyan Wan",
-    "email": "noreply@github.com"
+    "name": "wan-huiyan"
   },
   "plugins": [
     {
       "name": "agent-review-panel",
+      "source": "./plugins/agent-review-panel",
       "description": "Orchestrate a multi-agent adversarial review panel. 4-6 reviewers with distinct personas independently evaluate work, debate findings across 1-3 rounds, then a supreme judge renders the final verdict. Auto-detected Precise/Exhaustive mode, severity verification, tiered L0/L1/L2 knowledge mining, 10 signal groups with domain checklists. Based on ChatEval, AutoGen, DMAD, CONSENSAGENT, and Trust or Escalate research.",
-      "source": "./",
-      "category": "code-review",
-      "skills": [
-        "./"
-      ],
-      "version": "2.15.0",
-      "author": {
-        "name": "Huiyan Wan",
-        "email": "noreply@github.com"
-      },
-      "homepage": "https://github.com/wan-huiyan/agent-review-panel",
-      "tags": ["code-review", "multi-agent", "llm-debate", "ai-agents", "adversarial-review"]
+      "version": "2.16.0"
     }
   ]
 }

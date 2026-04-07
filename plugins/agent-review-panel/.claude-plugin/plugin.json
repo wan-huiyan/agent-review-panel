@@ -1,6 +1,6 @@
 {
   "name": "agent-review-panel",
-  "version": "2.15.0",
+  "version": "2.16.0",
   "description": "Multi-agent adversarial review panel — 4-6 AI reviewers debate your code/plans, then a judge delivers a structured verdict with epistemic labels",
   "author": {
     "name": "wan-huiyan",
@@ -8,5 +8,12 @@
   },
   "repository": "https://github.com/wan-huiyan/agent-review-panel",
   "license": "MIT",
-  "keywords": ["review", "multi-agent", "debate", "code-review", "adversarial", "evaluation"]
+  "keywords": [
+    "review",
+    "multi-agent",
+    "debate",
+    "code-review",
+    "adversarial",
+    "evaluation"
+  ]
 }
