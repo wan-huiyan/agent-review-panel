@@ -21,7 +21,7 @@ A [Claude Code](https://claude.ai/code) skill that orchestrates multi-agent adve
 **Install (recommended — Claude Code marketplace):**
 ```
 /plugin marketplace add wan-huiyan/agent-review-panel
-/plugin install agent-review-panel@agent-review-panel
+/plugin install agent-review-panel@wan-huiyan-agent-review-panel
 ```
 
 **Use:**
@@ -77,19 +77,66 @@ Add this repo as a marketplace and install the plugin:
 
 ```
 /plugin marketplace add wan-huiyan/agent-review-panel
-/plugin install agent-review-panel@agent-review-panel
+/plugin install agent-review-panel@wan-huiyan-agent-review-panel
 ```
 
 Or from the shell via the CLI:
 
 ```bash
 claude plugin marketplace add wan-huiyan/agent-review-panel
-claude plugin install agent-review-panel@agent-review-panel
+claude plugin install agent-review-panel@wan-huiyan-agent-review-panel
 ```
 
 Claude Code downloads the plugin to its cache, loads the skill, and activates the trigger phrases automatically. The skill then triggers when you ask for multi-perspective reviews, panel reviews, adversarial reviews, or invoke `/agent-review-panel`.
 
-**Why the marketplace path?** The repo ships with `.claude-plugin/marketplace.json` + `.claude-plugin/plugin.json` manifests that Claude Code reads to register the plugin. The marketplace install handles caching, version tracking, and automatic activation in one step. The manual clone path below still works but doesn't use the manifests — the marketplace flow is the canonical path for v2.14+.
+> **Command format:** `@<marketplace-name>`, not `@<repo-name>`. The marketplace name is `wan-huiyan-agent-review-panel` (defined in `.claude-plugin/marketplace.json`), which is distinct from the plugin name `agent-review-panel`. Pre-v2.16 releases used `@agent-review-panel` — if you're reading an older install command, use the new form above.
+
+**Why the marketplace path?** The repo ships with `.claude-plugin/marketplace.json` + `plugins/agent-review-panel/.claude-plugin/plugin.json` manifests (v2.16+ canonical layout) that Claude Code reads to register the plugin. The marketplace install handles caching, version tracking, and automatic activation in one step. The manual clone path below still works but doesn't use the manifests — the marketplace flow is the canonical path for v2.14+.
+
+### Updating to the latest version
+
+New releases land on `main`; Claude Code does not auto-pull. Run the update flow after each release (or any time you want the newest features):
+
+```
+/plugin marketplace update wan-huiyan-agent-review-panel
+/plugin update agent-review-panel@wan-huiyan-agent-review-panel
+```
+
+CLI equivalent:
+
+```bash
+claude plugin marketplace update wan-huiyan-agent-review-panel
+claude plugin update agent-review-panel@wan-huiyan-agent-review-panel
+```
+
+**Verify the update worked:**
+```bash
+cat ~/.claude/plugins/cache/wan-huiyan-agent-review-panel/plugins/agent-review-panel/.claude-plugin/plugin.json | grep version
+```
+The version should match the latest entry in the [Version History](#version-history) table below.
+
+**If the update appears to work but you're still getting old behavior** (e.g. missing the v2.12 HTML report, missing the v2.15 expandable cards, or missing the v2.14 data-flow trace phase), check for a **stale local clone** that shadows the marketplace install:
+
+```bash
+ls ~/.claude/skills/agent-review-panel 2>/dev/null
+```
+
+If that directory exists, it's loaded *before* the marketplace cache and will pin you to whatever version was cloned. Remove it:
+
+```bash
+rm -rf ~/.claude/skills/agent-review-panel
+```
+
+Then restart Claude Code. The marketplace install in `~/.claude/plugins/cache/wan-huiyan-agent-review-panel/` will take over.
+
+**Fallback — clean reinstall:** If the update commands misbehave, uninstall and reinstall from scratch:
+
+```
+/plugin uninstall agent-review-panel@wan-huiyan-agent-review-panel
+/plugin marketplace remove wan-huiyan-agent-review-panel
+/plugin marketplace add wan-huiyan/agent-review-panel
+/plugin install agent-review-panel@wan-huiyan-agent-review-panel
+```
 
 ### Manual clone (development / custom setup)
 
@@ -293,8 +340,8 @@ Please open an issue to discuss before submitting large PRs.
 
 **If installed via marketplace:**
 ```
-/plugin uninstall agent-review-panel@agent-review-panel
-/plugin marketplace remove agent-review-panel
+/plugin uninstall agent-review-panel@wan-huiyan-agent-review-panel
+/plugin marketplace remove wan-huiyan-agent-review-panel
 ```
 
 **If installed via manual clone:**
