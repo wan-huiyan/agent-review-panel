@@ -242,6 +242,42 @@ describe("Eval suite coverage of SKILL.md features", () => {
       );
     });
   });
+
+  describe("v2.14 Multi-Run + Data Flow Trace coverage", () => {
+    const v214Triggers = evalSuite.triggers.filter((t) =>
+      t.category.includes("v214")
+    );
+
+    it("has v2.14 positive triggers (multi-run + data flow trace)", () => {
+      const positives = v214Triggers.filter((t) => t.should_trigger);
+      assert.ok(
+        positives.length >= 3,
+        `Should have at least 3 v2.14 positive triggers (got ${positives.length})`
+      );
+    });
+
+    it("has v2.14 negative triggers (trace/run disambiguation)", () => {
+      const negatives = v214Triggers.filter((t) => !t.should_trigger);
+      assert.ok(
+        negatives.length >= 1,
+        `Should have at least 1 v2.14 negative trigger (got ${negatives.length})`
+      );
+    });
+
+    it("v2.14 triggers cover both multi-run and data flow trace features", () => {
+      const prompts = v214Triggers
+        .filter((t) => t.should_trigger)
+        .map((t) => t.prompt.toLowerCase());
+      const hasMultiRun = prompts.some(
+        (p) => /multi-run|run \d+ times|run twice|run 3|merge/.test(p)
+      );
+      const hasDataFlow = prompts.some(
+        (p) => /exhaustive|thorough|trace.*(data|path|every)|catch all/.test(p)
+      );
+      assert.ok(hasMultiRun, "v2.14 triggers must cover multi-run mode");
+      assert.ok(hasDataFlow, "v2.14 triggers must cover data flow trace tiers");
+    });
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -296,6 +332,14 @@ describe("Eval suite structural integrity", () => {
       "positive-v29",
       "negative-v29",
       "edge-v29",
+      // v2.14 categories (Phase 2 Data Flow Trace + Multi-Run Union Protocol)
+      "positive-v214",
+      "negative-v214",
+      "edge-v214",
+      // Legacy v2.11 category names (may coexist if eval-suite retains history)
+      "positive-v211",
+      "negative-v211",
+      "edge-v211",
     ];
     for (const trigger of evalSuite.triggers) {
       assert.ok(

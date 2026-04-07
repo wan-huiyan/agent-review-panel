@@ -197,7 +197,7 @@ describe("SKILL.md behavioral contract validation", () => {
     "utf-8"
   );
 
-  describe("Reviewer output format (Phase 2 template)", () => {
+  describe("Reviewer output format (Phase 3 template, renumbered in v2.11)", () => {
     // Verify the fixture's detailed reviews follow the prompt template format
     it("includes Perspective header for each reviewer", () => {
       const perspectives = validReport.match(/### Perspective: .+/g);
@@ -224,7 +224,7 @@ describe("SKILL.md behavioral contract validation", () => {
     });
   });
 
-  describe("Debate format (Phase 3 template)", () => {
+  describe("Debate format (Phase 5 template, renumbered in v2.11)", () => {
     it("includes debate round summaries", () => {
       assert.ok(
         validReport.includes("Round 1 Summary") || validReport.includes("### Round 1"),
@@ -241,7 +241,7 @@ describe("SKILL.md behavioral contract validation", () => {
     });
   });
 
-  describe("Blind Final Assessment format (Phase 4 template)", () => {
+  describe("Blind Final Assessment format (Phase 7 template, renumbered in v2.11)", () => {
     it("includes Final Score", () => {
       assert.ok(
         validReport.includes("Final Score:"),
@@ -257,7 +257,7 @@ describe("SKILL.md behavioral contract validation", () => {
     });
   });
 
-  describe("Completeness Audit format (Phase 4.5 template)", () => {
+  describe("Completeness Audit format (Phase 8 template, renumbered in v2.11)", () => {
     it("includes New Findings section", () => {
       assert.ok(
         validReport.includes("New Findings"),
@@ -273,7 +273,7 @@ describe("SKILL.md behavioral contract validation", () => {
     });
   });
 
-  describe("Claim Verification format (Phase 4.6 template)", () => {
+  describe("Claim Verification format (Phase 10 template, renumbered in v2.11)", () => {
     it("includes verification table", () => {
       assert.ok(
         validReport.includes("Claim") && validReport.includes("Verdict"),
@@ -288,7 +288,7 @@ describe("SKILL.md behavioral contract validation", () => {
     });
   });
 
-  describe("Supreme Judge format (Phase 5 template)", () => {
+  describe("Supreme Judge format (Phase 12 template, renumbered in v2.11)", () => {
     it("includes judge analysis in detailed reviews", () => {
       assert.ok(
         validReport.includes("Supreme Judge") || validReport.includes("Judge"),

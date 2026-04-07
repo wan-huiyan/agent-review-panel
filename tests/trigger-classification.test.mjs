@@ -57,6 +57,14 @@ const POSITIVE_PHRASES = [
   "multiple agents",
   "specialist subagents",
   "specialist agents",
+  // v2.11 additions
+  "multi-run review",
+  "run twice",
+  "run 3 times",
+  "maximum coverage review",
+  "exhaustive review",
+  "trace everything",
+  "catch all bugs",
 ];
 
 // Anti-trigger signals — single-agent, bug fix, or non-review tasks
