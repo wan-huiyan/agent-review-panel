@@ -1,4 +1,4 @@
-[![GitHub release](https://img.shields.io/github/v/release/wan-huiyan/agent-review-panel)](https://github.com/wan-huiyan/agent-review-panel/releases) [![Claude Code](https://img.shields.io/badge/Claude_Code-skill-orange)](https://claude.com/claude-code) [![license](https://img.shields.io/github/license/wan-huiyan/agent-review-panel)](LICENSE) [![last commit](https://img.shields.io/github/last-commit/wan-huiyan/agent-review-panel)](https://github.com/wan-huiyan/agent-review-panel/commits)
+[![GitHub release](https://img.shields.io/github/v/release/wan-huiyan/agent-review-panel)](https://github.com/wan-huiyan/agent-review-panel/releases) [![Claude Code](https://img.shields.io/badge/Claude_Code-plugin-orange)](https://claude.com/claude-code) [![license](https://img.shields.io/github/license/wan-huiyan/agent-review-panel)](LICENSE) [![last commit](https://img.shields.io/github/last-commit/wan-huiyan/agent-review-panel)](https://github.com/wan-huiyan/agent-review-panel/commits)
 [![Tests](https://github.com/wan-huiyan/agent-review-panel/actions/workflows/test.yml/badge.svg)](https://github.com/wan-huiyan/agent-review-panel/actions/workflows/test.yml)
 [![Research Papers](https://img.shields.io/badge/research%20foundations-9%20papers-orange)](#research-foundations)
 
@@ -6,7 +6,9 @@
 
 **Multiple AI reviewers independently evaluate your code, plans, or docs — then debate each other's findings. A judge renders the final verdict. You get a structured report with consensus, disagreements, and prioritized action items.**
 
-A [Claude Code](https://claude.ai/code) skill that orchestrates multi-agent adversarial review panels backed by [9 research papers](#research-foundations) on multi-agent debate.
+A [Claude Code](https://claude.ai/code) **plugin** that orchestrates multi-agent adversarial review panels backed by [9 research papers](#research-foundations) on multi-agent debate.
+
+> Packaged as a Claude Code plugin (containing the `agent-review-panel` skill). Install once via marketplace; it activates automatically on slash command or natural-language request. **Requires Claude Code** — does not work with the Claude desktop app, claude.ai web interface, or Claude API direct ([details below](#requires-claude-code)).
 
 [![Agent Review Panel — pipeline architecture](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/hero-flow.svg?v=1)](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/hero-flow.svg?v=1)
 
@@ -71,23 +73,36 @@ timeout. [VERIFIED] against actual code.
 
 ## Installation
 
+### Requires Claude Code
+
+This plugin **only works with [Claude Code](https://claude.ai/code)** — the CLI for agentic code/review tasks. It does **not** work with:
+
+- ❌ Claude desktop app (Mac/Windows)
+- ❌ claude.ai web interface
+- ❌ Claude API direct (no Agent tool)
+
+**Why:** the panel spawns 4-6 reviewer subagents in parallel via Claude Code's `Agent` tool, reads/writes files on your local filesystem to generate the three output reports, and responds to the `/agent-review-panel` slash command. None of these surfaces exist in the desktop app, web interface, or API direct.
+
+**Claude Code environments that work:**
+
+- ✅ **CLI** — `claude` command in your terminal
+- ✅ **VS Code extension** — Claude Code extension from the VS Code marketplace
+- ✅ **JetBrains IDE extension** — IntelliJ, PyCharm, WebStorm, GoLand, Rider, etc.
+
+Don't have Claude Code yet? Install it from **[claude.ai/code](https://claude.ai/code)**, then come back and run the [Quick Start](#quick-start) commands above.
+
 ### Claude Code marketplace (recommended)
 
-Add this repo as a marketplace and install the plugin:
+The two install commands are shown in [Quick Start](#quick-start) above. This section explains what they do, covers the shell/CLI equivalent, and links to [Updating](#updating-to-the-latest-version) + [Manual clone](#manual-clone-development--custom-setup) alternatives.
 
-```
-/plugin marketplace add wan-huiyan/agent-review-panel
-/plugin install agent-review-panel@wan-huiyan-agent-review-panel
-```
-
-Or from the shell via the CLI:
+**Shell / CLI equivalent** (instead of typing slash commands in the Claude Code REPL):
 
 ```bash
 claude plugin marketplace add wan-huiyan/agent-review-panel
 claude plugin install agent-review-panel@wan-huiyan-agent-review-panel
 ```
 
-Claude Code downloads the plugin to its cache, loads the skill, and activates the trigger phrases automatically. The skill then triggers when you ask for multi-perspective reviews, panel reviews, adversarial reviews, or invoke `/agent-review-panel`.
+Claude Code downloads the plugin to its cache, loads the `agent-review-panel` skill inside it, and activates the trigger phrases automatically. The plugin then activates when you ask for multi-perspective reviews, panel reviews, adversarial reviews, or invoke `/agent-review-panel`.
 
 > **Command format:** `@<marketplace-name>`, not `@<repo-name>`. The marketplace name is `wan-huiyan-agent-review-panel` (defined in `.claude-plugin/marketplace.json`), which is distinct from the plugin name `agent-review-panel`. Pre-v2.16 releases used `@agent-review-panel` — if you're reading an older install command, use the new form above.
 
@@ -318,7 +333,7 @@ Manifest tests enforce key invariants introduced in v2.14/v2.15:
 - All 16 phases present in SKILL.md (Phase 1 through Phase 16, no decimal numbering)
 - Every `subagent_type:` launch co-occurs with `model: "opus"` (force-opus enforcement)
 - Phase 15.3 spec documents all 10 expandable-card accordion sections
-- Both `SKILL.md` files (root + `skills/agent-review-panel/`) remain byte-identical
+- The canonical `SKILL.md` lives at `plugins/agent-review-panel/SKILL.md` (v2.16+ plugin layout, see PR #18)
 
 ## Companion Skills
 
