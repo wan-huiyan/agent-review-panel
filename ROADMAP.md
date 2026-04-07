@@ -4,9 +4,9 @@ A living document mapping academic research and open-source projects to skill fe
 
 ---
 
-## Already Incorporated (v1–v2.13)
+## Already Incorporated (v1–v2.15)
 
-These foundations form the core architecture. Research adopted in v1–v2.5; structural optimisation in v2.6; verification round in v2.11.
+These foundations form the core architecture. Research adopted in v1–v2.5; structural optimisation in v2.6; verification round in v2.11; triple output + persona profiles in v2.12–v2.13; Data Flow Trace + Multi-Run Union + Force Opus in v2.14; expandable issue cards in v2.15.
 
 | Source | What We Took | Version |
 |--------|-------------|---------|
@@ -16,6 +16,11 @@ These foundations form the core architecture. Research adopted in v1–v2.5; str
 | **MachineSoM** (zjunlp/MachineSoM, ACL 2024) | Private reflection rounds, conformity tracking (tf/ft/tt/ff) | v2 |
 | **DebateLLM** (instadeepai/DebateLLM) | Agreement intensity modulation, round summarization, judge-mediated convergence | v2 |
 | **MiroFish** ([666ghj/MiroFish](https://github.com/666ghj/MiroFish)) | Heterogeneous agent personalities matched to task characteristics; influenced auto-persona detection (v2.1) and persona-matched verification agents (v2.11) | v2.1, v2.11 |
+| **Meta Agentic Code Reasoning** (arXiv:2603.01896, 2026) | Semi-formal certificate prompting — INPUT_SCHEMA → TRANSFORM → OUTPUT_SCHEMA → COMPOSITION_CHECK per function; 78%→93% accuracy gain. Adopted as the core reasoning template for the Phase 2 Data Flow Tracer. | v2.14 |
+| **LLMDFA** (NeurIPS 2024) | Few-shot chain-of-thought dataflow facts per function, then compose across call graph. Adopted as the mental model for tier-based path traversal in Phase 2. | v2.14 |
+| **RepoAudit** (ICML 2025) | Demand-driven exploration with memory — fetch function definitions only when encountered on the path. Informs Phase 2's orchestrator path-ranking heuristic. | v2.14 |
+| **BugLens** (ASE 2025) | Static-analyzer-plus-LLM pattern: use high-recall candidate finder first, then LLM for feasibility validation (7x false positive reduction). Informs Phase 2 violation flagging → Phase 3 reviewer validation. | v2.14 |
+| **ZeroFalse** (arXiv:2510.02534, 2025) | Domain-specialized prompting with dynamic path reconstruction (F1 0.955). Informs the Phase 2 per-function certificate structure. | v2.14 |
 
 ### Key findings from each
 
@@ -264,6 +269,12 @@ Techniques evaluated and rejected for our use case.
 | v2.7 | 2026-03-26 | Severity verification, temporal scope, defect classification |
 | v2.8 | 2026-03-26 | Panel-reviewed: severity dampening, coverage check, verify-before-claim, auto mode |
 | v2.9 | 2026-03-29 | VoltAgent specialist agent integration (127+ agents, 10 families) |
+| v2.10 | 2026-03-30 | Codebase state check — prevents false "missing code" findings in worktrees |
+| v2.11 | 2026-04-03 | Verification round — Phase 4.8 tier assignment + Phase 4.9 targeted verification agents (persona-matched to claim type, tiered Light/Standard/Deep budgets) |
+| v2.12 | 2026-04-03 | Triple output format — primary markdown report + process history + interactive HTML dashboard |
+| v2.13 | 2026-04-03 | Persona profiles surfaced in process history (Registry section, inline blocks) and HTML dashboard (Panel Gallery with avatar cards, filter-by-reviewer) |
+| v2.14 | 2026-04-07 | **Phase 2 Data Flow Trace** (composition bug detector with Standard/Thorough/Exhaustive tiers), **Multi-Run Union Protocol** + Phase 16 Merge, **Force `model: "opus"`** on all subagent launches, integer phase renumbering (1–16 with sub-phases 12a/12b + 15.1/15.2/15.3) |
+| v2.15 | 2026-04-07 | **Expandable 10-section issue cards** in Phase 15.3 HTML dashboard (narrative, code evidence, debate, judge ruling, fix recommendation, cross-references, prior runs), deep-linking, keyboard nav, expand all/collapse all, print-friendly CSS, Prism.js syntax highlighting (CDN) |
 
 ---
 

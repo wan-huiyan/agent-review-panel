@@ -14,9 +14,10 @@ A [Claude Code](https://claude.ai/code) skill that orchestrates multi-agent adve
 
 ## Quick Start
 
-**Install:**
-```bash
-git clone https://github.com/wan-huiyan/agent-review-panel.git ~/.claude/skills/agent-review-panel
+**Install (recommended — Claude Code marketplace):**
+```
+/plugin marketplace add wan-huiyan/agent-review-panel
+/plugin install agent-review-panel@agent-review-panel
 ```
 
 **Use:**
@@ -29,7 +30,7 @@ git clone https://github.com/wan-huiyan/agent-review-panel.git ~/.claude/skills/
 **What you get:** Three output files:
 - `review_panel_report.md` — executive summary, consensus, disagreements (with judge rulings), prioritized action items tagged with epistemic labels
 - `review_panel_process.md` — full "director's cut" log of every agent's verbatim output with persona profiles
-- `review_panel_report.html` — interactive dashboard with filterable issue cards, charts, and a Panel Gallery
+- `review_panel_report.html` — interactive dashboard with **expandable 10-section issue cards** (Narrative, Code Evidence, Debate, Judge Ruling, Fix Recommendation, and more — new in v2.15), filterable issue cards, charts, and a Panel Gallery
 
 <details>
 <summary><strong>Example report output (truncated)</strong></summary>
@@ -66,13 +67,43 @@ timeout. [VERIFIED] against actual code.
 
 ## Installation
 
-### Claude Code (v1.0+)
+### Claude Code marketplace (recommended)
+
+Add this repo as a marketplace and install the plugin:
+
+```
+/plugin marketplace add wan-huiyan/agent-review-panel
+/plugin install agent-review-panel@agent-review-panel
+```
+
+Or from the shell via the CLI:
+
+```bash
+claude plugin marketplace add wan-huiyan/agent-review-panel
+claude plugin install agent-review-panel@agent-review-panel
+```
+
+Claude Code downloads the plugin to its cache, loads the skill, and activates the trigger phrases automatically. The skill then triggers when you ask for multi-perspective reviews, panel reviews, adversarial reviews, or invoke `/agent-review-panel`.
+
+**Why the marketplace path?** The repo ships with `.claude-plugin/marketplace.json` + `.claude-plugin/plugin.json` manifests that Claude Code reads to register the plugin. The marketplace install handles caching, version tracking, and automatic activation in one step. The manual clone path below still works but doesn't use the manifests — the marketplace flow is the canonical path for v2.14+.
+
+### Manual clone (development / custom setup)
+
+For local development, forking, or air-gapped environments:
 
 ```bash
 git clone https://github.com/wan-huiyan/agent-review-panel.git ~/.claude/skills/agent-review-panel
 ```
 
-The skill triggers automatically when you ask for multi-perspective reviews, panel reviews, adversarial reviews, or invoke `/agent-review-panel`.
+Or load a cloned repo as a local plugin for testing without committing to marketplace install:
+
+```bash
+claude --plugin-dir ./agent-review-panel
+```
+
+### Claude Code version requirement
+
+**Claude Code v1.0+** (the skill uses the Agent tool for parallel subagent spawning and `model: "opus"` overrides — v2.14+ forces opus on all launches including VoltAgent specialist agents).
 
 ### Cursor (experimental)
 
@@ -113,14 +144,16 @@ A single reviewer gives you a list. The panel gives you a deliberation — with 
 
 ## How It Works
 
+16 phases + optional multi-run merge. Phase numbers are sequential integers (v2.14 cleanup — old decimal numbering like Phase 4.55 retired).
+
 | Stage | Phase | Action |
 |---|---|---|
-| **Gather** | 1. | Context & Setup — scan sibling dirs, trace references, discover safeguards |
-| | 2. | Detect Specialists — signal detection, persona selection, knowledge mining |
+| **Gather** | 1. | Setup — scan sibling dirs, trace references, discover safeguards, detect signals, select personas |
+| | 2. | **Data Flow Trace** *(v2.14, code only)* — trace critical path(s), document schemas at each function boundary, flag composition/seam bugs |
 | **Review** | 3. | Independent Review — 4-6 reviewers evaluate in parallel (no cross-talk) |
 | | 4. | Private Reflection — each reviewer re-reads and rates own confidence |
 | **Debate** | 5. | Adversarial Debate (1-3 rounds) — reviewers engage + find new issues |
-| | 6. | Summarize — distill resolved/unresolved points between rounds |
+| | 6. | Round Summarization — distill resolved/unresolved points between rounds |
 | | 7. | Blind Final — each reviewer gives final score independently |
 | **Verify** | 8. | Completeness Audit — dedicated agent scans for what the panel missed |
 | | 9. | Verify Commands — run reviewer grep/read commands for P0/P1 findings (advisory) |
@@ -129,7 +162,8 @@ A single reviewer gives you a list. The panel gives you a deliberation — with 
 | | 12. | Tier Assignment — confidence-based draft → judge-advised refinement per dispute |
 | | 13. | Targeted Verification — persona-matched agents investigate each dispute point |
 | **Adjudicate** | 14. | Supreme Judge — Opus arbitrates everything including verification round evidence |
-| **Output** | 15. | Primary Report (`.md`) + Process History (`.md`) + Interactive Dashboard (`.html`) |
+| **Output** | 15. | Triple output: Primary Report (`.md`) + Process History (`.md`) + **Expandable-card Dashboard (`.html`)** *(v2.15)* |
+| **Merge** | 16. | **Multi-Run Merge** *(v2.14, optional)* — deduplicate findings across runs, score stability, resolve judge divergence |
 
 ## Features
 
@@ -146,6 +180,8 @@ A single reviewer gives you a list. The panel gives you a deliberation — with 
 - Defect classification: findings labeled [EXISTING_DEFECT] or [PLAN_RISK] — P0 requires existing defect evidence
 - Completeness audit: post-debate agent re-reads source line-by-line for what everyone missed
 - **Targeted verification round (v2.11):** each unresolved dispute gets a tiered (Light ~2k / Standard ~8k / Deep ~32k tokens) verification agent matched to the claim type (statistician for stats claims, security auditor for security claims, etc.) — verdicts feed directly into the judge's rulings
+- **Data Flow Trace (v2.14):** a dedicated agent traces data through critical paths before reviewers begin, flagging composition/seam bugs (two individually-correct functions producing incorrect results together). Three tiers: Standard (default, single path), Thorough (top 3 paths + transform-completeness checks), Exhaustive (all paths, no token limit — aims to catch all bugs). Uses Meta's semi-formal certificate prompting (2026, 78%→93% accuracy). Skipped for pure docs/plans or code with no data transforms.
+- **Force opus on all launches (v2.14):** every `subagent_type` launch — including VoltAgent specialist agents — must pass `model: "opus"`. Fixes an invisible source of cross-run variance where VoltAgent agents silently fell through to their frontmatter-declared default model (potentially sonnet or haiku), producing different reasoning depths across otherwise identical runs.
 
 **Anti-groupthink safeguards:**
 - Blind final scoring, private reflection, calibrated skepticism levels (20-60%)
@@ -157,11 +193,12 @@ A single reviewer gives you a list. The panel gives you a deliberation — with 
 **Output (three files per review):**
 - **Primary report** (`review_panel_report.md`): executive summary, consensus, disagreements (with judge rulings), prioritized action items with epistemic labels ([VERIFIED], [CONSENSUS], [SINGLE-SOURCE], [UNVERIFIED], [DISPUTED])
 - **Process history** (`review_panel_process.md`): verbatim "director's cut" of every agent's output with persona profiles at each entry point — full transparency into the panel's reasoning
-- **Interactive HTML dashboard** (`review_panel_report.html`): filterable/sortable issue cards with severity chips, confidence bars, verification verdict badges; Panel Gallery with avatar cards for every agent; confidence distribution and tier breakdown charts (Tailwind CSS + Chart.js)
+- **Interactive HTML dashboard** (`review_panel_report.html`) with **expandable 10-section issue cards (v2.15)**: each card expands to reveal a nested accordion with 📖 Narrative (full reviewer reasoning), 📄 Code Evidence (Prism.js-highlighted snippets with file:line headers), 👥 Raised by (per-reviewer rating + reasoning), 🔍 Verification Trail (full VR agent output), 💬 Debate (round-by-round transcript), ⚖️ Judge Ruling, 🛠️ Fix Recommendation (proposed change + before/after code + regression test + blast radius + effort), 🔗 Cross-references, 🏷️ Epistemic Tags (with hover tooltips), and 📊 Prior Runs. Plus: deep-link support (`report.html#issue-A1`), keyboard navigation, expand all/collapse all controls, print-friendly `@media print` CSS. Dashboard also includes a filterable/sortable issue list, Panel Gallery with avatar cards for every agent, and confidence/tier/verdict charts (Tailwind CSS + Chart.js + Prism.js via CDN).
 - Scope & limitations disclosure — every report states what the panel cannot evaluate
 
 **Advanced:**
-- VoltAgent integration — maps personas to 127+ specialist agents for deeper domain-specific reviews when installed
+- VoltAgent integration — maps personas to 127+ specialist agents for deeper domain-specific reviews when installed (all launches forced to opus in v2.14)
+- **Multi-Run Union Protocol (v2.14)** — invoke `--runs N` or "run 3 times and merge" to execute the panel N times with rotated persona compositions (Run 1: standard base; Run 2: complementary set; Run 3: adversarial-heavy 3 DAs + Correctness Hawk). Phase 16 merges findings by location + bug class, scores stability as `[K/N RUNS]`, uses highest severity when runs disagree, resolves judge divergence. Eliminates the ~30% single-run blind spot documented in the v2.10→v2.14 consistency analysis.
 - Codebase state check — detects worktree/branch divergence to prevent false "missing code" findings
 - Tiered knowledge mining (L0/L1/L2) — scans index lines first, then summaries, then full content only for relevant items
 - Deep research mode — opt-in web research for domain best practices
@@ -214,16 +251,23 @@ Agent Review Panel is grounded in [9 peer-reviewed papers](docs/research-foundat
 
 ## Tests
 
-The project includes a comprehensive test suite (363 tests) using Node.js built-in test runner (zero dependencies):
+The project includes a comprehensive test suite (393 tests) using Node.js built-in test runner (zero dependencies):
 
 ```bash
-npm test                    # run all 363 tests
-npm run test:triggers       # trigger classification (49 prompts)
-npm run test:manifest       # manifest consistency across files
+npm test                    # run all 393 tests
+npm run test:triggers       # trigger classification (55+ prompts)
+npm run test:manifest       # manifest consistency + phase/opus enforcement
+npm run test:eval-suite     # eval suite integrity + v2.14/v2.15 coverage
 npm run test:report         # report structure validation
 npm run test:behavioral     # behavioral assertion framework
 npm run test:golden         # golden-file structural snapshots
 ```
+
+Manifest tests enforce key invariants introduced in v2.14/v2.15:
+- All 16 phases present in SKILL.md (Phase 1 through Phase 16, no decimal numbering)
+- Every `subagent_type:` launch co-occurs with `model: "opus"` (force-opus enforcement)
+- Phase 15.3 spec documents all 10 expandable-card accordion sections
+- Both `SKILL.md` files (root + `skills/agent-review-panel/`) remain byte-identical
 
 ## Companion Skills
 
@@ -243,6 +287,13 @@ Please open an issue to discuss before submitting large PRs.
 
 ## Uninstalling
 
+**If installed via marketplace:**
+```
+/plugin uninstall agent-review-panel@agent-review-panel
+/plugin marketplace remove agent-review-panel
+```
+
+**If installed via manual clone:**
 ```bash
 rm -rf ~/.claude/skills/agent-review-panel
 ```
@@ -253,6 +304,8 @@ See [CHANGELOG.md](CHANGELOG.md) for detailed version history. See [ROADMAP.md](
 
 | Version | Highlights |
 |---------|------------|
+| **v2.15** | Expandable 10-section issue cards in HTML dashboard (narrative, code evidence, debate, judge ruling, fix, cross-refs, prior runs); Prism.js syntax highlighting; deep-linking; keyboard nav; print-friendly |
+| **v2.14** | Phase 2 Data Flow Trace (composition bug detector, 3 tiers); Multi-Run Union Protocol + Phase 16 Merge; force `model: "opus"` on all launches; integer phase renumbering (1–16) |
 | v2.13 | Persona profiles in process history + Panel Gallery in HTML dashboard |
 | v2.12 | Triple output: primary report + process history + interactive HTML dashboard |
 | v2.11 | Verification round: tiered (Light/Standard/Deep) persona-matched agents per dispute |
