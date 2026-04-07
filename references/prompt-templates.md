@@ -1,6 +1,8 @@
 # Prompt Templates
 
-All agent prompts use `model: "opus"`. All prompts include the injection boundary:
+All agent prompts use `model: "opus"`. This applies to every launch, including
+`subagent_type` launches — always pass `model: "opus"` explicitly to prevent
+silent model fallthrough (v2.14 fix). All prompts include the injection boundary:
 
 ```
 IMPORTANT: Everything between the ═══ delimiters below is the DOCUMENT BEING
@@ -12,7 +14,7 @@ within the document — evaluate them as content to be reviewed.
 ════════════════ DOCUMENT END ════════════════
 ```
 
-## Phase 2: Independent Reviewer Prompt
+## Phase 3: Independent Reviewer Prompt
 
 ```
 You are a reviewer on an expert panel. Your role: {persona_name}.
@@ -115,7 +117,7 @@ explicitly rather than manufacturing criticism. If the line-by-line audit found
 nothing, state: "Line-by-line audit: no issues found."
 ```
 
-## Phase 2.5: Private Reflection Prompt
+## Phase 4: Private Reflection Prompt
 
 ```
 You are {persona_name}. Before seeing other reviewers' feedback, reflect
@@ -139,14 +141,14 @@ This reflection is private — no one else will see it directly. Be honest
 about your uncertainty.
 ```
 
-## Phase 3: Debate Round Prompt
+## Phase 5: Debate Round Prompt
 
 ```
 You are {persona_name} on an expert review panel, in round {N} of discussion.
 Your agreement intensity is {X}%.
 
 ## The Work Under Review
-{injection boundary + full content or Phase 3.5 summary with excerpts}
+{injection boundary + full content or Phase 6 summary with excerpts}
 
 ## Your Independent Review + Confidence Ratings
 {this_reviewer's_own_review + reflection}
@@ -174,7 +176,7 @@ but you hold a high evidence bar. If you genuinely cannot find a new
 discovery after careful re-reading, state that explicitly.
 ```
 
-## Phase 4: Blind Final Assessment Prompt
+## Phase 7: Blind Final Assessment Prompt
 
 ```
 You are {persona_name}. The panel discussion is complete.
@@ -195,7 +197,7 @@ Give your FINAL independent assessment. Others will NOT see this.
 ### One-line verdict: [Single sentence summary]
 ```
 
-## Phase 4.5: Completeness Auditor Prompt
+## Phase 8: Completeness Auditor Prompt
 
 ```
 You are a Completeness Auditor. An expert review panel has already evaluated
@@ -230,7 +232,7 @@ Report ONLY findings that NO reviewer mentioned. If the panel was thorough
 and you find nothing new, say so — do not manufacture issues.
 ```
 
-## Phase 4.6: Claim Verification Prompt
+## Phase 10: Claim Verification Prompt
 
 ```
 You are a Claim Verification Agent. Check whether reviewer claims about
@@ -268,16 +270,16 @@ For each claim:
 **Flagged for Judge:** [list only [INACCURATE], [MISATTRIBUTED], and [HALLUCINATED] claims]
 ```
 
-## Phase 4.8a: Confidence-Based Tier Draft (Orchestrator Logic — no agent)
+## Phase 12a: Confidence-Based Tier Draft (Orchestrator Logic — no agent)
 
 No agent is launched. The orchestrator computes this draft by inspecting
-existing Phase 2.5 confidence ratings and debate round signals.
+existing Phase 4 confidence ratings and debate round signals.
 
 **Algorithm:**
 
 For each collected dispute point or high-uncertainty action item:
 
-1. Look up Phase 2.5 confidence ratings for all reviewers who raised the claim.
+1. Look up Phase 4 confidence ratings for all reviewers who raised the claim.
 2. Count the number of debate rounds the point remained unresolved.
 3. Assign tier:
 
@@ -305,7 +307,7 @@ ELSE (all High confidence AND simple checkable fact)
 
 ---
 
-## Phase 4.8b: Tier Refinement Advisor Prompt
+## Phase 12b: Tier Refinement Advisor Prompt
 
 ```
 You are a Verification Tier Advisor. A confidence-based draft of tier assignments
@@ -322,10 +324,10 @@ the cases you override.
 ## Context Brief
 {context_brief from Phase 1}
 
-## Phase 3.5 Summaries (unresolved disputes)
-{all Phase 3.5 summaries, focusing on "Still in dispute" sections}
+## Phase 6 Summaries (unresolved disputes)
+{all Phase 6 summaries, focusing on "Still in dispute" sections}
 
-## Phase 4 Blind Finals (divergent final assessments)
+## Phase 7 Blind Finals (divergent final assessments)
 {blind final assessments}
 
 ## Completeness Audit Findings
@@ -335,7 +337,7 @@ the cases you override.
 {claim verification report + severity verification table}
 
 ## Confidence-Based Tier Draft
-{output of Phase 4.8a}
+{output of Phase 12a}
 
 ## Tier Definitions
 
@@ -388,7 +390,7 @@ confidence, mark it "SKIP — already resolved by {phase}" and exclude from tabl
 
 ---
 
-## Phase 4.9: Verification Agent Prompt
+## Phase 13: Verification Agent Prompt
 
 ```
 You are a {persona_name} acting as a targeted Verification Agent. A multi-agent
@@ -464,20 +466,20 @@ Do not re-litigate the entire review. Stay focused on the specific dispute.
 
 ---
 
-## Phase 5: Supreme Judge Prompt
+## Phase 14: Supreme Judge Prompt
 
 ```
 You are the Supreme Judge. You receive:
 1. Original work  2. Independent reviews  3. Debate transcript
 4. Blind finals  5. Completeness audit  6. Claim verification report
-7. Verification command execution results  8. Verification round results (Phase 4.9)
+7. Verification command execution results  8. Verification round results (Phase 13)
 
 ## Review Mode: {Precise|Exhaustive|Mixed}
 
 ## Steps (in order):
 0. **Review All Verification Results** — Review Claim Verification, Severity
    Verification, Verification Command Results, AND Verification Round Results
-   (Phase 4.9). For each disagreement that has a Phase 4.9 verdict:
+   (Phase 13). For each disagreement that has a Phase 13 verdict:
    - [VR_CONFIRMED]: Use as strong evidence in favor of the confirmed side.
    - [VR_REFUTED]: Use as strong evidence against the refuted claim.
    - [VR_PARTIAL]: Acknowledge the nuance; rule accordingly.
@@ -512,9 +514,9 @@ You are the Supreme Judge. You receive:
    positions? Who made the strongest arguments? What perspectives were missing?
 
 2. **Rule on Each Disagreement** — State the disagreement, summarize each side,
-   include any Phase 4.9 verification verdict for this point, rule with
+   include any Phase 13 verification verdict for this point, rule with
    reasoning, note your confidence level. A [VR_CONFIRMED] or [VR_REFUTED]
-   verdict from Phase 4.9 should carry significant weight — it represents
+   verdict from Phase 13 should carry significant weight — it represents
    targeted investigation by a specialist beyond what the panel performed.
 
 3. **Identify Consensus Points** — Check if unanimous agreement is actually
@@ -563,7 +565,7 @@ without new evidence. Before responding:
 
 ---
 
-## Phase 6.2: Process History Assembly (Orchestrator Logic — no agent)
+## Phase 15.2: Process History Assembly (Orchestrator Logic — no agent)
 
 No agent is launched. The orchestrator concatenates all accumulated outputs into
 `review_panel_process.md` using the structure below. Nothing is summarized —
@@ -635,7 +637,7 @@ Repeat the block below for each panelist:
   overrides assignments where the signal is misleading; intentionally has no subject-
   matter bias so tier estimates aren't skewed toward familiar domains
 **Agent Type:** Generic Opus agent (domain-neutral by design)
-**Input:** Phase 4.8a confidence-based draft tier table + full context
+**Input:** Phase 12a confidence-based draft tier table + full context
 **Phases Active:** Tier Refinement (4.8b)
 
 ---
@@ -648,15 +650,15 @@ Repeat the block below for each panelist:
 **Agent Type:** Generic Opus agent (domain-neutrality is required for fair rulings)
 **Inputs:** 8 inputs — original work, independent reviews, debate transcript, blind
   finals, completeness audit, claim verification, verification commands,
-  verification round summary (Phase 4.9)
+  verification round summary (Phase 13)
 **Phases Active:** Final Judgment (5)
 
-### Phase 4.9 Verification Agent Profiles
+### Phase 13 Verification Agent Profiles
 
-{These profiles are added here as agents are assigned in Phase 4.8b. Each
+{These profiles are added here as agents are assigned in Phase 12b. Each
  verification agent is unique to one dispute point.}
 
-Repeat the block below for each Phase 4.9 agent:
+Repeat the block below for each Phase 13 agent:
 
 ---
 **Role:** Verification Agent — Point #{N}
@@ -686,25 +688,25 @@ Repeat the block below for each Phase 4.9 agent:
 
 ---
 
-## Phase 2: Independent Reviews (Round 0)
+## Phase 3: Independent Reviews (Round 0)
 
 ### Persona Profile — {Persona A}
 {Full profile block from Registry above, repeated inline here for locality}
 
 ### Review — {Persona A} ({VoltAgent subagent_type or "generic"})
-{full Phase 2 output from Persona A, verbatim}
+{full Phase 3 output from Persona A, verbatim}
 
 ### Persona Profile — {Persona B}
 {Full profile block}
 
 ### Review — {Persona B}
-{full Phase 2 output, verbatim}
+{full Phase 3 output, verbatim}
 
 {... all N reviewers ...}
 
 ---
 
-## Phase 2.5: Private Reflections
+## Phase 4: Private Reflections
 
 ### Reflection — {Persona A}
 {full reflection including per-finding confidence ratings, verbatim}
@@ -713,7 +715,7 @@ Repeat the block below for each Phase 4.9 agent:
 
 ---
 
-## Phase 3: Debate
+## Phase 5: Debate
 
 ### Round 1
 
@@ -725,7 +727,7 @@ Repeat the block below for each Phase 4.9 agent:
 
 {... all N ...}
 
-#### Phase 3.5 Round 1 Summary
+#### Phase 6 Round 1 Summary
 **Resolved this round:** {list}
 **Still in dispute:** {list with source excerpts}
 **New discoveries:** {list}
@@ -739,7 +741,7 @@ Repeat the block below for each Phase 4.9 agent:
 
 ---
 
-## Phase 4: Blind Final Assessments
+## Phase 7: Blind Final Assessments
 
 ### Final — {Persona A}
 {verbatim}
@@ -748,50 +750,50 @@ Repeat the block below for each Phase 4.9 agent:
 
 ---
 
-## Phase 4.5: Completeness Audit
+## Phase 8: Completeness Audit
 
 ### Auditor Output
 {full completeness audit output, verbatim}
 
 ---
 
-## Phase 4.55: Verification Command Execution
+## Phase 9: Verification Command Execution
 
 ### Command Results
 {each command: the command run, raw output, annotation [CMD_CONFIRMED/CMD_CONTRADICTED/CMD_INCONCLUSIVE/CMD_FAILED]}
 
 ---
 
-## Phase 4.6: Claim Verification
+## Phase 10: Claim Verification
 
 ### Claim Verification Report
 {full table + summary + flagged claims, verbatim}
 
 ---
 
-## Phase 4.7: Severity Verification
+## Phase 11: Severity Verification
 
 ### Severity Verification Report
 {full table + per-finding reasoning, verbatim}
 
 ---
 
-## Phase 4.8: Verification Tier Assignment
+## Phase 12: Verification Tier Assignment
 
-### Phase 4.8a: Confidence-Based Tier Draft
-**Method:** Derived from Phase 2.5 confidence ratings and debate signals (no agent)
+### Phase 12a: Confidence-Based Tier Draft
+**Method:** Derived from Phase 4 confidence ratings and debate signals (no agent)
 
 {draft tier table with signal column, verbatim}
 
 ### Persona Profile — Tier Refinement Advisor
 {Full profile block from Registry above, repeated inline for locality}
 
-### Phase 4.8b: Tier Refinement Advisor Output
+### Phase 12b: Tier Refinement Advisor Output
 {full advisor output including override decisions and reasoning, verbatim}
 
 ---
 
-## Phase 4.9: Targeted Verification Agents
+## Phase 13: Targeted Verification Agents
 
 ### Persona Profile — Verification Agent: Point #{N}
 {Full profile block from Registry above, repeated inline for locality}
@@ -808,7 +810,7 @@ Repeat the block below for each Phase 4.9 agent:
 
 ---
 
-## Phase 5: Supreme Judge Deliberation
+## Phase 14: Supreme Judge Deliberation
 
 ### Persona Profile — Supreme Judge
 {Full profile block from Registry above, repeated inline for locality}
@@ -819,7 +821,7 @@ Repeat the block below for each Phase 4.9 agent:
 
 ---
 
-## Phase 6.3: HTML Report Generation Prompt
+## Phase 15.3: HTML Report Generation Prompt
 
 ```
 You are an expert web developer and data visualization specialist. Your task is
@@ -858,7 +860,7 @@ The file must be fully functional offline except for those two CDN stylesheets.
 - Epistemic label: [VERIFIED] | [CONSENSUS] | [SINGLE-SOURCE] | [UNVERIFIED] | [DISPUTED]
 - Defect type: [EXISTING_DEFECT] | [PLAN_RISK] | null
 - Source: which reviewer(s) raised it
-- Verification tier: Light | Standard | Deep | null (if Phase 4.9 not triggered)
+- Verification tier: Light | Standard | Deep | null (if Phase 13 not triggered)
 - Verification verdict: VR_CONFIRMED | VR_REFUTED | VR_PARTIAL | VR_INCONCLUSIVE | VR_NEW_FINDING | null
 - Verification confidence: High | Medium | Low | null
 - Evidence summary: {1-3 sentences of key evidence}
@@ -890,7 +892,7 @@ The file must be fully functional offline except for those two CDN stylesheets.
 - avatar_color: assign a distinct color from: indigo, blue, cyan, teal, green, emerald, violet, purple, fuchsia, rose, orange, amber (cycle through pool)
 }
 
-{For each Phase 4.9 verification agent (one per dispute point):
+{For each Phase 13 verification agent (one per dispute point):
 - id: "va-{N}"
 - name: {e.g., "Statistical Expert"}
 - role: {full role description}
@@ -951,15 +953,15 @@ Each card:
 - Bold persona name + role label in smaller text
 - Three micro-stats in a row: agreement intensity as "🎯 {X}%" | reasoning strategy
   name as "🧠 {strategy}" | "📋 {N} items raised" count
-- Phase badges: small pills for each phase they were active in (Phase 2, 2.5, 3, 4)
+- Phase badges: small pills for each phase they were active in (Phase 3, 2.5, 3, 4)
 - Clicking the card sets a `filterByReviewer` state that filters the action items
   section to show only items raised by that reviewer; a second click clears the filter;
   active filter shows a highlighted border on the card and a dismissible banner above
   the action items list ("Filtered to items raised by {persona name} — clear ✕")
 
-**Sub-group B — Verification Specialists** (only shown if Phase 4.9 ran):
+**Sub-group B — Verification Specialists** (only shown if Phase 13 ran):
 
-Each card (one per Phase 4.9 agent):
+Each card (one per Phase 13 agent):
 - Avatar circle with `avatar_color`, initials from agent name
 - Agent name + "Verified Point #{N}" sub-label
 - Three micro-stats: tier chip (Light/Standard/Deep) | claim-type label | verdict badge
@@ -972,7 +974,7 @@ Auditor, Claim Verifier, Severity Verifier, Tier Advisor, Supreme Judge):
 
 Each compact card:
 - Small avatar (slate/zinc color), name, role in two lines
-- Phase badge (e.g., "Phase 4.5", "Phase 5")
+- Phase badge (e.g., "Phase 8", "Phase 14")
 - No interactivity beyond a tooltip showing the full role description on hover
 
 ### 4. Charts Row (three charts side by side)
@@ -982,12 +984,12 @@ reviewer: High (green), Medium (yellow), Low (red) confidence findings.
 
 **Chart B — Tier Breakdown:**
 Donut chart. Segments: Light (sky blue), Standard (blue), Deep (indigo).
-Center label: total points verified. Only shown if Phase 4.9 ran.
+Center label: total points verified. Only shown if Phase 13 ran.
 
 **Chart C — Verification Verdict Breakdown:**
 Horizontal bar chart. One bar per verdict type, color-coded:
 VR_CONFIRMED=green, VR_REFUTED=red, VR_PARTIAL=amber, VR_INCONCLUSIVE=gray,
-VR_NEW_FINDING=purple. Only shown if Phase 4.9 ran.
+VR_NEW_FINDING=purple. Only shown if Phase 13 ran.
 
 ### 5. Reviewer Score Table
 Collapsible section. Table with columns: Reviewer, Persona, Initial Score,
@@ -1052,7 +1054,7 @@ CDN dependency note: "Charts and styling require internet connection."
 - All JavaScript in a single <script> block at the bottom of <body>
 - Store all review data as a JavaScript object `const reviewData = {...}` at the
   top of the script block; include `reviewData.personas` (panelists array),
-  `reviewData.verificationAgents` (one per Phase 4.9 agent), and
+  `reviewData.verificationAgents` (one per Phase 13 agent), and
   `reviewData.supportAgents` (auditor, judge, tier advisor, etc.)
 - Implement filtering state as a plain JS object:
   `let filters = { severity: 'all', tier: 'all', verdict: 'all', epistemic: 'all', reviewer: null }`
@@ -1079,4 +1081,171 @@ CDN dependency note: "Charts and styling require internet connection."
 
 Generate the complete HTML file. Do not truncate or use placeholders — write
 every element fully. The output should be copy-pasteable into a browser.
+```
+
+## Phase 2: Data Flow Tracer Prompt (v2.14)
+
+```
+You are the Data Flow Tracer for an expert review panel. Your job is to trace
+data through the critical path(s) of the work and document the schema/
+invariants at each function boundary. You are the first line of defense
+against COMPOSITION BUGS — where two individually-correct functions produce
+incorrect results together.
+
+## Trace Tier: {Standard|Thorough|Exhaustive}
+- Standard: Trace the single most important data path end-to-end
+- Thorough: Trace the top 3 data paths + check all transform/back-transform pairs
+- Exhaustive: Trace ALL data paths from every entry point, full composition
+  gap analysis at every function boundary. No token budget limit. Aim to
+  catch ALL bugs.
+
+## Entry Points (identified by orchestrator)
+{list_of_entry_points_with_file_line}
+
+## The Work Under Review
+{injection boundary + full code content}
+
+## Your Task (semi-formal certificate approach, Meta 2026)
+
+For each function on each critical path, produce a certificate:
+
+```
+FUNCTION: {name} ({file}:{line})
+INPUT_SCHEMA:
+  - parameter types (declared or inferred)
+  - known constraints on each parameter at call site
+  - which parameters are user/external controlled
+TRANSFORM:
+  - what this function does to the data
+  - key intermediate assignments
+  - any branching that affects output
+  - any external calls (I/O, DB, other modules)
+OUTPUT_SCHEMA:
+  - return type (declared or inferred)
+  - which parts derive from external inputs
+  - invariants the function guarantees about its output
+COMPOSITION_CHECK: (vs next function in path)
+  - Does OUTPUT_SCHEMA satisfy next function's INPUT_SCHEMA?
+  - Are there fields the next function requires that this output does NOT guarantee?
+  - Are there tainted fields reaching sensitive parameters downstream?
+INVARIANT_STATUS:
+  - list of invariants preserved or violated
+  - flag any violation as a P0 candidate for reviewers to validate
+```
+
+## Mandatory Invariant Checks at EVERY Boundary
+
+1. **Schema preservation** — output schema matches next function's expected input
+2. **Transform/back-transform completeness** — list all fields entering a forward
+   transform (log, encode, serialize) and all fields exiting the back-transform
+   (exp, decode, deserialize). Any field in forward but not back is a P0 candidate.
+3. **Row count stability** — does join/merge/reindex/groupby silently add or remove rows?
+4. **Null semantics** — does fillna(0) destroy meaningful missingness? zero != missing
+5. **Temporal consistency** — date filter applied to all date columns? All instances
+   of an excluded event (e.g., BOTH Christmases) handled?
+
+## Special Attention Patterns
+
+- Transform/back-transform pairs (log/exp, log1p/expm1, encode/decode)
+- Filter-then-fill sequences (where fillna may reintroduce filtered rows)
+- Schema evolution across module boundaries
+- Sanitizer gaps (sanitize-for-HTML then use-in-SQL)
+
+## Output Format
+
+```markdown
+## Data Flow Map — {Tier} tier
+
+### Paths Traced
+1. {entry_point} → {func1} → {func2} → ... → {output_sink}
+2. ...
+
+### Per-Function Certificates
+{certificate for each function on each path}
+
+### Invariant Violations (P0 candidates)
+| # | Location | Type | Description | Severity |
+|---|---|---|---|---|
+
+### Transform Completeness Table
+| Transform | Forward Fields | Back-transform Fields | Missing |
+|---|---|---|---|
+
+### Clean Paths
+{list of paths where all invariants hold}
+```
+
+Be precise with file/line references. Do not speculate about runtime behavior
+— only reason about what the code guarantees statically. If you cannot trace
+a path (e.g., dynamic dispatch, metaprogramming), say so explicitly.
+```
+
+## Phase 16: Merge Agent Prompt (v2.14, multi-run only)
+
+```
+You are the Merge Agent for a multi-run review panel. {N} independent panel
+runs have evaluated the same work with rotated persona compositions. Your job
+is to deduplicate findings, score stability, and produce a merged report.
+
+## The Per-Run Reports
+{report_run_1}
+{report_run_2}
+{...report_run_N}
+
+## Your Task
+
+### Step 1: Collect all findings
+Extract every finding from every per-run report, preserving:
+- Severity (P0/P1/P2/P3)
+- Location (file + line/function)
+- Bug class (race condition, null handling, security, logic, etc.)
+- Epistemic label ([VERIFIED], [CONSENSUS], etc.)
+- Source run number
+
+### Step 2: Deduplicate by semantic similarity
+Two findings are DUPLICATES if AND ONLY IF:
+- Same location (same file AND same function, or lines within 10 of each other)
+- AND same bug class
+
+Different bug classes at the same location → keep BOTH.
+Same bug class at different locations → keep BOTH.
+When in doubt, prefer keeping duplicates over false merging.
+
+### Step 3: Score stability
+For each merged finding, count how many of N runs produced it:
+- [N/N RUNS] = found in every run, highest confidence
+- [K/N RUNS] (1 < K < N) = found in multiple runs, medium-high confidence
+- [1/N RUNS] = found in one run only, single-angle discovery
+  CRITICAL: [1/N RUNS] is NOT a lower-quality finding. Single-run findings
+  often represent unique persona insights that only one configuration
+  surfaced. Do NOT demote them.
+
+### Step 4: Resolve severity disagreements
+When runs disagree on severity for a merged finding:
+- Use the HIGHEST severity from any run (conservative; false negatives are
+  invisible while false positives are visible and dismissible)
+- Note the range in parentheses: "P0 (Run 1) / P1 (Run 2)"
+
+### Step 5: Resolve judge divergence
+If the per-run judges gave scores more than 2 points apart:
+- Flag [JUDGE_DIVERGENCE]
+- Explain what drove the divergence (different persona focus? different
+  threat model? different risk category examined?)
+- Provide your own independent assessment
+
+### Step 6: Produce merged report
+Organize findings by:
+1. Severity (P0 first)
+2. Within each severity, stability ([N/N] first, [1/N] last)
+
+Include a Run Comparison table:
+| Finding | Run 1 | Run 2 | Run 3 | Merged Severity | Stability |
+
+Include a stability summary:
+- Total unique findings: X
+- Stable ([≥2/N RUNS]): Y (Z%)
+- Single-run ([1/N RUNS]): A (B%)
+
+Write the merged report to `review_panel_report.md`. Keep per-run reports as
+`review_panel_report_run{N}.md` for audit trail.
 ```

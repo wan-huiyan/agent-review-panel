@@ -1,8 +1,8 @@
 {
   "skill_name": "agent-review-panel",
-  "version": "2.9.0",
+  "version": "2.14.0",
   "created_by": "manual",
-  "updated": "2026-03-29",
+  "updated": "2026-04-07",
   "triggers": [
     {
       "id": "pos-1",
@@ -129,6 +129,48 @@
       "should_trigger": true,
       "category": "positive",
       "notes": "Natural language: multiple reviewers + independently + discuss"
+    },
+    {
+      "id": "pos-19",
+      "prompt": "Run the review panel 3 times and merge the results — I want maximum coverage on this deployment",
+      "should_trigger": true,
+      "category": "positive-v214",
+      "notes": "v2.14 multi-run union mode: explicit --runs 3 via natural language + maximum coverage"
+    },
+    {
+      "id": "pos-20",
+      "prompt": "Do a multi-run review of this payment processing code. Run twice with different reviewer sets.",
+      "should_trigger": true,
+      "category": "positive-v214",
+      "notes": "v2.14 multi-run: multi-run review + twice with different reviewers"
+    },
+    {
+      "id": "pos-21",
+      "prompt": "Exhaustive review of this data pipeline — trace every data path and catch all bugs",
+      "should_trigger": true,
+      "category": "positive-v214",
+      "notes": "v2.14 data flow trace exhaustive tier: exhaustive + trace every path + catch all bugs"
+    },
+    {
+      "id": "pos-22",
+      "prompt": "This is high-stakes — I want a thorough review panel that traces the data flow across all our transforms",
+      "should_trigger": true,
+      "category": "positive-v214",
+      "notes": "v2.14 data flow trace thorough tier + multi-perspective signal"
+    },
+    {
+      "id": "neg-15",
+      "prompt": "Can you trace through this bug for me? I'm getting a null pointer on line 42 and can't figure out why",
+      "should_trigger": false,
+      "category": "negative-v214",
+      "notes": "v2.14 negative: 'trace' is debugging context, not review panel request"
+    },
+    {
+      "id": "neg-16",
+      "prompt": "Run this test suite twice to check for flakiness",
+      "should_trigger": false,
+      "category": "negative-v214",
+      "notes": "v2.14 negative: 'run twice' is test execution, not multi-run review"
     },
     {
       "id": "neg-1",

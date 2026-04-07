@@ -1,5 +1,62 @@
 # Changelog
 
+## v2.14 (2026-04-07) — Data Flow Trace, Multi-Run Union, Force Opus, Integer Phase Renumbering
+
+Motivated by a real consistency gap: two identical panel runs on the same Schuh webapp (v2.10) produced only ~30% finding overlap, each missing a different P0 bug. Root causes identified:
+
+1. **LLM-driven content classification** produces different persona compositions across runs
+2. **Single-run coverage** catches only ~60-70% of discoverable issues
+3. **Composition/seam bugs** (two individually-correct functions producing incorrect results together) require dedicated tracing — no prior phase targeted this bug class
+4. **Silent model mixing via VoltAgent** — the skill said "all agents use opus" but the VoltAgent launch instructions (added in v2.9) omitted `model: "opus"`, causing reviewers to fall through to the VoltAgent agent's default model (potentially sonnet or haiku)
+
+### New Features
+
+- **Phase 2: Data Flow Trace** — A dedicated agent traces data through critical path(s) before reviewers begin, targeting composition defects. Uses Meta's semi-formal certificate prompting (2026, 78%→93% accuracy): at each function boundary, produce INPUT_SCHEMA → TRANSFORM → OUTPUT_SCHEMA → COMPOSITION_CHECK → INVARIANT_STATUS. Five mandatory invariant checks: schema preservation, transform/back-transform completeness, row count stability, null semantics, temporal consistency. Three user-selectable tiers: **Standard** (default, single path, ~5 min), **Thorough** (top 3 paths + completeness checks, ~15 min), **Exhaustive** (all paths, no token limit, aims to catch all bugs). Data Flow Map is injected into Phase 3 reviewer prompts; violations flagged as P0 candidates. Skipped for pure docs/plans or code with no detectable transforms. Research foundations: Meta semi-formal reasoning (2026), LLMDFA (NeurIPS 2024), RepoAudit (ICML 2025), BugLens (ASE 2025), ZeroFalse (2025).
+
+- **Multi-Run Union Protocol + Phase 16: Merge** — User can invoke `--runs N` or "run 3 times and merge" to execute the panel N times with rotated persona compositions, then merge results via Phase 16. Persona rotation: Run 1 = standard base, Run 2 = complementary (Code Quality Auditor + Performance Specialist + Methodology Analyst + DA), Run 3 = adversarial-heavy (3 DAs + Correctness Hawk), Run 4+ cycles. Content classification runs ONCE (Run 1) and is reused — this eliminates the primary source of cross-run variance. Phase 2 also runs once and is cached. Phase 16 deduplicates findings by location + bug class, scores stability as `[K/N RUNS]`, uses highest severity when runs disagree, resolves judge divergence. Single-run findings are NOT demoted. Per-run reports retained for audit trail.
+
+- **Force `model: "opus"` on all launches** — Fixes a silent bug introduced in v2.9: the skill promised "all agents use opus" but the VoltAgent Step 4 launch instructions omitted the model parameter, causing launched agents to fall through to their frontmatter defaults. Now ALWAYS pass `model: "opus"` explicitly alongside `subagent_type`. New test in `manifest-consistency.test.mjs` catches future regressions. Applies to all VoltAgent launches including v2.11–v2.13 additions (Phase 12b Tier Refinement Advisor, Phase 13 Verification Agents, Phase 15.3 HTML Report Agent).
+
+### Housekeeping
+
+- **Integer phase renumbering** — All phases renumbered from decimal hierarchy (1, 2, 2.5, 3, 3.5, 4, 4.5, 4.55, 4.6, 4.7, 4.8, 4.8a, 4.8b, 4.9, 5, 6, 6.1, 6.2, 6.3) to sequential integers (Phases 1-16). Phase 15 retains sub-phases 15.1, 15.2, 15.3 as parent "Output Generation" because those represent parallel output generation. Phase 12 retains sub-parts 12a and 12b since they form a two-step tier assignment pipeline. All cross-references, prompt templates, and tests updated.
+
+- **Two new checklists** in `references/signals-and-checklists.md`: Transform/Back-Transform Completeness (8 items) and Data Flow Invariants (8 items). Used by the Phase 2 Data Flow Tracer.
+
+- **Two new prompt templates** in `references/prompt-templates.md`: Phase 2 Data Flow Tracer (~90 lines), Phase 16 Merge Agent (~60 lines).
+
+- **Version harmonization** — `package.json`, `plugin.json`, `marketplace.json`, `eval-suite.json`, and both SKILL.md headers all bumped to 2.14.0.
+
+### Phase Number Migration Reference
+
+| Old (v2.13) | New (v2.14) | Name |
+|-------------|-------------|------|
+| 1 | 1 | Setup |
+| — | **2** | **Data Flow Trace (NEW)** |
+| 2 | 3 | Independent Review |
+| 2.5 | 4 | Private Reflection |
+| 3 | 5 | Debate |
+| 3.5 | 6 | Round Summarization |
+| 4 | 7 | Blind Final |
+| 4.5 | 8 | Completeness Audit |
+| 4.55 | 9 | Verify Commands |
+| 4.6 | 10 | Claim Verification |
+| 4.7 | 11 | Severity Verification |
+| 4.8 | 12 | Verification Tier Assignment (with 12a, 12b) |
+| 4.9 | 13 | Targeted Verification Agents |
+| 5 | 14 | Supreme Judge |
+| 6 (parent) | 15 | Output Generation (parent) |
+| 6.1 | 15.1 | Primary Markdown Report |
+| 6.2 | 15.2 | Process History |
+| 6.3 | 15.3 | Interactive HTML Report |
+| — | **16** | **Merge (multi-run, NEW)** |
+
+### Expected Impact
+
+Running a single panel now catches ~30-40% more findings via Phase 2 composition analysis. Running multi-run union (N=2) effectively eliminates the ~30% single-run blind spot. Force-opus eliminates the invisible model-mixing variance. All three changes compose with v2.11–v2.13's verification round and triple-output system to produce a maximally thorough review.
+
+---
+
 ## v2.13 (2026-04-03) — Persona Profiles in Process History and HTML Dashboard
 
 Every agent in the review now has a full persona profile, surfaced in both output files.

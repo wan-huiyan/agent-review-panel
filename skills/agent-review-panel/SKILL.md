@@ -21,10 +21,17 @@ description: >
   writing tests. Supports "deep research mode" when user says "deep review",
   "thorough review", "research review", or passes "deep" to
   /agent-review-panel — adds web research for domain best practices before
-  launching reviewers.
+  launching reviewers. Supports "multi-run union mode" when user says
+  "multi-run review", "run N times and merge", "run twice", "run 3 times",
+  or "maximum coverage review" — repeats the panel with rotated persona sets
+  and merges results with stability scoring. Supports "data flow trace
+  tiers" (Standard/Thorough/Exhaustive) when user says "thorough review",
+  "exhaustive review", "trace everything", or "catch all bugs" — dedicates
+  a pre-review phase to tracing data through critical paths and flagging
+  composition/seam bugs.
 ---
 
-# Agent Review Panel v2.13
+# Agent Review Panel v2.14
 
 A multi-agent adversarial review system based on nine research foundations:
 ChatEval (ICLR 2024), AutoGen, Du et al. (ICML 2024), MachineSoM (ACL 2024),
@@ -56,9 +63,14 @@ It expects the user to specify (or let it auto-detect) what to review.
 ## Dependencies
 
 This skill depends on the Agent tool to launch parallel subagent reviewers and
-requires bash for context gathering (grep, file reads). All agents use
-`model: "opus"`. Knowledge mining reads from memory paths if they exist; if
-not available, it degrades gracefully — no hard dependency.
+requires bash for context gathering (grep, file reads). All agents MUST use
+`model: "opus"`. This includes VoltAgent specialist agents launched via
+`subagent_type` — always pass `model: "opus"` explicitly alongside
+`subagent_type` to override the agent's default model. Omitting it causes
+the launched agent to fall through to its own frontmatter-declared model
+(which may be sonnet or haiku), introducing cross-run reasoning variance.
+Knowledge mining reads from memory paths if they exist; if not available,
+it degrades gracefully — no hard dependency.
 
 **Optional enhancement:** When VoltAgent specialist agents are installed, the
 panel can use them instead of generic persona-prompted agents for stronger
@@ -81,22 +93,27 @@ Output: Classifies as mixed → adds Code Quality Auditor + Data Quality Auditor
 ## Process Overview
 
 ```
-Phase 1: Setup              → Identify work, pick personas, define criteria
-Phase 2: Independent Review → All reviewers evaluate in parallel (no cross-talk)
-Phase 2.5: Private Reflection → Each reviewer re-reads source, rates own confidence
-Phase 3: Debate             → Reviewers engage with each other + find new issues
-Phase 3.5: Summarize        → Distill resolved/unresolved points between rounds
-Phase 4: Blind Final        → Each reviewer gives final score independently
-Phase 4.5: Completeness Audit → Dedicated agent scans for what the panel missed
-Phase 4.55: Verify Commands  → Run up to 5 reviewer verification commands (advisory)
-Phase 4.6: Claim Verification → Verify all line-number citations against source
-Phase 4.7: Severity Verification → Read actual code for every P0/P1, downgrade if overstated
-Phase 4.8: Verification Tier Assignment → Confidence draft (4.8a) + judge refinement (4.8b)
-Phase 4.9: Targeted Verification Agents → Persona-matched agents dispatched per dispute point
-Phase 5: Supreme Judge      → Opus arbitrates everything including verification round evidence
-Phase 6.1: Primary Report   → Structured markdown summary (review_panel_report.md)
-Phase 6.2: Process History  → Full director's-cut log of every agent action (review_panel_process.md)
-Phase 6.3: HTML Report      → Interactive single-file HTML dashboard (review_panel_report.html)
+Phase 1:    Setup                     → Identify work, pick personas, define criteria
+Phase 2:    Data Flow Trace           → Trace critical path(s), document schemas [code only] (v2.14)
+Phase 3:    Independent Review        → All reviewers evaluate in parallel (no cross-talk)
+Phase 4:    Private Reflection        → Each reviewer re-reads source, rates own confidence
+Phase 5:    Debate (rounds 1–3)       → Reviewers engage with each other + find new issues
+Phase 6:    Round Summarization       → Distill resolved/unresolved points between rounds
+Phase 7:    Blind Final               → Each reviewer gives final score independently
+Phase 8:    Completeness Audit        → Dedicated agent scans for what the panel missed
+Phase 9:    Verify Commands           → Run up to 5 reviewer verification commands (advisory)
+Phase 10:   Claim Verification        → Verify all line-number citations against source
+Phase 11:   Severity Verification     → Read actual code for every P0/P1, downgrade if overstated
+Phase 12:   Verification Tier Assign  → Confidence draft (12a) + judge-advised refinement (12b)
+Phase 13:   Targeted Verification     → Persona-matched agents dispatched per dispute point
+Phase 14:   Supreme Judge             → Opus arbitrates everything including verification round
+Phase 15:   Output Generation         → (parent) Three output files (15.1 sequential, 15.2/15.3 parallel)
+  Phase 15.1: Primary Markdown Report → Structured markdown summary (review_panel_report.md)
+  Phase 15.2: Process History         → Full director's-cut log (review_panel_process.md)
+  Phase 15.3: HTML Report             → Interactive dashboard (review_panel_report.html)
+
+[Multi-Run mode (--runs N > 1): repeat Phases 2–15 with rotated personas, then:]
+Phase 16:   Merge                     → Deduplicate, score stability, produce merged report (v2.14)
 ```
 
 ---
@@ -125,7 +142,7 @@ Auto-detect review mode from content type. No user toggle.
 | Mixed | **Precise** for code, **Exhaustive** for prose | Reviewers label each finding with its mode. Code findings without line citations are demoted. |
 | Documentation | **Exhaustive** | Same as plan/design. |
 
-The detected mode is injected into Phase 2 reviewer prompts and the judge prompt.
+The detected mode is injected into Phase 3 reviewer prompts and the judge prompt.
 Report header states the detected mode.
 
 ### Detect Content Signals
@@ -308,7 +325,8 @@ to VoltAgent agents. Full catalog: github.com/VoltAgent/awesome-claude-code-suba
 agents are available by scanning the system-reminder agent list for any
 `voltagent-*` prefixed agents. Note which families are installed.
 
-**Step 2: Map personas to specialists.** Use this mapping table:
+**Step 2: Map personas to specialists.** Use this mapping table.
+*(When launching any persona via `subagent_type`, ALWAYS pass `model: "opus"`. v2.14.)*
 
 #### Core Persona Mapping (review panel built-in personas)
 
@@ -376,16 +394,21 @@ VoltAgent agents instead of generic personas:
 | SEO | SEO Reviewer | `voltagent-domains:seo-specialist` |
 | Quant / financial models | Quant Reviewer | `voltagent-domains:quant-analyst` |
 
-#### Multi-Agent Orchestration Mapping (for completeness audit & judge)
+#### Multi-Agent Orchestration Mapping (for pre/post-panel phases)
+
+All launches below MUST pass `model: "opus"` explicitly (v2.14).
 
 | Review Phase | VoltAgent `subagent_type` | Use When |
 |---|---|---|
-| Completeness Audit (4.5) | `voltagent-meta:knowledge-synthesizer` | Synthesize what the panel missed |
-| Claim Verification (4.6) | `voltagent-qa-sec:code-reviewer` | Verify line-number citations |
-| Severity Verification (4.7) | `voltagent-qa-sec:debugger` | Read actual code for P0/P1 findings |
-| Tier Refinement Advisor (4.8b) | Generic + opus | (must be domain-neutral to refine tiers) |
-| Verification Agents (4.9) | Persona-matched — see Phase 4.9 table | Each agent matched to claim type |
-| Supreme Judge (5) | Generic + opus | (judge must be domain-neutral) |
+| Data Flow Trace (Phase 2) | `voltagent-data-ai:data-engineer`, `model: "opus"` | Trace data paths, document schemas at boundaries (v2.14) |
+| Completeness Audit (Phase 8) | `voltagent-meta:knowledge-synthesizer`, `model: "opus"` | Synthesize what the panel missed |
+| Claim Verification (Phase 10) | `voltagent-qa-sec:code-reviewer`, `model: "opus"` | Verify line-number citations |
+| Severity Verification (Phase 11) | `voltagent-qa-sec:debugger`, `model: "opus"` | Read actual code for P0/P1 findings |
+| Tier Refinement Advisor (Phase 12b) | Generic, `model: "opus"` | (must be domain-neutral to refine tiers) |
+| Verification Agents (Phase 13) | Persona-matched — see Phase 13 table, `model: "opus"` | Each agent matched to claim type |
+| Supreme Judge (Phase 14) | Generic, `model: "opus"` | (judge must be domain-neutral) |
+| HTML Report Agent (Phase 15.3) | `voltagent-lang:javascript-pro`, `model: "opus"` | Generate interactive HTML dashboard |
+| Merge Agent (Phase 16) | `voltagent-meta:knowledge-synthesizer`, `model: "opus"` | Deduplicate + score stability in multi-run mode (v2.14) |
 
 **Step 3: Suggest installation when beneficial.** If a selected persona would
 benefit from a VoltAgent agent but the agent family is not available, suggest
@@ -413,9 +436,18 @@ Only suggest installation **once per session**. List only the families relevant
 to the detected content signals, not all 10. If the user declines or the agents
 aren't available, proceed with the generic fallback silently.
 
-**Step 4: Launch with `subagent_type`.** When launching Phase 2 agents, use:
-- `subagent_type: "voltagent-qa-sec:code-reviewer"` (when available)
-- Omit `subagent_type` (generic agent with persona prompt as fallback)
+**Step 4: Launch with `subagent_type` AND `model: "opus"`.** When launching Phase 3 agents:
+- `subagent_type: "voltagent-qa-sec:code-reviewer", model: "opus"` (when available)
+- Omit `subagent_type`, pass `model: "opus"` explicitly (generic agent fallback)
+
+**CRITICAL (v2.14):** ALWAYS pass `model: "opus"` even when using `subagent_type`.
+VoltAgent agents may declare their own default model (sonnet, haiku) in their
+frontmatter. Without an explicit override, the panel silently runs on mixed
+models, producing different reasoning depths across runs. The VoltAgent
+agent's value lives in its system prompt and tool access, NOT its default
+model. Forcing opus preserves the domain expertise while guaranteeing
+consistent reasoning depth. This fix resolves an invisible source of
+cross-run variance documented in the v2.10→v2.14 consistency analysis.
 
 The persona prompt is STILL included even when using VoltAgent agents — it
 provides the review-panel-specific context (agreement intensity, reasoning
@@ -423,11 +455,144 @@ strategy, evaluation criteria) that the VoltAgent agent doesn't have natively.
 
 ---
 
-## Phase 2: Independent Review (Round 0)
+## Phase 2: Data Flow Trace (v2.14)
+
+A dedicated agent traces data through the critical path(s) of the work
+BEFORE reviewers begin, producing a structured Data Flow Map. This phase
+specifically targets **composition defects** — bugs where two individually-
+correct functions produce incorrect results together. These bugs are
+structurally invisible to reviewers who read each function in isolation.
+
+Research foundations: Meta semi-formal certificate prompting (2026, 78%→93%
+accuracy), LLMDFA (NeurIPS 2024, 87% precision), RepoAudit (ICML 2025,
+78% precision with demand-driven exploration), BugLens (ASE 2025, 7x false
+positive reduction), ZeroFalse (2025, F1 0.955).
+
+### Skip Conditions
+
+- Pure plans/design (no code)
+- Pure documentation (no code)
+- Code with no detectable data transforms (pure API routing, static config,
+  declarative-only files)
+
+When Phase 2 is skipped, note the reason in the Context Brief and the report
+header. Proceed directly to Phase 3.
+
+### Tier System
+
+Three tiers, user-selectable via `--trace {tier}` or natural language:
+
+| Tier | Trigger Phrases | Paths Traced | Overhead | Token Budget |
+|------|----------------|--------------|----------|--------------|
+| **Standard** (default) | no modifier, "review" | Single most important path | ~5 min | ~8k |
+| **Thorough** | "thorough review", "thorough trace", `--trace thorough` | Top 3 paths + transform completeness | ~15 min | ~20k |
+| **Exhaustive** | "exhaustive review", "trace everything", "catch all bugs", `--trace exhaustive` | ALL paths from every entry point | No limit | No limit |
+
+**Tier detection priority:**
+1. Explicit `--trace {tier}` flag
+2. Natural language keywords in user's original prompt
+3. Default: Standard
+
+"Deep review" (which triggers web research) combines with Standard trace
+unless the user also specifies a trace tier.
+
+### Critical Path Identification (orchestrator, not subagent)
+
+Before launching the Data Flow Tracer, the orchestrator identifies entry
+points and ranks them by data complexity:
+
+1. **Find entry points.** Scan for structural markers:
+   - Web frameworks: `@app.route`, `@router.get/post`, `@api_view`, Django CBVs
+   - CLI: `@click.command`, `@app.command` (Typer), `if __name__ == "__main__":`, argparse
+   - Background: `@app.task` (Celery), AWS `lambda_handler`, Kafka/SQS consumers
+   - Scripts: `main()`, top-level script execution
+
+2. **Rank by data complexity.** Count on each path:
+   - Number of function calls
+   - Number of data transforms (map/filter/reduce/apply/merge/join/groupby/pivot)
+   - Number of I/O boundaries (DB, HTTP, file, queue)
+   - Presence of transform/back-transform pairs
+
+3. **Select paths per tier:**
+   - Standard: top-ranked path only
+   - Thorough: top 3 paths
+   - Exhaustive: all paths
+
+### The Data Flow Tracer Agent
+
+Single agent (`model: "opus"`). VoltAgent mapping: `voltagent-data-ai:data-engineer`
+primary, `voltagent-qa-sec:code-reviewer` fallback. **Always pass `model: "opus"`**
+even when using `subagent_type`.
+
+Uses the **semi-formal certificate approach** from Meta's 2026 agentic code
+reasoning research. At each function boundary on the critical path, the agent
+produces a certificate:
+
+```
+FUNCTION: {name} ({file}:{line})
+INPUT_SCHEMA:
+  - parameter types (declared or inferred)
+  - known constraints at call site
+  - which parameters are externally controlled
+TRANSFORM:
+  - what the function does
+  - key assignments and branches
+  - external calls (I/O, DB, modules)
+OUTPUT_SCHEMA:
+  - return type
+  - tainted/derived fields
+  - guaranteed invariants
+COMPOSITION_CHECK: (vs next function)
+  - Does OUTPUT_SCHEMA satisfy next INPUT_SCHEMA?
+  - Fields required but not guaranteed?
+  - Tainted fields reaching sensitive parameters?
+INVARIANT_STATUS:
+  - preserved or violated invariants
+  - violations flagged as P0 candidates
+```
+
+See `references/prompt-templates.md` for the full Phase 2 Data Flow Tracer
+prompt.
+
+### Mandatory Invariant Checks (at every boundary)
+
+1. **Schema preservation** — output schema matches next function's expected input
+2. **Transform/back-transform completeness** — list forward transforms (log,
+   encode, serialize) and back-transforms (exp, decode, deserialize). Any
+   field in forward but not back is a P0 candidate. See the Transform/Back-
+   Transform Completeness checklist in `references/signals-and-checklists.md`.
+3. **Row count stability** — joins/merges/reindex/groupby should not silently
+   add or remove rows
+4. **Null semantics** — `fillna(0)` does not destroy meaningful missingness
+5. **Temporal consistency** — date filters applied to all date columns;
+   ALL instances of an excluded event (e.g., BOTH Christmases) handled
+
+### Output and Integration with Phase 3
+
+The Data Flow Tracer produces a **Data Flow Map** containing:
+- List of paths traced
+- Per-function certificates
+- Invariant violations table (P0 candidates)
+- Transform completeness table
+- Clean paths (where all invariants hold)
+
+**Integration with Phase 3:** The Data Flow Map is injected into every
+reviewer's Phase 3 prompt as dedicated context. Invariant violations are
+flagged as P0 candidates; reviewers must either validate them (agree they're
+real P0s) or explicitly challenge them with reasoning. Reviewers are NOT
+required to agree with the tracer — this is an additional input, not a
+mandate.
+
+When no violations are found, reviewers receive a short "clean trace"
+confirmation instead.
+
+---
+
+## Phase 3: Independent Review (Round 0)
 
 Launch ALL reviewer agents **in parallel** using Agent tool with `model: "opus"`.
 When VoltAgent integration is active, use `subagent_type` from the mapping table.
-Each gets the structured prompt from `references/prompt-templates.md` (Phase 2
+Each gets the structured prompt from `references/prompt-templates.md` (Phase 3
 template) with their persona, agreement intensity, reasoning strategy, context
 brief, and the full work content inside injection boundaries.
 
@@ -435,7 +600,7 @@ Collect all N independent reviews.
 
 ---
 
-## Phase 2.5: Private Reflection
+## Phase 4: Private Reflection
 
 Launch all reviewers **in parallel**, each receiving ONLY their own review.
 They re-read source, rate confidence per finding (High/Medium/Low), note new
@@ -443,12 +608,12 @@ issues, identify most/least defensible findings. See `references/prompt-template
 
 ---
 
-## Phase 3: Debate (Rounds 1-3, adaptive)
+## Phase 5: Debate (Rounds 1-3, adaptive)
 
 Launch all reviewers **in parallel** each round. Each receives their own review
 + reflection, all others' feedback, and unresolved points from previous round.
 
-### Phase 3.5: Round Summarization
+### Phase 6: Round Summarization
 
 After each round, summarize (no agent needed):
 - **Resolved this round** — who agreed, what convinced them
@@ -471,14 +636,14 @@ sycophancy alert into next round prompt for all reviewers.
 
 ---
 
-## Phase 4: Blind Final Assessment
+## Phase 7: Blind Final Assessment
 
 Launch all reviewers one final time in parallel. Each gives final score, top 3
 points, recommendation, one-line verdict. Others do NOT see these.
 
 ---
 
-## Phase 4.5: Completeness Audit
+## Phase 8: Completeness Audit
 
 Single agent (`model: "opus"`) hunts for what the entire panel missed. Does NOT
 evaluate quality — only finds overlooked details, edge cases, constants, code.
@@ -493,7 +658,7 @@ See `references/prompt-templates.md` for full prompt.
 
 ---
 
-## Phase 4.55: Verification Command Execution (v2.8)
+## Phase 9: Verification Command Execution (v2.8)
 
 Run up to 5 reviewer `verification_command` entries for P0/P1 findings (P0 first).
 Validate read-only (grep/cat/head/tail/wc only), execute via Bash, annotate:
@@ -503,7 +668,7 @@ Skip this phase if no verification commands were provided.
 
 ---
 
-## Phase 4.6: Claim Verification
+## Phase 10: Claim Verification
 
 Single agent (`model: "opus"`) checks all reviewer citations against source.
 Classifies each as [VERIFIED], [INACCURATE], [MISATTRIBUTED], [HALLUCINATED],
@@ -511,7 +676,7 @@ or [UNVERIFIABLE]. Results feed into judge prompt.
 
 ---
 
-## Phase 4.7: Severity Verification (v2.7)
+## Phase 11: Severity Verification (v2.7)
 
 Single agent (`model: "opus"`) that reads the actual codebase to verify every
 P0 and P1 finding before the judge sees them. This phase exists because panels
@@ -551,15 +716,15 @@ verification table when ruling on disagreements.
 
 ---
 
-## Phase 4.8: Verification Tier Assignment (v2.11)
+## Phase 12: Verification Tier Assignment (v2.11)
 
-After Phases 4.5–4.7, collect all **unresolved dispute points** from Phase 3.5
+After Phases 8–11, collect all **unresolved dispute points** from Phase 6
 summaries plus any **high-uncertainty action items** bearing `[SINGLE-SOURCE]`,
 `[DISPUTED]`, or `[UNVERIFIED]` labels. Each point is assigned a depth tier that
-controls the verification agent's budget and capabilities in Phase 4.9.
+controls the verification agent's budget and capabilities in Phase 13.
 
 **Skip condition:** If there are zero unresolved disputes and zero unverified
-action items, skip Phases 4.8 and 4.9 entirely.
+action items, skip Phases 12 and 13 entirely.
 
 ### Tier Definitions
 
@@ -577,10 +742,10 @@ Tier assignment runs as a two-step pipeline. Step 1 is always fast; step 2
 
 **Step 1 — Confidence-Based Draft (always runs; no agent needed):**
 
-The orchestrator derives initial tier assignments from existing Phase 2.5
+The orchestrator derives initial tier assignments from existing Phase 4
 confidence ratings and debate round signals:
 
-- **Deep**: Any reviewer rated the claim Low confidence in Phase 2.5, OR the
+- **Deep**: Any reviewer rated the claim Low confidence in Phase 4, OR the
   point remained unresolved across 2+ debate rounds, OR the claim requires
   external or runtime knowledge (e.g., production behavior, third-party API
   semantics, literature validation)
@@ -597,8 +762,8 @@ Produces a draft tier table:
 
 **Step 2 — Judge-Advised Refinement (default: on):**
 
-A single Opus agent (Phase 4.8b) receives the confidence-based draft table and
-all supporting context (context brief, Phase 3.5 summaries, Phase 4 blind finals,
+A single Opus agent (Phase 12b) receives the confidence-based draft table and
+all supporting context (context brief, Phase 6 summaries, Phase 7 blind finals,
 completeness audit, claim and severity verification results). Its job is to
 **review and refine** the draft — upgrade, downgrade, or confirm each tier with
 reasoning. It also assigns the verification persona per point.
@@ -615,7 +780,7 @@ Final tier table:
 
 ---
 
-## Phase 4.9: Targeted Verification Agents (v2.11)
+## Phase 13: Targeted Verification Agents (v2.11)
 
 Dispatch one verification agent per collected dispute/action item. All Light and
 Standard agents launch **in parallel**; Deep agents can also parallelize unless
@@ -669,14 +834,14 @@ After all agents complete, compile into a summary table:
 |-------|------|---------|---------|--------------|
 ```
 
-This table is passed to Phase 5 as input item 8.
+This table is passed to Phase 14 as input item 8.
 
 ---
 
-## Phase 5: Supreme Judge
+## Phase 14: Supreme Judge
 
 Single agent (`model: "opus"`). Receives all prior outputs (including the
-Verification Round Summary from Phase 4.9 as input item 8). Steps (in order):
+Verification Round Summary from Phase 13 as input item 8). Steps (in order):
 0. Review verification results (claims, severity, commands, **and verification round**)
 0.5a-b. Verify audit findings, anti-rhetoric assessment
 0.5c. Severity dampening — minimum evidence-justified severity. **In Precise mode, findings without code citations cannot exceed P2.**
@@ -690,14 +855,14 @@ See `references/prompt-templates.md` for the full judge prompt.
 
 ---
 
-## Phase 6: Output Generation
+## Phase 15: Output Generation
 
 Three output files are written at the end of every review. All three are produced
-sequentially; Phases 6.2 and 6.3 run in parallel once Phase 6.1 is complete.
+sequentially; Phases 15.2 and 15.3 run in parallel once Phase 15.1 is complete.
 
 ---
 
-### Phase 6.1: Primary Markdown Report
+### Phase 15.1: Primary Markdown Report
 
 Write structured summary to `review_panel_report.md` (or user-specified name).
 This is the main deliverable — concise, structured, action-oriented.
@@ -709,7 +874,11 @@ This is the main deliverable — concise, structured, action-oriented.
 **Verdict:** {recommendation}  |  **Confidence:** {High|Medium|Low}
 **Auto-detected signals:** {list or "None — base set used"}
 **Review mode:** {Precise|Exhaustive|Mixed} (auto-detected from content type)
+**Data flow trace:** {Standard|Thorough|Exhaustive} tier | {N} paths traced | {M} invariant violations (v2.14)
+{If skipped: "**Data flow trace:** Skipped ({reason — pure docs / no transforms / plan-only})"}
 **Codebase state:** {branch name} | {N commits behind {default_branch}} | {worktree: yes/no}
+{If multi-run: "**Runs:** {N} (personas rotated per schedule)"}
+{If multi-run: "**Run stability:** {X}% of findings appeared in 2+ runs | {Y} single-run findings"}
 {If stale: "⚠️ STALE BRANCH — {N} commits merged to {default_branch} since branch point. Findings about missing code should be verified against {default_branch}."}
 
 ## Executive Summary
@@ -738,9 +907,13 @@ Defect type labels: [EXISTING_DEFECT] (bug in current code) [PLAN_RISK] (risk if
 ## Coverage Gaps (if any)
 {Risk categories no reviewer examined, with judge's independent assessment}
 
-## Action Items (with severity AND epistemic labels)
+{If multi-run: "## Run Comparison"}
+{If multi-run: Table showing which findings appeared in which runs, with stability labels}
+
+## Action Items (with severity AND epistemic labels{, and stability labels if multi-run})
 
 ## Detailed Reviews (collapsible sections)
+- Data Flow Map (Phase 2, v2.14) — if tracer ran
 - Round 0: Independent Reviews
 - Private Reflections
 - Debate Rounds + Summaries
@@ -756,7 +929,7 @@ Defect type labels: [EXISTING_DEFECT] (bug in current code) [PLAN_RISK] (risk if
 
 ---
 
-### Phase 6.2: Full Agent Process History
+### Phase 15.2: Full Agent Process History
 
 Write `review_panel_process.md` — the "director's cut". This is a complete,
 chronological, verbatim log of every agent's output with nothing summarized away.
@@ -765,7 +938,7 @@ The orchestrator assembles this from accumulated outputs; no new agent needed.
 **Persona profiles are embedded** at the point each agent first enters the flow:
 before each agent's output, a structured "Persona Profile" block documents that
 agent's role, expertise, reasoning strategy, agreement intensity (for panelists),
-matched-claim-type (for Phase 4.9 agents), and which phases they participated in.
+matched-claim-type (for Phase 13 agents), and which phases they participated in.
 This makes the process history fully self-explanatory to a reader who wasn't present.
 
 Structure (in order, verbatim for each):
@@ -773,8 +946,8 @@ Structure (in order, verbatim for each):
 ```
 Persona Profiles Registry (at top)
   - All panelist profiles listed before any review output
-  - Phase 4.8b tier advisor profile
-  - Phase 4.9 verification agent profiles (added as they are assigned)
+  - Phase 12b tier advisor profile
+  - Phase 13 verification agent profiles (added as they are assigned)
   - Supreme judge profile
 
 Phase 1: Setup
@@ -782,48 +955,48 @@ Phase 1: Setup
   - Persona selection rationale
   - Review mode detection
 
-Phase 2: Independent Reviews
+Phase 3: Independent Reviews
   - [Persona Profile — Persona A] full profile block
   - [Persona A] Full review text
   - [Persona Profile — Persona B] full profile block
   - [Persona B] Full review text
   - ... (all N)
 
-Phase 2.5: Private Reflections
+Phase 4: Private Reflections
   - [Persona A] Full reflection + per-finding confidence ratings
   - [Persona B] Full reflection
   - ... (all N)
 
-Phase 3: Debate Rounds
+Phase 5: Debate Rounds
   - Round 1: All reviewer responses (verbatim)
-  - Phase 3.5 Summary: Resolved / Still in dispute / New discoveries
+  - Phase 6 Summary: Resolved / Still in dispute / New discoveries
   - Round 2: All reviewer responses (if run)
-  - Phase 3.5 Summary: ...
+  - Phase 6 Summary: ...
   - Round 3: ... (if run)
 
-Phase 4: Blind Final Assessments
+Phase 7: Blind Final Assessments
   - [Persona A] Final score, top 3 points, recommendation, verdict
   - [Persona B] ...
   - ... (all N, unsealed)
 
-Phase 4.5: Completeness Audit
+Phase 8: Completeness Audit
   - Full auditor output
 
-Phase 4.55: Verification Command Execution
+Phase 9: Verification Command Execution
   - Each command run, raw output, annotation
 
-Phase 4.6: Claim Verification
+Phase 10: Claim Verification
   - Full verification table + flagged claims
 
-Phase 4.7: Severity Verification
+Phase 11: Severity Verification
   - Full severity verification table + reasoning per finding
 
-Phase 4.8: Verification Tier Assignment
-  - Phase 4.8a: Confidence-based draft table (with signals)
+Phase 12: Verification Tier Assignment
+  - Phase 12a: Confidence-based draft table (with signals)
   - [Persona Profile — Tier Refinement Advisor] profile block
-  - Phase 4.8b: Tier refinement advisor full output (overrides + reasoning)
+  - Phase 12b: Tier refinement advisor full output (overrides + reasoning)
 
-Phase 4.9: Targeted Verification Agents
+Phase 13: Targeted Verification Agents
   - [Persona Profile — Verification Agent: Point #1] full profile block
     (role, matched-claim-type, why matched, tier, VoltAgent subagent or generic)
   - [Point #1 — Tier — Persona] Full investigation trail, what was searched,
@@ -831,16 +1004,16 @@ Phase 4.9: Targeted Verification Agents
   - [Persona Profile — Verification Agent: Point #2] ...
   - [Point #2 ...] (all N verification agents, verbatim)
 
-Phase 5: Supreme Judge Deliberation
+Phase 14: Supreme Judge Deliberation
   - [Persona Profile — Supreme Judge] profile block
   - Full judge output (all steps, unabridged)
 ```
 
-See `references/prompt-templates.md` for the Phase 6.2 assembly spec.
+See `references/prompt-templates.md` for the Phase 15.2 assembly spec.
 
 ---
 
-### Phase 6.3: Interactive HTML Report
+### Phase 15.3: Interactive HTML Report
 
 Launch a single Opus agent to write `review_panel_report.html` — a polished,
 self-contained single-file interactive dashboard. The agent receives the full
@@ -865,7 +1038,7 @@ structured data from all prior phases.
 - Sort controls: by severity, confidence, tier
 - Inline CSS/JS; Tailwind CSS and Chart.js loaded via CDN
 
-See `references/prompt-templates.md` for the Phase 6.3 agent prompt.
+See `references/prompt-templates.md` for the Phase 15.3 agent prompt.
 
 ---
 
@@ -875,20 +1048,141 @@ After all three files are written, tell user:
 - Counts: consensus points, disagreements, action items, verification verdicts
 - Top P0 action item (if any)
 - Note: HTML report requires internet connection for Tailwind CSS + Chart.js CDN
-- HTML footer should read "Agent Review Panel v2.13"
+- HTML footer should read "Agent Review Panel v2.14"
+
+---
+
+## Multi-Run Union Protocol (v2.14)
+
+A single panel run catches ~60–70% of discoverable issues. Independent runs
+with rotated persona compositions have only ~30% finding overlap — meaning
+each run catches issues the others miss. For high-stakes reviews, the
+Multi-Run Union Protocol runs the panel N times and merges results.
+
+### Invocation
+
+- **Flag:** `--runs N` (explicit count)
+- **Natural language:** "run 3 times and merge", "multi-run review",
+  "run twice with different reviewers", "maximum coverage review"
+- **Default:** N=1 (no merge, single-run mode)
+- **"Multi-run" without N:** defaults to 2
+
+### Persona Rotation Schedule
+
+Deterministic given the run number. Run 1 uses the base set; subsequent
+runs use complementary sets to maximize coverage diversity.
+
+| Run # | Persona Set | Purpose |
+|-------|------------|---------|
+| 1 | Standard content-type base set + signal specialists | Canonical review |
+| 2 | Complementary: Code Quality Auditor, Performance Specialist, Methodology Analyst, DA + DIFFERENT signal specialists than Run 1 | Catch what Run 1 missed |
+| 3 | Adversarial-heavy: 3 Devil's Advocates (different reasoning strategies) + 1 Correctness Hawk | Stress-test consensus |
+| 4+ | Cycle through 1–3 with shuffled signal specialists | Diminishing returns |
+
+**Run 3 Devil's Advocates** use different reasoning strategies:
+1. Analogical reasoning ("compare to known failure patterns from similar projects")
+2. Adversarial simulation ("imagine you are an attacker / malicious user")
+3. Failure mode enumeration ("list every way this could fail in production")
+
+### Key Rules for Multi-Run Mode
+
+1. **Content classification runs ONCE** (in Run 1). The classification is
+   FIXED for all subsequent runs. This eliminates the primary source of
+   cross-run non-determinism documented in the consistency analysis.
+2. **Phase 2 (Data Flow Trace) runs ONCE** (in Run 1). The Data Flow Map is
+   cached and shared with all subsequent runs. The trace is deterministic
+   for a given codebase; re-running would not produce different paths.
+3. **Each run independently executes Phases 3–15** with its own persona set.
+4. **Per-run reports** are written to `review_panel_report_run{N}.md`.
+5. **After all runs complete**, Phase 16 (Merge) runs once to produce the
+   final merged `review_panel_report.md`.
+6. **Runs MAY execute in parallel** if the orchestrator supports it (launching
+   multiple run orchestrations as parallel background agents). Sequential
+   execution is also acceptable.
+
+---
+
+## Phase 16: Merge (v2.14, multi-run only)
+
+Single agent (`model: "opus"`). VoltAgent mapping:
+`voltagent-meta:knowledge-synthesizer` (always pass `model: "opus"`).
+
+The Merge Agent receives all N per-run reports and executes:
+
+1. **Collect all findings** from all runs, preserving severity, location,
+   bug class, epistemic label, and source run number.
+
+2. **Deduplicate by semantic similarity.** Two findings are duplicates if AND
+   ONLY IF:
+   - Same location (same file AND same function, OR lines within 10 of each other)
+   - AND same bug class
+   - Different bug classes at same location → keep both
+   - Same bug class at different locations → keep both
+   - When in doubt, prefer keeping duplicates over false merging
+
+3. **Score stability.** For each merged finding, count how many runs produced it:
+   - `[N/N RUNS]` — found in every run, highest confidence
+   - `[K/N RUNS]` (1 < K < N) — found in multiple runs, medium-high confidence
+   - `[1/N RUNS]` — single-run finding, NOT demoted. Single-run findings
+     often represent unique persona insights that only one configuration
+     surfaced. The consistency analysis proved single-run P0s are often the
+     most valuable findings.
+
+4. **Resolve severity disagreements.** When runs disagree on severity for a
+   merged finding, use the HIGHEST severity from any run (conservative:
+   false negatives are invisible while false positives are visible and
+   dismissible). Note the range: "P0 (Run 1) / P1 (Run 2)".
+
+5. **Resolve judge divergence.** If per-run judges gave scores more than 2
+   points apart, flag `[JUDGE_DIVERGENCE]`, explain what drove the difference
+   (different persona focus? different threat model?), and provide an
+   independent merged assessment.
+
+6. **Produce the merged report** at `review_panel_report.md`. Per-run reports
+   remain at `review_panel_report_run{N}.md` for audit trail.
+
+### Merged Report Additions
+
+The single-run Phase 15.1 report format is extended with:
+
+**New header fields:**
+```
+**Runs:** {N} (personas rotated per schedule)
+**Run stability:** {X}% of findings appeared in 2+ runs
+**Unique to single run:** {Y} findings
+```
+
+**New required section:**
+```
+## Run Comparison
+| Finding | Run 1 | Run 2 | Run 3 | Merged Severity | Stability |
+```
+
+**New label type in Scope & Limitations:**
+```
+Stability labels: [N/N RUNS] (high confidence) [K/N RUNS] (medium) [1/N RUNS] (single-angle)
+```
+
+**Action items gain a stability label:**
+```
+1. **[P0] [VERIFIED] [2/2 RUNS]** Add mutex lock around token refresh
+2. **[P1] [CONSENSUS] [1/2 RUNS]** Sanitize error messages *(Run 2 only: Security Auditor)*
+```
+
+See `references/prompt-templates.md` for the full Phase 16 Merge Agent prompt.
 
 ---
 
 ## Implementation Notes
 
-- **Parallel execution:** Phases 2, 2.5, 3, 4 use single message with multiple
-  Agent tool calls. Phases 4.5, 4.55, 4.6, 4.7, 4.8 are sequential (4.55 is
-  orchestrator-driven via Bash, not a subagent). Phase 4.8a is orchestrator
-  logic (no agent). Phase 4.8b is a single Opus agent. Phase 4.9 agents launch
-  in parallel (single message with one Agent call per dispute point). Phase 6.1
-  runs first; Phases 6.2 (orchestrator-assembled, no agent) and 6.3 (single
-  Opus agent) run in parallel after 6.1 completes.
-- **Context management:** Full content in Phases 2, 4.5, 5. Phase 3.5 summaries
+- **Parallel execution:** Phases 3, 4, 5, 7 use single message with multiple
+  Agent tool calls. Phases 2, 8, 9, 10, 11, 12, 13, 14 are sequential (Phase 9 is
+  orchestrator-driven via Bash, not a subagent). Phase 12a is orchestrator
+  logic (no agent). Phase 12b is a single Opus agent. Phase 13 agents launch
+  in parallel (single message with one Agent call per dispute point). Phase 15.1
+  runs first; Phases 15.2 (orchestrator-assembled, no agent) and 15.3 (single
+  Opus agent) run in parallel after Phase 15.1 completes.
+- **Context management:** Full content in Phases 2, 3, 8, 14. Phase 6 summaries
   with source excerpts in debate rounds for long works (>500 lines).
 - **Error handling:** Retry failed agents once. Proceed with minimum 2 reviewers.
   Note gaps in report.
@@ -896,16 +1190,31 @@ After all three files are written, tell user:
   an independent panel with no side effects from previous runs.
 - **Auto-persona algorithm:** Classify → base set → signal scan → add up to 6 →
   replace DA first. See `references/signals-and-checklists.md` for signal table.
+- **Multi-run execution (v2.14):** When `--runs N > 1`, Phase 1 runs once
+  (shared classification + signal detection + context brief), Phase 2 runs
+  once in Run 1 (cached Data Flow Map), then Phases 3–15 repeat N times
+  with rotated personas, then Phase 16 merges. Runs MAY execute in parallel
+  (independent orchestrations) or sequentially.
+- **Force opus (v2.14):** ALWAYS pass `model: "opus"` when launching agents,
+  even with `subagent_type`. VoltAgent agents may have sonnet/haiku defaults
+  in their frontmatter; without explicit override, reviewer reasoning depth
+  varies across runs. This was an invisible source of cross-run variance
+  in v2.9–v2.13.
 
 ## Edge Cases
 
 - **No content provided:** Ask user what to review. Do not launch a panel with empty input.
-- **Very large files (>500 lines):** Use Phase 3.5 summaries with excerpts instead of full content in debate rounds. Cap at 20k lines total.
+- **Very large files (>500 lines):** Use Phase 6 summaries with excerpts instead of full content in debate rounds. Cap at 20k lines total.
 - **Binary/image files:** Skip. Note in report: "Binary files excluded from review."
 - **Single tiny file (<20 lines):** Reduce to 2 reviewers (minimum). Full panel is overkill.
-- **No P0/P1 findings:** Skip Phases 4.55 and 4.7. Proceed directly to claim verification.
-- **No unresolved disputes or unverified action items:** Skip Phases 4.8 and 4.9. Proceed directly to Phase 5.
+- **No P0/P1 findings:** Skip Phases 9 and 11. Proceed directly to claim verification.
+- **No unresolved disputes or unverified action items:** Skip Phases 12 and 13. Proceed directly to Phase 14.
 - **All reviewers agree (score spread < 2):** Flag correlated-bias warning in report. Do NOT skip debate — unanimous agreement is the most dangerous failure mode.
+- **Phase 2 skipped (v2.14):** For pure docs/plans, or code with no data transforms (pure API routing, static config), skip Phase 2 entirely. Note reason in Context Brief and report header: "Data flow trace: Skipped ({reason})". Proceed directly to Phase 3.
+- **Single-run mode (v2.14):** `--runs 1` (default) skips Phase 16 (Merge). Report is written directly to `review_panel_report.md` by Phase 15.1. No stability labels. No Run Comparison section.
+- **Multi-run with N > 3 (v2.14):** Persona rotation cycles through Runs 1/2/3 schedule with shuffled signal specialists. N > 4 has diminishing returns — warn the user that marginal finding discovery drops sharply after Run 3.
+- **Multi-run judge divergence (v2.14):** If per-run judge scores span > 2 points, Phase 16 flags `[JUDGE_DIVERGENCE]` and provides an independent merged assessment rather than averaging.
+- **Exhaustive trace on very large codebases (v2.14):** No token budget limit. If the file is > 20k lines, Phase 2 may take > 30 min. Warn the user and offer Thorough tier as alternative.
 
 For full prompt templates, see `references/prompt-templates.md`.
 For version history, see `references/changelog.md`.

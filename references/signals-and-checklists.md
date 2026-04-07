@@ -106,3 +106,23 @@ Each auto-added persona receives a built-in domain checklist injected into their
 - Cross-references to other skills/files — verify they exist and are accessible
 - Assumptions about file locations (e.g., `profiles.yml` in project root vs `~/.dbt/`)
 - Complexity proportionality — is the process too heavy for simple cases?
+
+### Transform/Back-Transform Completeness (v2.14, Phase 2 Data Flow Tracer)
+- List ALL fields entering each forward transform (`log`, `log1p`, `encode`, `serialize`, `normalize`, `scale`, `hash`, `compress`, `encrypt`)
+- List ALL fields exiting each back-transform (`exp`, `expm1`, `decode`, `deserialize`, `denormalize`, `unscale`, `verify-hash`, `decompress`, `decrypt`)
+- Diff the two lists — any field in the forward list but NOT the back-transform list is a P0 candidate (the `rel_eff` class of bug)
+- Check transform ORDERING — encrypt-then-compress requires decompress-then-decrypt (reverse order)
+- Check transform PARAMETERS — does `exp()` use the same base as `log()`? does `decode()` use the same encoding as `encode()`?
+- Check for PARTIAL back-transforms — `expm1()` applied to 3 of 4 log-transformed fields is a silent bug
+- Check for ASYMMETRIC pairs — `log1p` paired with `exp` (should be `expm1`), `log` paired with `expm1` (should be `exp`)
+- Check for transforms in comments vs code — docstring says "log-transformed" but code applies `np.log2`
+
+### Data Flow Invariants (v2.14, Phase 2 Data Flow Tracer)
+- Row count after join/merge — 1:1 preserves, 1:N multiplies, did the code account for the multiplication?
+- Row count after filter + reindex/fillna — does `fillna(0)` or `reindex` silently reintroduce rows that a preceding filter removed? (the `apply_date_mask` + `prep_df` class of bug)
+- Null semantics — does `fillna(0)` destroy structural missingness? Zero is not the same as missing for revenue, latency, or counts
+- Index alignment — off-by-one after `reindex`, `shift`, or `rolling` operations
+- Temporal scope — is the date filter applied to ALL date columns or just one? Are all instances of an excluded event (e.g., both Christmases) handled?
+- Schema propagation — column names consistent across the pipeline? Renamed columns break downstream consumers silently
+- Aggregation granularity — `groupby` changes the grain; is downstream code aware that rows now represent groups, not individuals?
+- Type coercion at boundaries — implicit int-to-float loses precision, str-to-datetime may silently accept wrong format

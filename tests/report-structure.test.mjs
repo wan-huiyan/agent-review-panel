@@ -80,6 +80,8 @@ function parseReport(markdown) {
   const optionalSections = [
     "Completeness Audit Findings",
     "Coverage Gaps",
+    "Run Comparison",        // v2.11 multi-run
+    "Data Flow Map",         // v2.11 Phase 2 data flow trace
   ];
   for (const section of optionalSections) {
     const found = sectionBlocks.find((b) => b.name.startsWith(section));
