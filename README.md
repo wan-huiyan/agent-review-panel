@@ -8,7 +8,7 @@
 
 A [Claude Code](https://claude.ai/code) **plugin** that orchestrates multi-agent adversarial review panels backed by [9 research papers](#research-foundations) on multi-agent debate.
 
-> Packaged as a Claude Code plugin (containing the `agent-review-panel` skill). Install once via marketplace; it activates automatically on slash command or natural-language request. **Requires Claude Code** — does not work with the Claude desktop app, claude.ai web interface, or Claude API direct ([details below](#requires-claude-code)).
+> Packaged as a Claude Code plugin (containing the `agent-review-panel` skill). Install once via marketplace; it activates automatically on slash command or natural-language request. **Requires Claude Code** — the CLI, an IDE extension, or the **Code tab inside the Claude Desktop app**. Does not work with the regular claude.ai web chat or Claude API direct ([details below](#requires-claude-code)).
 
 [![Agent Review Panel — pipeline architecture](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/hero-flow.svg?v=1)](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/hero-flow.svg?v=1)
 
@@ -78,19 +78,20 @@ timeout. [VERIFIED] against actual code.
 
 ### Requires Claude Code
 
-This plugin **only works with [Claude Code](https://claude.ai/code)** — the CLI for agentic code/review tasks. It does **not** work with:
+This plugin **only works inside [Claude Code](https://claude.ai/code)** — the agentic-coding surface that ships the `Agent` tool, subagent spawning, local-filesystem access, and the `/plugin` marketplace machinery. Claude Code is available in several forms:
 
-- ❌ Claude desktop app (Mac/Windows)
-- ❌ claude.ai web interface
-- ❌ Claude API direct (no Agent tool)
-
-**Why:** the panel spawns 4-6 reviewer subagents in parallel via Claude Code's `Agent` tool, reads/writes files on your local filesystem to generate the three output reports, and responds to the `/agent-review-panel` slash command. None of these surfaces exist in the desktop app, web interface, or API direct.
-
-**Claude Code environments that work:**
-
+**Works ✅**
 - ✅ **CLI** — `claude` command in your terminal
 - ✅ **VS Code extension** — Claude Code extension from the VS Code marketplace
 - ✅ **JetBrains IDE extension** — IntelliJ, PyCharm, WebStorm, GoLand, Rider, etc.
+- ✅ **Claude Desktop app → Code tab** — the Desktop app bundles a Claude Code surface in its dedicated "Code" tab; the plugin installs and runs there the same way it does in the CLI.
+
+**Does not work ❌**
+- ❌ **Claude Desktop app → regular chat tabs** — general chat in Desktop has no `Agent` tool and no `/plugin` marketplace, so the plugin can't load there. Use the Code tab instead.
+- ❌ **claude.ai web chat** — same reason: no `Agent` tool, no subagent spawning, no local-filesystem access, no `/plugin` surface.
+- ❌ **Claude API direct** — same reason.
+
+**Why:** the panel spawns 4–6 reviewer subagents in parallel via Claude Code's `Agent` tool, reads/writes files on your local filesystem to generate the three output reports, and responds to the `/agent-review-panel` slash command. Only Claude Code surfaces expose those capabilities.
 
 Don't have Claude Code yet? Install it from **[claude.ai/code](https://claude.ai/code)**, then come back and run the [Quick Start](#quick-start) commands above.
 
