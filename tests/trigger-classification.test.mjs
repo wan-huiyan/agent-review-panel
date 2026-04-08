@@ -1,15 +1,15 @@
 /**
- * Trigger Classification Tests — Generalized Template
+ * Trigger Classification Tests — Multi-Plugin Marketplace
  *
- * Validates that eval-suite.json trigger entries are structurally correct
- * and that positive triggers contain keywords from the SKILL.md description.
+ * Validates eval-suite.json trigger entries for ALL plugins in the marketplace.
+ * Iterates over plugins/<name>/eval-suite.json and runs the structural checks
+ * against each plugin's own SKILL.md.
  *
- * This is a structural validator, NOT a full trigger classifier (that's
- * skill-specific). It checks:
- * - Triggers have required fields (id, prompt, should_trigger, category)
- * - Positive triggers contain at least one keyword from SKILL.md description
- * - Negative triggers exist and cover anti-patterns
- * - SKILL.md frontmatter mentions the slash command
+ * Structural checks (NOT a full classifier):
+ * - Triggers have required fields (prompt, should_trigger)
+ * - Positive triggers reference the skill name / slash command / keywords
+ * - Negative triggers exist
+ * - SKILL.md frontmatter mentions the skill name
  */
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
@@ -20,98 +20,84 @@ import { fileURLToPath } from "node:url";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
 
-const evalSuitePath = resolve(ROOT, "eval-suite.json");
-if (!existsSync(evalSuitePath)) {
-  describe("Trigger classification", () => {
-    it("eval-suite.json not present — skipping", { skip: "no eval-suite.json" }, () => {});
-  });
-} else {
-  const evalSuite = JSON.parse(readFileSync(evalSuitePath, "utf-8"));
+// ---------------------------------------------------------------------------
+// Discover all plugins with eval-suites
+// ---------------------------------------------------------------------------
 
-  if (!evalSuite.triggers || evalSuite.triggers.length === 0) {
-    describe("Trigger classification", () => {
-      it("eval-suite has no triggers — skipping", { skip: "no triggers array" }, () => {});
-    });
-  } else {
-    // Find the best SKILL.md to extract trigger keywords from.
-    // Priority:
-    //   1. plugins/<name>/SKILL.md (canonical plugin layout)
-    //   2. plugins/<name>/skills/<skill>/SKILL.md (skill-within-plugin layout)
-    //   3. skills/<name>/SKILL.md (legacy flat-skill layout)
-    //   4. SKILL.md at repo root (legacy single-file layout)
-    let skillMdContent = "";
+function discoverPluginEvalSuites() {
+  const pluginsRoot = resolve(ROOT, "plugins");
+  const found = [];
 
-    // 1. Canonical plugin layout
-    const pluginsRoot = resolve(ROOT, "plugins");
-    if (existsSync(pluginsRoot)) {
-      try {
-        for (const entry of readdirSync(pluginsRoot, { withFileTypes: true })) {
-          if (!entry.isDirectory()) continue;
-          const direct = resolve(pluginsRoot, entry.name, "SKILL.md");
-          if (existsSync(direct)) {
-            skillMdContent = readFileSync(direct, "utf-8");
-            break;
-          }
-          // 2. skills-within-plugin layout
-          const skillsDirInPlugin = resolve(pluginsRoot, entry.name, "skills");
-          if (existsSync(skillsDirInPlugin)) {
-            try {
-              const subdirs = readdirSync(skillsDirInPlugin, { withFileTypes: true })
-                .filter((d) => d.isDirectory());
-              for (const subdir of subdirs) {
-                const candidate = resolve(skillsDirInPlugin, subdir.name, "SKILL.md");
-                if (existsSync(candidate)) {
-                  skillMdContent = readFileSync(candidate, "utf-8");
-                  break;
-                }
-              }
-            } catch { /* ignore */ }
-          }
-          if (skillMdContent) break;
-        }
-      } catch { /* fallback below */ }
-    }
+  if (existsSync(pluginsRoot)) {
+    for (const entry of readdirSync(pluginsRoot, { withFileTypes: true })) {
+      if (!entry.isDirectory()) continue;
+      const dir = resolve(pluginsRoot, entry.name);
+      const evalSuitePath = resolve(dir, "eval-suite.json");
+      if (!existsSync(evalSuitePath)) continue;
 
-    // 3. Legacy flat-skill layout
-    if (!skillMdContent) {
-      const skillsDir = resolve(ROOT, "skills");
-      if (existsSync(skillsDir)) {
+      const skillMdPath = resolve(dir, "SKILL.md");
+      const nestedSkillsDir = resolve(dir, "skills");
+      let nestedSkillMdPath = null;
+      if (!existsSync(skillMdPath) && existsSync(nestedSkillsDir)) {
         try {
-          const subdirs = readdirSync(skillsDir, { withFileTypes: true })
-            .filter((d) => d.isDirectory());
-          for (const subdir of subdirs) {
-            const candidate = resolve(skillsDir, subdir.name, "SKILL.md");
+          for (const sub of readdirSync(nestedSkillsDir, { withFileTypes: true })) {
+            if (!sub.isDirectory()) continue;
+            const candidate = resolve(nestedSkillsDir, sub.name, "SKILL.md");
             if (existsSync(candidate)) {
-              skillMdContent = readFileSync(candidate, "utf-8");
+              nestedSkillMdPath = candidate;
               break;
             }
           }
-        } catch { /* fallback below */ }
+        } catch { /* ignore */ }
       }
+
+      const finalSkillMdPath = existsSync(skillMdPath) ? skillMdPath : nestedSkillMdPath;
+      found.push({
+        dirName: entry.name,
+        evalSuite: JSON.parse(readFileSync(evalSuitePath, "utf-8")),
+        skillMdContent: finalSkillMdPath ? readFileSync(finalSkillMdPath, "utf-8") : "",
+      });
+    }
+  }
+
+  // Legacy fallback: root-level eval-suite.json + root SKILL.md
+  if (found.length === 0) {
+    const legacyEval = resolve(ROOT, "eval-suite.json");
+    if (existsSync(legacyEval)) {
+      const legacySkill = resolve(ROOT, "SKILL.md");
+      found.push({
+        dirName: "(legacy-root)",
+        evalSuite: JSON.parse(readFileSync(legacyEval, "utf-8")),
+        skillMdContent: existsSync(legacySkill) ? readFileSync(legacySkill, "utf-8") : "",
+      });
+    }
+  }
+
+  return found;
+}
+
+const pluginEvalSuites = discoverPluginEvalSuites();
+
+if (pluginEvalSuites.length === 0) {
+  describe("Trigger classification", () => {
+    it("no eval-suite.json found in any plugin — skipping", { skip: "no eval-suite" }, () => {});
+  });
+} else {
+  for (const { dirName, evalSuite, skillMdContent } of pluginEvalSuites) {
+    if (!evalSuite.triggers || evalSuite.triggers.length === 0) {
+      describe(`Trigger classification — ${dirName}`, () => {
+        it("eval-suite has no triggers — skipping", { skip: "no triggers array" }, () => {});
+      });
+      continue;
     }
 
-    // 4. Legacy single-file layout
-    if (!skillMdContent) {
-      const rootSkillMd = resolve(ROOT, "SKILL.md");
-      if (existsSync(rootSkillMd)) {
-        skillMdContent = readFileSync(rootSkillMd, "utf-8");
-      }
-    }
-
-    // Extract skill name for slash command check
     const skillName = evalSuite.skill_name || evalSuite.skill || "";
-
-    // Extract keywords from SKILL.md description field (frontmatter)
     const frontmatterMatch = skillMdContent.match(/^---\n([\s\S]*?)\n---/);
     const frontmatterText = frontmatterMatch
       ? frontmatterMatch[1].replace(/\n\s+/g, " ").toLowerCase()
       : "";
 
-    // ---------------------------------------------------------------------------
-    // Tests
-    // ---------------------------------------------------------------------------
-
-    describe("Trigger classification", () => {
+    describe(`Trigger classification — ${dirName}`, () => {
       describe("Trigger entries are well-formed", () => {
         for (const trigger of evalSuite.triggers) {
           it(`${trigger.id || trigger.prompt?.slice(0, 50)}`, () => {
@@ -132,16 +118,16 @@ if (!existsSync(evalSuitePath)) {
         });
 
         if (skillName) {
-          // Check if at least one trigger references the skill name, slash command,
-          // or any word from the skill name (e.g., "feature" from "ml-feature-evaluator")
           it("at least one trigger references the skill name, slash command, or skill keywords", () => {
             const slashCommand = `/${skillName}`;
             const nameWords = skillName.split("-").filter((w) => w.length > 2);
             const hasReference = positives.some((t) => {
               const lower = t.prompt.toLowerCase();
-              return lower.includes(slashCommand.toLowerCase()) ||
-                     lower.includes(skillName.toLowerCase()) ||
-                     nameWords.some((w) => lower.includes(w.toLowerCase()));
+              return (
+                lower.includes(slashCommand.toLowerCase()) ||
+                lower.includes(skillName.toLowerCase()) ||
+                nameWords.some((w) => lower.includes(w.toLowerCase()))
+              );
             });
             assert.ok(
               hasReference,
@@ -158,8 +144,6 @@ if (!existsSync(evalSuitePath)) {
           assert.ok(negatives.length > 0, "must have at least one negative trigger");
         });
 
-        // Note: some eval-suites have minimal negative triggers without metadata.
-        // This test only validates that metadata exists when the eval-suite uses it.
         const negativesWithMetadata = negatives.filter((t) => t.notes || t.category || t.id);
         if (negativesWithMetadata.length > 0) {
           it("negative triggers with IDs have explanatory notes or category", () => {
@@ -176,9 +160,9 @@ if (!existsSync(evalSuitePath)) {
         }
       });
 
-      if (frontmatterText) {
+      if (frontmatterText && skillName) {
         describe("SKILL.md frontmatter contains skill name", () => {
-          it(`frontmatter mentions skill name`, () => {
+          it("frontmatter mentions skill name", () => {
             assert.ok(
               frontmatterText.includes(skillName.toLowerCase()),
               `SKILL.md frontmatter should contain the skill name "${skillName}"`

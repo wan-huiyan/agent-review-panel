@@ -23,8 +23,11 @@ A [Claude Code](https://claude.ai/code) **plugin** that orchestrates multi-agent
 **Install (recommended — Claude Code marketplace):**
 ```
 /plugin marketplace add wan-huiyan/agent-review-panel
-/plugin install agent-review-panel@wan-huiyan-agent-review-panel
+/plugin install agent-review-panel@plugin
+/plugin install plan-review-integrator@plugin    # optional companion: integrate review findings into plans
 ```
+
+> The marketplace bundles **two plugins**: `agent-review-panel` (this project) and `plan-review-integrator` (the review→integrate companion). See [Bundled plugins](#bundled-plugins) below.
 
 **Use:**
 ```
@@ -99,12 +102,12 @@ The two install commands are shown in [Quick Start](#quick-start) above. This se
 
 ```bash
 claude plugin marketplace add wan-huiyan/agent-review-panel
-claude plugin install agent-review-panel@wan-huiyan-agent-review-panel
+claude plugin install agent-review-panel@plugin
 ```
 
 Claude Code downloads the plugin to its cache, loads the `agent-review-panel` skill inside it, and activates the trigger phrases automatically. The plugin then activates when you ask for multi-perspective reviews, panel reviews, adversarial reviews, or invoke `/agent-review-panel`.
 
-> **Command format:** `@<marketplace-name>`, not `@<repo-name>`. The marketplace name is `wan-huiyan-agent-review-panel` (defined in `.claude-plugin/marketplace.json`), which is distinct from the plugin name `agent-review-panel`. Pre-v2.16 releases used `@agent-review-panel` — if you're reading an older install command, use the new form above.
+> **Command format:** `@<marketplace-name>`, not `@<repo-name>`. The marketplace name is `plugin` (defined in `.claude-plugin/marketplace.json`), which is distinct from the plugin name `agent-review-panel`. Pre-v2.16.1 releases used `@wan-huiyan-agent-review-panel`; pre-v2.16 used `@agent-review-panel`. If you installed under an older marketplace name, see the [Migration](#migration-from-previous-marketplaces) section to switch.
 
 **Why the marketplace path?** The repo ships with `.claude-plugin/marketplace.json` + `plugins/agent-review-panel/.claude-plugin/plugin.json` manifests (v2.16+ canonical layout) that Claude Code reads to register the plugin. The marketplace install handles caching, version tracking, and automatic activation in one step. The manual clone path below still works but doesn't use the manifests — the marketplace flow is the canonical path for v2.14+.
 
@@ -113,20 +116,20 @@ Claude Code downloads the plugin to its cache, loads the `agent-review-panel` sk
 New releases land on `main`; Claude Code does not auto-pull. Run the update flow after each release (or any time you want the newest features):
 
 ```
-/plugin marketplace update wan-huiyan-agent-review-panel
-/plugin update agent-review-panel@wan-huiyan-agent-review-panel
+/plugin marketplace update plugin
+/plugin update agent-review-panel@plugin
 ```
 
 CLI equivalent:
 
 ```bash
-claude plugin marketplace update wan-huiyan-agent-review-panel
-claude plugin update agent-review-panel@wan-huiyan-agent-review-panel
+claude plugin marketplace update plugin
+claude plugin update agent-review-panel@plugin
 ```
 
 **Verify the update worked:**
 ```bash
-cat ~/.claude/plugins/cache/wan-huiyan-agent-review-panel/agent-review-panel/*/.claude-plugin/plugin.json | grep version
+cat ~/.claude/plugins/cache/plugin/agent-review-panel/*/.claude-plugin/plugin.json | grep version
 ```
 The version should match the latest entry in the [Version History](#version-history) table below. (The cache layout is `cache/<marketplace-name>/<plugin-name>/<version>/` — note that the `plugins/` intermediate directory from the repo is flattened out during install, and a version segment is added. The `*` glob above matches whatever version is installed so you don't have to look it up first.)
 
@@ -142,15 +145,15 @@ If that directory exists, it's loaded *before* the marketplace cache and will pi
 rm -rf ~/.claude/skills/agent-review-panel
 ```
 
-Then restart Claude Code. The marketplace install in `~/.claude/plugins/cache/wan-huiyan-agent-review-panel/` will take over.
+Then restart Claude Code. The marketplace install in `~/.claude/plugins/cache/plugin/` will take over.
 
 **Fallback — clean reinstall:** If the update commands misbehave, uninstall and reinstall from scratch:
 
 ```
-/plugin uninstall agent-review-panel@wan-huiyan-agent-review-panel
-/plugin marketplace remove wan-huiyan-agent-review-panel
+/plugin uninstall agent-review-panel@plugin
+/plugin marketplace remove plugin
 /plugin marketplace add wan-huiyan/agent-review-panel
-/plugin install agent-review-panel@wan-huiyan-agent-review-panel
+/plugin install agent-review-panel@plugin
 ```
 
 ### Manual clone (development / custom setup)
@@ -335,11 +338,47 @@ Manifest tests enforce key invariants introduced in v2.14/v2.15:
 - Phase 15.3 spec documents all 10 expandable-card accordion sections
 - The canonical `SKILL.md` lives at `plugins/agent-review-panel/SKILL.md` (v2.16+ plugin layout, see PR #18)
 
-## Companion Skills
+## Bundled plugins
 
-| Skill | What It Does | When to Use |
-|---|---|---|
-| [plan-review-integrator](https://github.com/wan-huiyan/plan-review-integrator) | Takes review panel output and integrates findings into an implementation plan — classifies each finding, applies concrete edits, produces a traceability summary | After a panel review of a plan document |
+This marketplace ships **two plugins** in one repository. They are independently installable; install only what you need.
+
+| Plugin | Source | What It Does | When to Use |
+|---|---|---|---|
+| `agent-review-panel` | [`plugins/agent-review-panel/`](plugins/agent-review-panel/) | Multi-agent adversarial review panel — 4–6 reviewers debate, judge renders final verdict (this project, v2.16.1) | When you need a structured review of code, plans, docs, or configs |
+| `plan-review-integrator` | [`plugins/plan-review-integrator/`](plugins/plan-review-integrator/) | Takes review panel output and integrates findings into an implementation plan — classifies each finding, applies concrete edits, produces a traceability summary (v2.0.0) | After a panel review of a plan document, when you need findings reflected in the plan with traceability |
+
+Install both for the full review→integrate pipeline:
+```
+/plugin install agent-review-panel@plugin
+/plugin install plan-review-integrator@plugin
+```
+
+`plan-review-integrator` was previously published as a standalone repo at `wan-huiyan/plan-review-integrator`. That repo is now **archived** in favor of the bundled distribution here. See [Migration](#migration-from-previous-marketplaces) for upgrade instructions.
+
+## Migration from previous marketplaces
+
+If you installed before v2.16.1, you used one of the old marketplace names. Migrate with:
+
+```
+# Old agent-review-panel install
+/plugin uninstall agent-review-panel@wan-huiyan-agent-review-panel
+/plugin marketplace remove wan-huiyan-agent-review-panel
+
+# Old plan-review-integrator standalone install (if applicable)
+/plugin uninstall plan-review-integrator@wan-huiyan-plan-review-integrator
+/plugin marketplace remove wan-huiyan-plan-review-integrator
+
+# New bundled install
+/plugin marketplace add wan-huiyan/agent-review-panel
+/plugin install agent-review-panel@plugin
+/plugin install plan-review-integrator@plugin
+```
+
+Verify both are loaded under the new marketplace:
+```
+ls ~/.claude/plugins/cache/plugin/
+# expected: agent-review-panel  plan-review-integrator
+```
 
 ## Contributing
 
@@ -355,8 +394,8 @@ Please open an issue to discuss before submitting large PRs.
 
 **If installed via marketplace:**
 ```
-/plugin uninstall agent-review-panel@wan-huiyan-agent-review-panel
-/plugin marketplace remove wan-huiyan-agent-review-panel
+/plugin uninstall agent-review-panel@plugin
+/plugin marketplace remove plugin
 ```
 
 **If installed via manual clone:**
