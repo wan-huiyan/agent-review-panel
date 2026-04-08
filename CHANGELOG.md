@@ -2,6 +2,27 @@
 
 All notable changes to Agent Review Panel.
 
+## [2.16.2] — 2026-04-08
+
+### Fixed — Plugin layout bug that silently broke all marketplace installs
+- **`plugins/<name>/.claude-plugin/plugin.json` now declares `"skills": ["./"]`.** Without this field, Claude Code's plugin loader does NOT auto-discover `SKILL.md` at the plugin root — it only looks in the default `skills/<name>/SKILL.md` sub-directory. Every install since PR #18 (v2.16) has been silently loading the plugin with ZERO registered skills. Users hit `Unknown skill: agent-review-panel` the first time they tried the slash command on a clean install, because the skill was never loaded in the first place. Empirically confirmed by `claude --debug --plugin-dir ./plugins/agent-review-panel` reporting no skills loaded on the pre-fix layout, and reporting both `agent-review-panel:agent-review-panel` and `plan-review-integrator:plan-review-integrator` loaded on the post-fix layout.
+- **Why nobody noticed for two weeks:** users who previously had `~/.claude/skills/agent-review-panel/` from a pre-PR-#18 manual clone had that loose-skill install shadowing the broken marketplace install (exactly the stale-clone gotcha PR #19 documented). The plugin "worked" because the loose skill worked, not because the plugin did. Anyone who clean-installed for the first time hit the bug immediately.
+- **Structural tests didn't catch it** because `tests/manifest-consistency.test.mjs` validates file structure and JSON schema, not actual plugin-loader behavior. We now know: `claude plugin validate` checks the manifest schema but doesn't tell you whether the skill will actually load — the only empirical check is `claude --debug --plugin-dir ./plugins/<name> --print "list skills"` and reading the loaded-skills list. Consider adding this as a test step in a future PR.
+
+### Fixed — plan-review-integrator manifest schema error (inherited from upstream)
+- `author: "wan-huiyan"` (string) → `author: {"name": "wan-huiyan", "url": "https://github.com/wan-huiyan"}` (object). The schema requires an object; the string form was an upstream bug that `claude plugin validate` now rejects.
+
+### Fixed — README documented the wrong slash command
+- All `/agent-review-panel` slash command references updated to `/agent-review-panel:agent-review-panel` (the namespaced form that plugin skills actually get). A new ⚠️ callout explains the `/<plugin>:<skill>` convention and reminds users that natural-language invocation works either way.
+
+### Bumped
+- `plugins/agent-review-panel/.claude-plugin/plugin.json`: 2.16.1 → 2.16.2
+- `plugins/agent-review-panel/eval-suite.json`: 2.16.1 → 2.16.2
+- `package.json`: 2.16.1 → 2.16.2
+- `plugins/plan-review-integrator/.claude-plugin/plugin.json`: 2.0.0 → 2.0.1
+- `plugins/plan-review-integrator/eval-suite.json`: 2.0.0 → 2.0.1
+- `.claude-plugin/marketplace.json`: both entries bumped to match
+
 ## [2.16.1] — 2026-04-08
 
 ### Changed — Marketplace bundle (PR #22)
