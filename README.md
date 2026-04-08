@@ -20,12 +20,27 @@ A [Claude Code](https://claude.ai/code) **plugin** that orchestrates multi-agent
 
 ## Quick Start
 
-**Install (recommended — Claude Code marketplace):**
+**Install (recommended — Claude Code marketplace).** Run these **in your terminal** (bash/zsh):
+
+```bash
+claude plugin marketplace add wan-huiyan/agent-review-panel
+claude plugin install agent-review-panel@plugin
+claude plugin install plan-review-integrator@plugin    # optional companion: integrate review findings into plans
+```
+
+<details>
+<summary>Already inside a Claude Code session? Use the slash-command form instead</summary>
+
+Type these at the REPL prompt (note the leading `/` and no `claude` prefix):
+
 ```
 /plugin marketplace add wan-huiyan/agent-review-panel
 /plugin install agent-review-panel@plugin
-/plugin install plan-review-integrator@plugin    # optional companion: integrate review findings into plans
+/plugin install plan-review-integrator@plugin
 ```
+
+Both forms do the same thing. Pick whichever matches where you are: shell-form `claude plugin …` for terminal, REPL-form `/plugin …` for inside Claude Code.
+</details>
 
 > The marketplace bundles **two plugins**: `agent-review-panel` (this project) and `plan-review-integrator` (the review→integrate companion). See [Bundled plugins](#bundled-plugins) below.
 
@@ -116,19 +131,22 @@ Claude Code downloads the plugin to its cache, loads the `agent-review-panel` sk
 
 ### Updating to the latest version
 
-New releases land on `main`; Claude Code does not auto-pull. Run the update flow after each release (or any time you want the newest features):
+New releases land on `main`; Claude Code does not auto-pull. Run the update flow after each release (or any time you want the newest features) **in your terminal**:
+
+```bash
+claude plugin marketplace update plugin
+claude plugin update agent-review-panel@plugin
+```
+
+<details>
+<summary>Or, if you're already in a Claude Code session, use the slash-command form</summary>
 
 ```
 /plugin marketplace update plugin
 /plugin update agent-review-panel@plugin
 ```
 
-CLI equivalent:
-
-```bash
-claude plugin marketplace update plugin
-claude plugin update agent-review-panel@plugin
-```
+</details>
 
 **Verify the update worked:**
 ```bash
@@ -150,7 +168,17 @@ rm -rf ~/.claude/skills/agent-review-panel
 
 Then restart Claude Code. The marketplace install in `~/.claude/plugins/cache/plugin/` will take over.
 
-**Fallback — clean reinstall:** If the update commands misbehave, uninstall and reinstall from scratch:
+**Fallback — clean reinstall:** If the update commands misbehave, uninstall and reinstall from scratch. From your terminal:
+
+```bash
+claude plugin uninstall agent-review-panel@plugin
+claude plugin marketplace remove plugin
+claude plugin marketplace add wan-huiyan/agent-review-panel
+claude plugin install agent-review-panel@plugin
+```
+
+<details>
+<summary>REPL-form equivalent (inside a Claude Code session)</summary>
 
 ```
 /plugin uninstall agent-review-panel@plugin
@@ -158,6 +186,8 @@ Then restart Claude Code. The marketplace install in `~/.claude/plugins/cache/pl
 /plugin marketplace add wan-huiyan/agent-review-panel
 /plugin install agent-review-panel@plugin
 ```
+
+</details>
 
 ### Manual clone (development / custom setup)
 
@@ -350,32 +380,50 @@ This marketplace ships **two plugins** in one repository. They are independently
 | `agent-review-panel` | [`plugins/agent-review-panel/`](plugins/agent-review-panel/) | Multi-agent adversarial review panel — 4–6 reviewers debate, judge renders final verdict (this project, v2.16.1) | When you need a structured review of code, plans, docs, or configs |
 | `plan-review-integrator` | [`plugins/plan-review-integrator/`](plugins/plan-review-integrator/) | Takes review panel output and integrates findings into an implementation plan — classifies each finding, applies concrete edits, produces a traceability summary (v2.0.0) | After a panel review of a plan document, when you need findings reflected in the plan with traceability |
 
-Install both for the full review→integrate pipeline:
+Install both for the full review→integrate pipeline. From your terminal:
+
+```bash
+claude plugin install agent-review-panel@plugin
+claude plugin install plan-review-integrator@plugin
 ```
-/plugin install agent-review-panel@plugin
-/plugin install plan-review-integrator@plugin
-```
+
+(Or, inside a Claude Code session, use the REPL form: `/plugin install agent-review-panel@plugin` and `/plugin install plan-review-integrator@plugin`.)
 
 `plan-review-integrator` was previously published as a standalone repo at `wan-huiyan/plan-review-integrator`. That repo is now **archived** in favor of the bundled distribution here. See [Migration](#migration-from-previous-marketplaces) for upgrade instructions.
 
 ## Migration from previous marketplaces
 
-If you installed before v2.16.1, you used one of the old marketplace names. Migrate with:
+If you installed before v2.16.1, you used one of the old marketplace names. Migrate from your terminal:
 
-```
+```bash
 # Old agent-review-panel install
-/plugin uninstall agent-review-panel@wan-huiyan-agent-review-panel
-/plugin marketplace remove wan-huiyan-agent-review-panel
+claude plugin uninstall agent-review-panel@wan-huiyan-agent-review-panel
+claude plugin marketplace remove wan-huiyan-agent-review-panel
 
 # Old plan-review-integrator standalone install (if applicable)
-/plugin uninstall plan-review-integrator@wan-huiyan-plan-review-integrator
-/plugin marketplace remove wan-huiyan-plan-review-integrator
+claude plugin uninstall plan-review-integrator@wan-huiyan-plan-review-integrator
+claude plugin marketplace remove wan-huiyan-plan-review-integrator
 
 # New bundled install
+claude plugin marketplace add wan-huiyan/agent-review-panel
+claude plugin install agent-review-panel@plugin
+claude plugin install plan-review-integrator@plugin
+```
+
+<details>
+<summary>REPL-form equivalent (inside a Claude Code session)</summary>
+
+```
+/plugin uninstall agent-review-panel@wan-huiyan-agent-review-panel
+/plugin marketplace remove wan-huiyan-agent-review-panel
+/plugin uninstall plan-review-integrator@wan-huiyan-plan-review-integrator
+/plugin marketplace remove wan-huiyan-plan-review-integrator
 /plugin marketplace add wan-huiyan/agent-review-panel
 /plugin install agent-review-panel@plugin
 /plugin install plan-review-integrator@plugin
 ```
+
+</details>
 
 Verify both are loaded under the new marketplace:
 ```
@@ -395,11 +443,13 @@ Please open an issue to discuss before submitting large PRs.
 
 ## Uninstalling
 
-**If installed via marketplace:**
+**If installed via marketplace**, from your terminal:
+```bash
+claude plugin uninstall agent-review-panel@plugin
+claude plugin marketplace remove plugin
 ```
-/plugin uninstall agent-review-panel@plugin
-/plugin marketplace remove plugin
-```
+
+(REPL-form equivalent: `/plugin uninstall agent-review-panel@plugin` and `/plugin marketplace remove plugin`.)
 
 **If installed via manual clone:**
 ```bash
