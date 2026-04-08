@@ -1,5 +1,5 @@
 {
-  "version": "2.0.0",
+  "version": "2.0.1",
   "skill": "plan-review-integrator",
   "triggers": [
     {"prompt": "update the plan with review findings", "should_trigger": true},

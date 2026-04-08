@@ -1,6 +1,6 @@
 {
   "name": "agent-review-panel",
-  "version": "2.16.1",
+  "version": "2.16.2",
   "description": "Multi-agent adversarial review panel — 4-6 AI reviewers debate your code/plans, then a judge delivers a structured verdict with epistemic labels",
   "author": {
     "name": "wan-huiyan",
@@ -15,5 +15,6 @@
     "code-review",
     "adversarial",
     "evaluation"
-  ]
+  ],
+  "skills": ["./"]
 }
