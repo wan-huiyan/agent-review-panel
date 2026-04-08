@@ -275,7 +275,9 @@ Techniques evaluated and rejected for our use case.
 | v2.13 | 2026-04-03 | Persona profiles surfaced in process history (Registry section, inline blocks) and HTML dashboard (Panel Gallery with avatar cards, filter-by-reviewer) |
 | v2.14 | 2026-04-07 | **Phase 2 Data Flow Trace** (composition bug detector with Standard/Thorough/Exhaustive tiers), **Multi-Run Union Protocol** + Phase 16 Merge, **Force `model: "opus"`** on all subagent launches, integer phase renumbering (1–16 with sub-phases 12a/12b + 15.1/15.2/15.3) |
 | v2.15 | 2026-04-07 | **Expandable 10-section issue cards** in Phase 15.3 HTML dashboard (narrative, code evidence, debate, judge ruling, fix recommendation, cross-references, prior runs), deep-linking, keyboard nav, expand all/collapse all, print-friendly CSS, Prism.js syntax highlighting (CDN) |
+| v2.16 | 2026-04-07 | **Canonical plugin layout** — restructured to `plugins/<name>/SKILL.md` + `plugins/<name>/.claude-plugin/plugin.json` for Claude Code plugin marketplace compliance (PR #18). Marketplace manifest moved to `.claude-plugin/marketplace.json` with owner-prefixed name. Follow-ups: install-command fix + stale-clone diagnosis docs (PR #19), README dedupe + plugin rebrand + version drift cleanup (PR #20), 4 cross-version consistency assertions (PR #21). |
+| v2.16.1 | 2026-04-08 | **Multi-plugin marketplace bundle** (PR #22) — renamed marketplace to `plugin`; bundled `plan-review-integrator` v2.0.0 as a second plugin in the same repo; moved `eval-suite.json` to per-plugin location; refactored `manifest-consistency` and `trigger-classification` tests to iterate all plugins with independent per-plugin cross-version checks. Test count: 308 → 352. |
 
 ---
 
-*This roadmap is maintained alongside the skill at `~/.claude/skills/agent-review-panel/`.*
+*This roadmap is maintained alongside the plugin at `plugins/agent-review-panel/SKILL.md`. For the bundled `plan-review-integrator` plugin, see `plugins/plan-review-integrator/SKILL.md`.*

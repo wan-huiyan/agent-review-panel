@@ -428,7 +428,7 @@ matching historically-applied patterns get a +0.1 bonus.
 > This section defines the expected input format from `agent-review-panel` to prevent
 > silent misparse when the upstream skill evolves. Version-pinned for compatibility.
 
-**Compatible with:** `agent-review-panel` v2.0+ (v2.9+ for VoltAgent-enriched findings)
+**Compatible with:** `agent-review-panel` v2.0+ (v2.9+ for VoltAgent-enriched findings, v2.16.1+ ships in the same `plugin` marketplace bundle as this plugin — install both with `/plugin install agent-review-panel@plugin` + `/plugin install plan-review-integrator@plugin`)
 
 **Required fields per finding:**
 - Severity tier: `P0` / `P1` / `P2` (maps to CRITICAL / HIGH / MEDIUM-LOW)
@@ -458,7 +458,7 @@ This skill expects structured review output as input (requires a file path or in
 Do not use for running review panels or writing plans from scratch.
 If integration fails, gracefully degrade by presenting unmodified findings for manual triage.
 After integration, then use the implementation executor to begin building.
-This skill depends on `agent-review-panel` upstream. Works with review v1.0 output format and above.
+This plugin is designed to consume output from `agent-review-panel` and ships alongside it in the same `plugin` marketplace bundle (see [`wan-huiyan/agent-review-panel`](https://github.com/wan-huiyan/agent-review-panel)). It works with any structured review output matching the schema above; `agent-review-panel` is the canonical producer. Compatible with review v1.0 output format and above.
 
 | Field | Value |
 |-------|-------|
