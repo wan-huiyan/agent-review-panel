@@ -8,7 +8,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
 
 const evalSuite = JSON.parse(
-  readFileSync(resolve(ROOT, "eval-suite.json"), "utf-8")
+  readFileSync(resolve(ROOT, "plugins/agent-review-panel/eval-suite.json"), "utf-8")
 );
 
 function findSkillMd() {

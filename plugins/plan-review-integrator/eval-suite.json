@@ -1,0 +1,172 @@
+{
+  "version": "2.0.0",
+  "skill": "plan-review-integrator",
+  "triggers": [
+    {"prompt": "update the plan with review findings", "should_trigger": true},
+    {"prompt": "incorporate review feedback into the plan", "should_trigger": true},
+    {"prompt": "integrate review results", "should_trigger": true},
+    {"prompt": "apply review recommendations to the plan", "should_trigger": true},
+    {"prompt": "cross-reference review output against the plan", "should_trigger": true},
+    {"prompt": "merge review findings into the implementation plan", "should_trigger": true},
+    {"prompt": "what needs to change in the plan based on the review", "should_trigger": true},
+    {"prompt": "take the review panel output and update my plan", "should_trigger": true},
+    {"prompt": "the review is done, now update the implementation plan", "should_trigger": true},
+    {"prompt": "apply the agent-review-panel findings to the plan document", "should_trigger": true},
+    {"prompt": "here are the review results, integrate them into the plan", "should_trigger": true},
+    {"prompt": "reconcile the review feedback with the current plan", "should_trigger": true},
+    {"prompt": "run a review panel on my plan", "should_trigger": false},
+    {"prompt": "review this code for me", "should_trigger": false},
+    {"prompt": "write me an implementation plan from scratch", "should_trigger": false},
+    {"prompt": "create a new plan document", "should_trigger": false},
+    {"prompt": "do a code review of this PR", "should_trigger": false},
+    {"prompt": "summarize the review findings without changing anything", "should_trigger": false},
+    {"prompt": "what did the reviewers say", "should_trigger": false},
+    {"prompt": "brainstorm ideas for the implementation", "should_trigger": false},
+    {"prompt": "give me feedback on this design", "should_trigger": false},
+    {"prompt": "run the agent-review-panel skill", "should_trigger": false}
+  ],
+  "test_cases": [
+    {
+      "id": "TC01",
+      "name": "Single review report with mixed severities",
+      "input": "Here is the review output (review-report.md) and the plan (plan.md). Integrate the findings into the plan.",
+      "assertions": [
+        {"type": "contains", "value": "finding", "description": "Extracts all findings with severity levels"},
+        {"type": "contains", "value": "must-fix", "description": "Classifies findings into action categories"},
+        {"type": "pattern", "value": "\\|.*ID.*Severity.*Summary.*Category.*Action", "description": "Produces a traceability summary table"},
+        {"type": "contains", "value": "adjust", "description": "Asks user to confirm classifications before finalizing"}
+      ]
+    },
+    {
+      "id": "TC02",
+      "name": "Multiple review reports with overlapping findings",
+      "input": "Two review panels reviewed the same plan. Here are both reports. Integrate them into plan.md.",
+      "assertions": [
+        {"type": "contains", "value": "deduplicate", "description": "Deduplicates findings across reports"},
+        {"type": "contains", "value": "source", "description": "Notes all sources for merged findings"},
+        {"type": "contains", "value": "conflict", "description": "Flags conflicting recommendations"}
+      ]
+    },
+    {
+      "id": "TC03",
+      "name": "Review with completeness audit findings",
+      "input": "The review includes a completeness audit section. Integrate all findings including the completeness audit into the plan.",
+      "assertions": [
+        {"type": "contains", "value": "completeness", "description": "Identifies completeness audit findings"},
+        {"type": "contains", "value": "systematic", "description": "Treats completeness findings as high-signal"},
+        {"type": "excludes", "value": "skip completeness", "description": "Does not dismiss completeness audit items"}
+      ]
+    },
+    {
+      "id": "TC04",
+      "name": "Inline review findings without file",
+      "input": "Here are the review findings:\n- CRITICAL: SQL missing WHERE clause on date\n- HIGH: No retry logic for API calls\n- LOW: Use constants instead of magic numbers\nIntegrate these into my plan at plan.md.",
+      "assertions": [
+        {"type": "contains", "value": "CRITICAL", "description": "Parses inline findings and extracts severity"},
+        {"type": "contains", "value": "must-fix", "description": "Classifies CRITICAL SQL issue as must-fix"},
+        {"type": "format", "value": "markdown_table", "description": "Produces structured summary table"}
+      ]
+    },
+    {
+      "id": "TC05",
+      "name": "Peripheral updates needed",
+      "input": "The review found we need to update the deployment runbook and add an ADR for the caching decision. Integrate the review into the plan.",
+      "assertions": [
+        {"type": "contains", "value": "ADR", "description": "Creates or updates ADR for architectural decisions"},
+        {"type": "contains", "value": "runbook", "description": "Updates runbook for operational changes"},
+        {"type": "contains", "value": "memory", "description": "Updates memory files with new conventions"}
+      ]
+    }
+  ],
+  "edge_cases": [
+    {
+      "id": "EC01",
+      "category": "empty_input",
+      "name": "Empty review with no findings",
+      "input": "The review panel found no issues. The plan passed all checks. Integrate the review.",
+      "expected_behavior": "Produces summary confirming clean review. Does not make edits to the plan. Notes the plan passed review.",
+      "assertions": [
+        {"type": "excludes", "value": "must-fix", "description": "No must-fix items when review is clean"},
+        {"type": "contains", "value": "no action", "description": "States no plan changes required"}
+      ]
+    },
+    {
+      "id": "EC02",
+      "category": "invalid_classification",
+      "name": "CRITICAL finding that is pre-existing tech debt",
+      "input": "The review found a CRITICAL issue about identity resolution. But this is pre-existing tech debt not introduced by the plan. Integrate the review into the plan.",
+      "expected_behavior": "Classifies as defer (not must-fix). Adds caveat noting the risk. Links to future TODO. Does not block the plan.",
+      "assertions": [
+        {"type": "contains", "value": "defer", "description": "Pre-existing debt classified as defer"},
+        {"type": "contains", "value": "TODO", "description": "Links to future TODO"},
+        {"type": "excludes", "value": "block", "description": "Does not block plan on pre-existing debt"}
+      ]
+    },
+    {
+      "id": "EC03",
+      "category": "invalid_fix",
+      "name": "Reviewer prescribes wrong fix for valid finding",
+      "input": "The review identified a real gap in error handling but the prescribed fix would break our rate limiter. Integrate this into the plan.",
+      "expected_behavior": "Validates prescribed fix against domain context. Identifies fix is incorrect. Supplies correct fix. Documents override in key decisions.",
+      "assertions": [
+        {"type": "contains", "value": "domain", "description": "Validates against domain context"},
+        {"type": "contains", "value": "override", "description": "Documents why reviewer fix was overridden"}
+      ]
+    },
+    {
+      "id": "EC04",
+      "category": "minimal_input",
+      "name": "Review with only informational items",
+      "input": "The review panel found some concerns but the judge resolved all of them as not applicable. Integrate the review into the plan.",
+      "expected_behavior": "Classifies all items as informational. Does not make unnecessary edits to the plan. Produces summary noting no changes needed.",
+      "assertions": [
+        {"type": "contains", "value": "informational", "description": "All items classified as informational"},
+        {"type": "excludes", "value": "edit", "description": "No unnecessary plan edits"}
+      ]
+    },
+    {
+      "id": "EC05",
+      "category": "invalid_assumption",
+      "name": "CRITICAL finding that is actually a verification step",
+      "input": "Review flagged a CRITICAL: 'verify column X exists in BigQuery before running'. Integrate this into the plan.",
+      "expected_behavior": "Classifies as bundle-into-implementation (checklist item), not must-fix. Does not treat verification steps as design flaws.",
+      "assertions": [
+        {"type": "contains", "value": "checklist", "description": "Adds to implementation checklist"},
+        {"type": "excludes", "value": "plan defect", "description": "Does not treat as plan correction"}
+      ]
+    },
+    {
+      "id": "EC06",
+      "category": "missing_context",
+      "name": "Domain context contradicts reviewer assumption",
+      "input": "The reviewer assumed we use REST APIs but we use gRPC. Their fix suggests adding HTTP retry headers. Integrate this review into the plan.",
+      "expected_behavior": "Checks domain context. Identifies incorrect assumption. Adapts fix to gRPC context. Documents domain context gap.",
+      "assertions": [
+        {"type": "contains", "value": "domain context", "description": "Checks domain context before applying"},
+        {"type": "contains", "value": "assumption", "description": "Identifies incorrect reviewer assumption"}
+      ]
+    },
+    {
+      "id": "EC07",
+      "category": "scale_large",
+      "name": "Large review with 20+ findings across multiple panels",
+      "input": "Three review panels produced 25 findings total with significant overlap. Integrate all findings into the plan.",
+      "expected_behavior": "Deduplicates across all three panels. Processes all 25 findings. Produces complete traceability table. Does not drop any findings.",
+      "assertions": [
+        {"type": "contains", "value": "deduplicate", "description": "Handles deduplication at scale"},
+        {"type": "pattern", "value": "Total findings: \\d+", "description": "Reports total finding count"}
+      ]
+    },
+    {
+      "id": "EC08",
+      "category": "missing_plan",
+      "name": "Plan already addresses the concern",
+      "input": "The reviewer flagged missing rollback steps, but the plan already has a rollback section in Phase 4. Integrate the review.",
+      "expected_behavior": "Cross-references finding against existing plan content. Identifies as already addressed. Notes relevant plan section. Does not duplicate existing content.",
+      "assertions": [
+        {"type": "contains", "value": "already addressed", "description": "Identifies finding as already covered"},
+        {"type": "excludes", "value": "add rollback", "description": "Does not duplicate existing content"}
+      ]
+    }
+  ]
+}

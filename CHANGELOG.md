@@ -2,6 +2,25 @@
 
 All notable changes to Agent Review Panel.
 
+## [2.16.1] — 2026-04-08
+
+### Changed — Marketplace bundle (PR #22)
+- **Renamed marketplace** `wan-huiyan-agent-review-panel` → `plugin`. Install command is now `/plugin install agent-review-panel@plugin` (was `@wan-huiyan-agent-review-panel`).
+- **Bundled `plan-review-integrator` v2.0.0** as a second plugin in the same marketplace. The full review→integrate pipeline now ships from one repo. The old standalone `wan-huiyan/plan-review-integrator` repo is archived in favor of `/plugin install plan-review-integrator@plugin`.
+- **Per-plugin `eval-suite.json`** — moved from repo root to `plugins/agent-review-panel/eval-suite.json` and added `plugins/plan-review-integrator/eval-suite.json`. Tests discover eval-suites under each plugin's directory; the multi-plugin manifest test iterates all plugins independently.
+- **Refactored `tests/manifest-consistency.test.mjs` and `tests/trigger-classification.test.mjs`** to multi-plugin discovery. Each plugin's plugin.json, eval-suite.json, SKILL.md, and marketplace entry are validated independently. Red-test validation: drifting either plugin's `plugin.json` version produces ≥3 independent failures (eval-suite cross-version, marketplace cross-version, SKILL.md H1 header).
+- **Cross-version assertions from PR #21** generalized for multi-plugin: the H1 header check (`# <title> v<major>.<minor>`) and HTML footer check are now run per-plugin and skip cleanly when a plugin's SKILL.md doesn't carry that pattern (e.g. plan-review-integrator has no HTML footer instruction).
+- **Breaking change for existing installs.** Anyone who installed via `wan-huiyan-agent-review-panel` or `wan-huiyan-plan-review-integrator` must uninstall + reinstall under the new `@plugin` marketplace name. See README "Migration from previous marketplaces" for the exact commands.
+
+### Bumped
+- `plugins/agent-review-panel/.claude-plugin/plugin.json`: 2.16.0 → 2.16.1
+- `plugins/agent-review-panel/eval-suite.json`: 2.16.0 → 2.16.1
+- `package.json`: 2.16.0 → 2.16.1
+- `plugins/plan-review-integrator/.claude-plugin/plugin.json`: 1.4.0 → 2.0.0 (major bump marks marketplace move; plugin behavior unchanged)
+- `plugins/plan-review-integrator/eval-suite.json`: 1.0.0 → 2.0.0 (was upstream-drifted from plugin.json's 1.4.0 since the file's first commit; brought into lockstep here)
+- `plugins/plan-review-integrator/SKILL.md`: header `v1.3` → `v2.0` (matched plugin.json)
+- `.claude-plugin/marketplace.json`: top-level `name` renamed; plugin entries updated; new `plan-review-integrator` entry added
+
 ## [2.16.0] — 2026-04-07
 
 ### Changed — Plugin layout (PR #18)
