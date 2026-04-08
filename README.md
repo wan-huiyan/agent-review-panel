@@ -33,8 +33,10 @@ A [Claude Code](https://claude.ai/code) **plugin** that orchestrates multi-agent
 ```
 > Review this implementation plan from multiple perspectives: docs/my_plan.md
 
-> /agent-review-panel
+> /agent-review-panel:agent-review-panel
 ```
+
+> ⚠️ **Plugin slash commands are namespaced as `/<plugin>:<skill>`**. Because both the plugin and its skill are named `agent-review-panel`, the slash form is `/agent-review-panel:agent-review-panel`. Natural-language invocation (the first example above — "Review this implementation plan from multiple perspectives: ...") works without the slash command because it triggers by the skill's description, not by exact slash match. Use whichever feels more natural.
 
 **What you get:** Three output files:
 - `review_panel_report.md` — executive summary, consensus, disagreements (with judge rulings), prioritized action items tagged with epistemic labels
@@ -91,7 +93,7 @@ This plugin **only works inside [Claude Code](https://claude.ai/code)** — the 
 - ❌ **claude.ai web chat** — same reason: no `Agent` tool, no subagent spawning, no local-filesystem access, no `/plugin` surface.
 - ❌ **Claude API direct** — same reason.
 
-**Why:** the panel spawns 4–6 reviewer subagents in parallel via Claude Code's `Agent` tool, reads/writes files on your local filesystem to generate the three output reports, and responds to the `/agent-review-panel` slash command. Only Claude Code surfaces expose those capabilities.
+**Why:** the panel spawns 4–6 reviewer subagents in parallel via Claude Code's `Agent` tool, reads/writes files on your local filesystem to generate the three output reports, and responds to the `/agent-review-panel:agent-review-panel` slash command (or any natural-language "review panel" request). Only Claude Code surfaces expose those capabilities.
 
 Don't have Claude Code yet? Install it from **[claude.ai/code](https://claude.ai/code)**, then come back and run the [Quick Start](#quick-start) commands above.
 
@@ -106,7 +108,7 @@ claude plugin marketplace add wan-huiyan/agent-review-panel
 claude plugin install agent-review-panel@plugin
 ```
 
-Claude Code downloads the plugin to its cache, loads the `agent-review-panel` skill inside it, and activates the trigger phrases automatically. The plugin then activates when you ask for multi-perspective reviews, panel reviews, adversarial reviews, or invoke `/agent-review-panel`.
+Claude Code downloads the plugin to its cache, loads the `agent-review-panel` skill inside it, and activates the trigger phrases automatically. The plugin then activates when you ask for multi-perspective reviews, panel reviews, adversarial reviews, or invoke `/agent-review-panel:agent-review-panel`.
 
 > **Command format:** `@<marketplace-name>`, not `@<repo-name>`. The marketplace name is `plugin` (defined in `.claude-plugin/marketplace.json`), which is distinct from the plugin name `agent-review-panel`. Pre-v2.16.1 releases used `@wan-huiyan-agent-review-panel`; pre-v2.16 used `@agent-review-panel`. If you installed under an older marketplace name, see the [Migration](#migration-from-previous-marketplaces) section to switch.
 
@@ -278,7 +280,7 @@ A single reviewer gives you a list. The panel gives you a deliberation — with 
 ```
 > Review this implementation plan from multiple perspectives: docs/my_plan.md
 
-> /agent-review-panel
+> /agent-review-panel:agent-review-panel
 
 > Get a panel review of the authentication module — I want to stress-test the design
 
@@ -286,9 +288,9 @@ A single reviewer gives you a list. The panel gives you a deliberation — with 
 
 > Have agents debate whether this refactor is worth the complexity
 
-> /agent-review-panel deep              # adds web research for domain best practices
+> /agent-review-panel:agent-review-panel deep   # adds web research for domain best practices
 
-> Do a deep review of this ML pipeline   # also triggers deep research mode
+> Do a deep review of this ML pipeline          # also triggers deep research mode
 ```
 
 The skill auto-detects content type and selects appropriate personas and review mode. You can also specify custom reviewers.
