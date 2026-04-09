@@ -260,7 +260,7 @@ A single reviewer gives you a list. The panel gives you a deliberation — with 
 | **Verify** | 8. | Completeness Audit — dedicated agent scans for what the panel missed |
 | | 9. | Verify Commands — run reviewer grep/read commands for P0/P1 findings (advisory) |
 | | 10. | Claim Verification — verify all line-number citations against source |
-| | 11. | Severity Verification — read actual code for every P0/P1; downgrade if overstated |
+| | 11. | Severity Verification — read actual code for every P0/P1; downgrade if overstated; **web-verify external domain claims** *(v2.16.3)* |
 | | 12. | Tier Assignment — confidence-based draft → judge-advised refinement per dispute |
 | | 13. | Targeted Verification — persona-matched agents investigate each dispute point |
 | **Adjudicate** | 14. | Supreme Judge — Opus arbitrates everything including verification round evidence |
@@ -277,7 +277,7 @@ A single reviewer gives you a list. The panel gives you a deliberation — with 
 
 **Verification layer:**
 - Claim verification checks all reviewer citations against actual source code
-- Severity verification reads the codebase to confirm P0/P1 findings before the judge sees them (v2.6 benchmark: 2/3 P0 findings were overstated)
+- Severity verification reads the codebase to confirm P0/P1 findings before the judge sees them (v2.6 benchmark: 2/3 P0 findings were overstated). **External domain claims** (product limits, regulatory jurisdiction, API behavior) are automatically web-searched and tagged `[WEB-VERIFIED]`, `[WEB-CONTRADICTED]`, or `[WEB-INCONCLUSIVE]` *(v2.16.3)*
 - Verification commands: runs read-only grep/cat commands from reviewers to confirm or contradict claims
 - Defect classification: findings labeled [EXISTING_DEFECT] or [PLAN_RISK] — P0 requires existing defect evidence
 - Completeness audit: post-debate agent re-reads source line-by-line for what everyone missed
@@ -293,7 +293,7 @@ A single reviewer gives you a list. The panel gives you a deliberation — with 
 - Correlated-bias warning when all reviewers converge (unanimous agreement is the most dangerous failure mode)
 
 **Output (three files per review):**
-- **Primary report** (`review_panel_report.md`): executive summary, consensus, disagreements (with judge rulings), prioritized action items with epistemic labels ([VERIFIED], [CONSENSUS], [SINGLE-SOURCE], [UNVERIFIED], [DISPUTED])
+- **Primary report** (`review_panel_report.md`): executive summary, consensus, disagreements (with judge rulings), prioritized action items with epistemic labels ([VERIFIED], [CONSENSUS], [SINGLE-SOURCE], [UNVERIFIED], [DISPUTED], [WEB-VERIFIED], [WEB-CONTRADICTED], [WEB-INCONCLUSIVE])
 - **Process history** (`review_panel_process.md`): verbatim "director's cut" of every agent's output with persona profiles at each entry point — full transparency into the panel's reasoning
 - **Interactive HTML dashboard** (`review_panel_report.html`) with **expandable 10-section issue cards (v2.15)**: each card expands to reveal a nested accordion with 📖 Narrative (full reviewer reasoning), 📄 Code Evidence (Prism.js-highlighted snippets with file:line headers), 👥 Raised by (per-reviewer rating + reasoning), 🔍 Verification Trail (full VR agent output), 💬 Debate (round-by-round transcript), ⚖️ Judge Ruling, 🛠️ Fix Recommendation (proposed change + before/after code + regression test + blast radius + effort), 🔗 Cross-references, 🏷️ Epistemic Tags (with hover tooltips), and 📊 Prior Runs. Plus: deep-link support (`report.html#issue-A1`), keyboard navigation, expand all/collapse all controls, print-friendly `@media print` CSS. Dashboard also includes a filterable/sortable issue list, Panel Gallery with avatar cards for every agent, and confidence/tier/verdict charts (Tailwind CSS + Chart.js + Prism.js via CDN).
 - Scope & limitations disclosure — every report states what the panel cannot evaluate

@@ -110,7 +110,7 @@ Phase 7:    Blind Final               → Each reviewer gives final score indepe
 Phase 8:    Completeness Audit        → Dedicated agent scans for what the panel missed
 Phase 9:    Verify Commands           → Run up to 5 reviewer verification commands (advisory)
 Phase 10:   Claim Verification        → Verify all line-number citations against source
-Phase 11:   Severity Verification     → Read actual code for every P0/P1, downgrade if overstated
+Phase 11:   Severity Verification     → Read actual code for every P0/P1, downgrade if overstated + web-verify external domain claims (v2.16.3)
 Phase 12:   Verification Tier Assign  → Confidence draft (12a) + judge-advised refinement (12b)
 Phase 13:   Targeted Verification     → Persona-matched agents dispatched per dispute point
 Phase 14:   Supreme Judge             → Opus arbitrates everything including verification round
@@ -718,6 +718,51 @@ benchmark: 2/3 P0 findings were overstated after code investigation).
 | ...     | P0            | Partial   | P1              | DELETE-then-INSERT already exists |
 ```
 
+5. **External domain claim detection and web verification (v2.16.3)**
+
+   **Why this exists:** Consensus P0 findings that depend on external domain
+   knowledge bypass the Phase 12/13 dispute-verification pipeline entirely
+   (because there is no dispute to trigger it). But all reviewers can be wrong
+   the same way — shared model bias or shared domain knowledge gaps. In a real
+   engagement (PUMA GA4 audit, 2026-04-09), all 4 reviewers unanimously flagged
+   "50 months = GA4 360" as P0 without verifying whether 50 months is even a
+   valid GA4 setting. The claim happened to be correct, but the panel had no
+   mechanism to verify it. If the source data had been wrong, the panel would
+   have confidently presented an incorrect P0.
+
+   **For each P0/P1 finding, classify whether it depends on external knowledge:**
+
+   - **External domain claim:** The finding's validity depends on facts outside
+     the reviewed codebase — product feature limits, API behavior, regulatory
+     jurisdiction, pricing tiers, platform capabilities, protocol specifications,
+     third-party documentation. Examples: "50 months retention means GA4 360",
+     "GDPR applies to Mexico", "this API rate-limits at 100 req/s."
+   - **Internal claim:** The finding is fully verifiable from the reviewed code,
+     config, or documentation. No external knowledge needed.
+
+   **For each finding classified as external domain claim:**
+   - Run a web search to verify the specific factual premise (cap: 2 searches
+     per claim, 5 claims max per review)
+   - Tag result: `[WEB-VERIFIED]` (confirmed by authoritative source),
+     `[WEB-CONTRADICTED]` (external source disagrees — demote severity by 1 level),
+     `[WEB-INCONCLUSIVE]` (no authoritative source found — flag for judge)
+   - Include the source URL and key quote in the verification table
+   - Regulatory/jurisdiction claims (e.g., "GDPR applies to X country") are
+     ALWAYS classified as external domain claims
+
+   **Extended severity verification table:**
+
+   ```
+   | Finding | Severity | Domain Type | Web Result | Source | Adjusted Severity |
+   |---------|----------|-------------|------------|--------|-------------------|
+   | ...     | P0       | External    | [WEB-VERIFIED] | support.google.com/... | P0 (confirmed) |
+   | ...     | P1       | External    | [WEB-CONTRADICTED] | gdpr.eu/... | P2 (demoted) |
+   | ...     | P0       | Internal    | N/A        | N/A    | P0 (code-verified) |
+   ```
+
+   **Skip condition:** If all P0/P1 findings are internal claims (fully
+   verifiable from the reviewed content), skip web verification.
+
 Results feed into the Supreme Judge prompt. The judge MUST reference the
 verification table when ruling on disagreements.
 
@@ -896,7 +941,7 @@ This is the main deliverable — concise, structured, action-oriented.
 ## Scope & Limitations
 {What was reviewed. What CANNOT be evaluated: runtime behavior, production
 data, security via dynamic analysis. Structural limitation: shared base model.}
-Epistemic labels: [VERIFIED] [CONSENSUS] [SINGLE-SOURCE] [UNVERIFIED] [DISPUTED]
+Epistemic labels: [VERIFIED] [CONSENSUS] [SINGLE-SOURCE] [UNVERIFIED] [DISPUTED] [WEB-VERIFIED] [WEB-CONTRADICTED] [WEB-INCONCLUSIVE]
 Defect type labels: [EXISTING_DEFECT] (bug in current code) [PLAN_RISK] (risk if plan is implemented as written)
 
 ## Score Summary
