@@ -1,5 +1,42 @@
 # Changelog
 
+## v2.16.3 (2026-04-09) — External Domain Claim Web Verification in Phase 11
+
+Motivated by a real gap in the PUMA GA4 audit: all 4 reviewers unanimously
+flagged "Data Retention set to 50 months confirms GA4 360" as P0, but none
+verified whether 50 months is even a valid GA4 setting. The existing Phase 13
+Deep-tier web search only triggers for **unresolved disputes** — consensus P0
+findings bypass it entirely because there's no dispute to route.
+
+### The Gap
+
+Phase 12 skip condition: "If zero unresolved disputes and zero unverified
+action items, skip Phases 12 and 13 entirely." This means unanimous-but-wrong
+P0 findings based on external domain knowledge would sail through unverified.
+Shared model bias makes this especially dangerous — all reviewers can be
+confidently wrong about the same external fact.
+
+### Fix
+
+Added step 5 to Phase 11 (Severity Verification): **External Domain Claim
+Detection and Web Verification.** For each P0/P1 finding, the agent now
+classifies whether its validity depends on facts outside the reviewed content
+(product limits, API behavior, regulatory jurisdiction, pricing tiers, etc.).
+External claims get a web search (cap: 2 searches per claim, 5 claims max).
+
+New labels: `[WEB-VERIFIED]`, `[WEB-CONTRADICTED]` (demotes severity by 1),
+`[WEB-INCONCLUSIVE]` (flagged for judge). Extended severity verification table
+includes source URLs and key quotes.
+
+### Expected Impact
+
+In the PUMA audit, this would have automatically verified: (1) "50 months =
+GA4 360" via Google's Admin API docs, (2) "GDPR applies to Mexico" would have
+been `[WEB-CONTRADICTED]` and auto-demoted. Both were manually caught later —
+this step makes it systematic.
+
+---
+
 ## v2.15 (2026-04-07) — Expandable Issue Cards in Phase 15.3 HTML Report
 
 Motivated by a real compliance gap in the v2.13 nice-shtern sample: the Phase 15.3 HTML output rendered 22 flat issue cards with no expand mechanism, even though the prompt template already specified a "▶ View evidence" button. The root cause: the schema only populated rich evidence fields (`evidenceSummary`, `fullEvidence`) for the 3 findings that went through Phase 13 verification. For the other 19 findings, the HTML agent had nothing to expand, so it silently omitted the expand button entirely — degrading the whole UX to one-liner cards.

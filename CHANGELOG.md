@@ -2,6 +2,21 @@
 
 All notable changes to Agent Review Panel.
 
+## [2.16.3] — 2026-04-09
+
+### Added — External Domain Claim Web Verification in Phase 11
+
+Motivated by a real gap in the PUMA GA4 audit: all 4 reviewers unanimously flagged "Data Retention set to 50 months confirms GA4 360" as P0, but none verified whether 50 months is even a valid GA4 setting. The existing Phase 13 Deep-tier web search only triggers for **unresolved disputes** — consensus P0 findings bypass it because there's no dispute to route.
+
+- **Phase 11 step 5:** For each P0/P1, the severity verification agent now classifies whether the finding depends on external domain knowledge (product limits, API behavior, regulatory jurisdiction, pricing tiers, etc.). External claims get a web search (cap: 2 searches per claim, 5 claims max).
+- **New labels:** `[WEB-VERIFIED]` (confirmed by authoritative source), `[WEB-CONTRADICTED]` (external source disagrees — auto-demotes severity by 1 level), `[WEB-INCONCLUSIVE]` (flagged for judge).
+- **Regulatory/jurisdiction claims** (e.g., "GDPR applies to Mexico") are ALWAYS classified as external domain claims.
+- **Extended severity verification table** now includes Domain Type, Web Result, Source URL, and Adjusted Severity columns.
+
+In the PUMA audit, this would have auto-verified "50 months = GA4 360" via Google's Admin API docs and auto-demoted "GDPR applies to Mexico" via `[WEB-CONTRADICTED]`.
+
+---
+
 ## [2.16.2] — 2026-04-08
 
 ### Fixed — Plugin layout bug that silently broke all marketplace installs
