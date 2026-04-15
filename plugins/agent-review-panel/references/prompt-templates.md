@@ -839,22 +839,29 @@ The HTML file must work when opened directly in a browser. Use:
 
 The file must be fully functional offline except for those three CDN dependencies.
 
-## Reference Inputs (v2.15)
+## Reference Inputs (v2.15, updated v2.16.4)
 
-In addition to the structured review data below, you receive the full Phase 15.2
-process history as reference context. Use it to extract verbatim reviewer
-narratives, debate exchanges, and judge rulings when populating the per-finding
-schema fields (`narrative`, `debateTranscript`, `judgeRuling`). Do NOT copy the
-entire process history into the HTML — extract only the relevant passages per
-finding. The process history is the authoritative source for the verbatim
-content; the Phase 15.1 summary report is a condensed view.
+Read the Phase 15.2 process history from disk (see data source files below).
+Use it to extract verbatim reviewer narratives, debate exchanges, and judge
+rulings when populating the per-finding schema fields (`narrative`,
+`debateTranscript`, `judgeRuling`). Do NOT copy the entire process history
+into the HTML — extract only the relevant passages per finding. The process
+history is the authoritative source for the verbatim content; the Phase 15.1
+summary report is a condensed view.
 
-{Phase 15.2 process history content, injected by orchestrator — the full
-contents of `review_panel_process.md`}
+**Data source files (v2.16.4 — read from disk, do NOT rely on orchestrator
+injection):**
+1. Read `review_panel_report.md` for all structured summary data below
+2. Read `review_panel_process.md` for verbatim narratives, debate transcripts,
+   judge rulings, and verification agent trails
+3. This prompt template (starting from "Phase 15.3: HTML Report Generation
+   Prompt") contains the full rendering spec
+
+Extract the following structured data from those files:
 
 ## Structured Review Data
 
-{Provide all data in a clear structured format:}
+{The agent extracts this from the Phase 15.1 and 15.2 files on disk:}
 
 ### Panel Summary
 - Work reviewed: {title/path}

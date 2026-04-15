@@ -1,5 +1,57 @@
 # Changelog
 
+## v2.16.4 (2026-04-15) — Phase 15.3 Reliability Fix
+
+Fixes a reliability bug where Phase 15.3 (Interactive HTML Report) silently
+fails to execute when the orchestrator's context window is near capacity
+after 14 prior phases.
+
+### Root Cause
+
+Phase 15.3 ran in parallel with 15.2, requiring the orchestrator to inject
+~700 lines of structured data + the full process history into the subagent
+prompt from its own context. By Phase 15, the orchestrator's context is
+near capacity, causing the agent launch to silently fail or produce a
+degraded prompt that generates a generic HTML page instead of the spec-
+compliant interactive dashboard.
+
+### Fixes
+
+1. **Sequential Phase 15**: 15.1 → 15.2 → 15.3 (no longer parallel).
+   Phase 15.3 runs AFTER 15.2 so the agent can read completed files from
+   disk. Latency impact: negligible (15.2 is orchestrator-assembled, ~2s).
+
+2. **Disk-reading data strategy**: Phase 15.3 agent reads
+   `review_panel_report.md`, `review_panel_process.md`, and the rendering
+   spec from `references/prompt-templates.md` directly. Orchestrator prompt
+   drops from 700+ lines to ~10 lines.
+
+3. **Verification gate**: Mandatory file-existence check for all 3 output
+   files before reporting completion. If HTML is missing, retry once
+   automatically before degrading to 2-file output.
+
+4. **Manual recovery path**: "generate the HTML review report" launches
+   the Phase 15.3 agent with the same disk-reading prompt, following the
+   authoritative spec in `prompt-templates.md` — not a generic HTML page.
+
+### Files Changed
+
+- `SKILL.md` — Phase 15 sequencing, data passing strategy, verification
+  gate, manual recovery section, implementation notes, error handling
+- `references/prompt-templates.md` — data injection placeholders updated
+  to reference disk-reading instead of orchestrator injection
+- `references/changelog.md` — this entry
+- `SKILL.md` line 34 header: `v2.16` → `v2.16.4` (full semver unification)
+- `SKILL.md` line 1182 footer instruction: `v2.16` → `v2.16.4` with note to keep in sync with `plugin.json`
+
+### Backward Compatibility
+
+No schema changes. No new dependencies. Multi-run mode unaffected (Phase 15
+ordering is internal to each run and doesn't interact with the multi-run
+protocol).
+
+---
+
 ## v2.16.3 (2026-04-09) — External Domain Claim Web Verification in Phase 11
 
 Motivated by a real gap in the PUMA GA4 audit: all 4 reviewers unanimously
