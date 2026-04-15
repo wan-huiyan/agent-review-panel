@@ -14,6 +14,7 @@ Phase 15.3 (Interactive HTML Report) silently failed in most runs because the or
 - **Manual recovery path:** "generate the HTML review report" launches the Phase 15.3 agent with the same disk-reading prompt, following the authoritative spec.
 - **Path resolution:** Orchestrator resolves `{output_dir}` and `{skill_dir}` to absolute paths. Custom filenames handled.
 - **Legacy language fix:** Updated `prompt-templates.md` Reference Inputs section to align with disk-reading strategy.
+- **Version unification:** SKILL.md heading and HTML footer instruction now show the full semver (`v2.16.4`) instead of the bare major version (`v2.16`). Single source of truth: `plugin.json` version is the canonical version; SKILL.md heading and footer instruction must match it on every bump.
 
 ---
 

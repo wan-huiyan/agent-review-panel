@@ -41,6 +41,8 @@ compliant interactive dashboard.
 - `references/prompt-templates.md` — data injection placeholders updated
   to reference disk-reading instead of orchestrator injection
 - `references/changelog.md` — this entry
+- `SKILL.md` line 34 header: `v2.16` → `v2.16.4` (full semver unification)
+- `SKILL.md` line 1182 footer instruction: `v2.16` → `v2.16.4` with note to keep in sync with `plugin.json`
 
 ### Backward Compatibility
 
