@@ -2,6 +2,22 @@
 
 All notable changes to Agent Review Panel.
 
+## [2.16.4] — 2026-04-15
+
+### Fixed — Phase 15.3 Reliability (HTML Report Generation)
+
+Phase 15.3 (Interactive HTML Report) silently failed in most runs because the orchestrator's context window was near capacity after 14 phases, causing the subagent launch to fail.
+
+- **Sequential Phase 15:** 15.1 → 15.2 → 15.3 (no longer parallel). Latency impact: ~2s.
+- **Disk-reading data strategy:** Phase 15.3 agent reads `review_panel_report.md`, `review_panel_process.md`, and the rendering spec from `references/prompt-templates.md` directly. Orchestrator prompt drops from 700+ lines to ~10 lines.
+- **Verification gate:** Mandatory file-existence check for all 3 output files before reporting completion. Auto-retry once if HTML is missing.
+- **Manual recovery path:** "generate the HTML review report" launches the Phase 15.3 agent with the same disk-reading prompt, following the authoritative spec.
+- **Path resolution:** Orchestrator resolves `{output_dir}` and `{skill_dir}` to absolute paths. Custom filenames handled.
+- **Legacy language fix:** Updated `prompt-templates.md` Reference Inputs section to align with disk-reading strategy.
+- **Version unification:** SKILL.md heading and HTML footer instruction now show the full semver (`v2.16.4`) instead of the bare major version (`v2.16`). Single source of truth: `plugin.json` version is the canonical version; SKILL.md heading and footer instruction must match it on every bump.
+
+---
+
 ## [2.16.3] — 2026-04-09
 
 ### Added — External Domain Claim Web Verification in Phase 11

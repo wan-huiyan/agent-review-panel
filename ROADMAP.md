@@ -277,6 +277,9 @@ Techniques evaluated and rejected for our use case.
 | v2.15 | 2026-04-07 | **Expandable 10-section issue cards** in Phase 15.3 HTML dashboard (narrative, code evidence, debate, judge ruling, fix recommendation, cross-references, prior runs), deep-linking, keyboard nav, expand all/collapse all, print-friendly CSS, Prism.js syntax highlighting (CDN) |
 | v2.16 | 2026-04-07 | **Canonical plugin layout** — restructured to `plugins/<name>/SKILL.md` + `plugins/<name>/.claude-plugin/plugin.json` for Claude Code plugin marketplace compliance (PR #18). Marketplace manifest moved to `.claude-plugin/marketplace.json` with owner-prefixed name. Follow-ups: install-command fix + stale-clone diagnosis docs (PR #19), README dedupe + plugin rebrand + version drift cleanup (PR #20), 4 cross-version consistency assertions (PR #21). |
 | v2.16.1 | 2026-04-08 | **Multi-plugin marketplace bundle** (PR #22) — renamed marketplace to `plugin`; bundled `plan-review-integrator` v2.0.0 as a second plugin in the same repo; moved `eval-suite.json` to per-plugin location; refactored `manifest-consistency` and `trigger-classification` tests to iterate all plugins with independent per-plugin cross-version checks. Test count: 308 → 352. |
+| v2.16.2 | 2026-04-08 | **README unification** (PR #25) — unified shell-form and REPL-form install instructions with shell-form as primary. |
+| v2.16.3 | 2026-04-09 | **External domain claim web verification in Phase 11** — P0/P1 findings with external domain claims (product limits, API behavior, regulatory jurisdiction) auto-verified via web search. New labels: `[WEB-VERIFIED]`, `[WEB-CONTRADICTED]`, `[WEB-INCONCLUSIVE]`. |
+| v2.16.4 | 2026-04-15 | **Phase 15.3 reliability fix** (PR #26) — sequential Phase 15 execution (15.1→15.2→15.3), disk-reading data strategy (agent reads files instead of orchestrator injection), mandatory verification gate, manual recovery path. Fixes silent HTML report generation failure. |
 
 ---
 
