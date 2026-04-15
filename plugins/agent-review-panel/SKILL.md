@@ -909,8 +909,12 @@ See `references/prompt-templates.md` for the full judge prompt.
 
 ## Phase 15: Output Generation
 
-Three output files are written at the end of every review. All three are produced
-sequentially; Phases 15.2 and 15.3 run in parallel once Phase 15.1 is complete.
+Three output files are written at the end of every review. They are produced
+in strict sequence: Phase 15.1 first, then Phase 15.2, then Phase 15.3.
+Phase 15.3 runs AFTER Phase 15.2 (not in parallel) so that the Phase 15.3
+agent can read the already-written Phase 15.1 and 15.2 files from disk,
+avoiding the need for the orchestrator to inject all structured data and
+process history into the agent prompt from its own context window.
 
 ---
 
@@ -1069,8 +1073,46 @@ See `references/prompt-templates.md` for the Phase 15.2 assembly spec.
 
 Launch a single Opus agent to write `review_panel_report.html` — a polished,
 self-contained single-file interactive dashboard with **expandable issue
-cards** (v2.15). The agent receives the full structured data from all prior
-phases AND the Phase 15.2 process history as reference context.
+cards** (v2.15).
+
+**CRITICAL — Data passing strategy (v2.16.4 context-pressure fix):** Do NOT
+inject the structured data or process history into the agent prompt from the
+orchestrator's context. Instead, the agent prompt MUST instruct the agent to
+read from disk:
+1. Read `review_panel_report.md` (already written by Phase 15.1) for all
+   structured summary data (verdict, scores, action items, consensus, etc.)
+2. Read `review_panel_process.md` (already written by Phase 15.2) for
+   verbatim reviewer narratives, debate transcripts, judge rulings, and
+   verification agent trails — extracting per-finding content for the
+   10-section accordion
+3. Read `references/prompt-templates.md` starting from the line
+   `## Phase 15.3: HTML Report Generation Prompt` for the full rendering
+   spec (HTML structure, CSS, JS, expandable card schema, filter logic,
+   Prism.js setup, print styles)
+
+**Path resolution (CRITICAL):** The orchestrator MUST resolve all paths to
+absolute paths before including them in the Phase 15.3 agent prompt. The
+subagent has no knowledge of the skill installation directory or the user's
+output directory. Substitute:
+- `{output_dir}` → the actual resolved output directory (where Phase 15.1
+  wrote `review_panel_report.md`)
+- `{skill_dir}` → the absolute path to the skill's `references/` directory
+- If the user specified a custom output name (e.g., `--output my_review.md`),
+  use the actual filenames, not the defaults
+
+The orchestrator's Phase 15.3 launch prompt should be SHORT (~10 lines):
+```
+You are the Phase 15.3 HTML Report Agent. Generate `{output_dir}/{html_filename}`
+by reading these files:
+1. {output_dir}/{report_filename} — structured review data
+2. {output_dir}/{process_filename} — verbatim narratives and transcripts
+3. {skill_dir}/references/prompt-templates.md (search for "Phase 15.3: HTML
+   Report Generation Prompt") — the authoritative rendering spec
+Follow the rendering spec exactly. Write the complete HTML file.
+```
+
+This keeps the orchestrator's launch prompt under 200 tokens instead of
+700+ lines, eliminating the context-pressure failure mode.
 
 **Features:**
 - Dashboard overview: verdict, score, panel composition at a glance
@@ -1112,13 +1154,53 @@ full 10-section schema and rendering spec.
 
 ---
 
-After all three files are written, tell user:
-- Paths to all three output files
+### Phase 15 Verification Gate (MANDATORY — v2.16.4)
+
+Before reporting completion, verify ALL THREE output files exist by checking
+that each file was successfully written (e.g., `ls -la review_panel_report.md
+review_panel_process.md review_panel_report.html`).
+
+**If all three files exist:** proceed to the completion message below.
+
+**If `review_panel_report.html` is missing (Phase 15.3 failed):**
+1. Log: "Phase 15.3 HTML report generation failed. Retrying..."
+2. Retry Phase 15.3 ONCE with the same disk-reading prompt (the agent reads
+   from disk, so no orchestrator context re-assembly is needed)
+3. After retry, verify again
+4. If the file now exists: proceed to completion message
+5. If still missing after retry: report the two files that DO exist, and
+   tell the user: "The HTML report could not be generated automatically.
+   To generate it manually, say: **generate the HTML review report**"
+
+**Completion message (only after verification passes):**
+Tell user:
+- Paths to all output files that were successfully written
 - Verdict + score (from primary report)
 - Counts: consensus points, disagreements, action items, verification verdicts
 - Top P0 action item (if any)
 - Note: HTML report requires internet connection for Tailwind CSS, Chart.js, and Prism.js CDNs
 - HTML footer should read "Agent Review Panel v2.16" (match the current product version from `plugin.json`, not the version that introduced the HTML features)
+
+---
+
+### Manual HTML Report Recovery (v2.16.4)
+
+If the user asks to "generate the HTML report" or "generate the HTML review
+report" after a review has completed (whether Phase 15.3 failed or the user
+wants to regenerate), launch the Phase 15.3 agent with the same disk-reading
+prompt described above. Resolve all paths to absolute paths. The agent MUST:
+1. Read the Phase 15.1 output file (e.g., `review_panel_report.md`) for
+   structured data — use the actual filename from the completed review
+2. Read the Phase 15.2 output file (e.g., `review_panel_process.md`) for
+   verbatim content
+3. Read the skill's `references/prompt-templates.md` (absolute path) starting
+   from "Phase 15.3: HTML Report Generation Prompt" for the rendering spec
+
+Do NOT write a generic styled HTML page from the orchestrator's memory of the
+review. The spec in `references/prompt-templates.md` is authoritative — it
+specifies Tailwind CSS, Chart.js, Prism.js, the 10-section expandable accordion,
+Panel Gallery, filter logic, keyboard navigation, deep-linking, and print styles.
+Any HTML report that does not follow this spec is non-compliant.
 
 ---
 
@@ -1249,13 +1331,16 @@ See `references/prompt-templates.md` for the full Phase 16 Merge Agent prompt.
   Agent tool calls. Phases 2, 8, 9, 10, 11, 12, 13, 14 are sequential (Phase 9 is
   orchestrator-driven via Bash, not a subagent). Phase 12a is orchestrator
   logic (no agent). Phase 12b is a single Opus agent. Phase 13 agents launch
-  in parallel (single message with one Agent call per dispute point). Phase 15.1
-  runs first; Phases 15.2 (orchestrator-assembled, no agent) and 15.3 (single
-  Opus agent) run in parallel after Phase 15.1 completes.
+  in parallel (single message with one Agent call per dispute point). Phases
+  15.1, 15.2, and 15.3 run in strict sequence (15.1 → 15.2 → 15.3). Phase
+  15.3 runs AFTER 15.2 so its agent can read the already-written files from
+  disk instead of requiring the orchestrator to inject all data in-context.
 - **Context management:** Full content in Phases 2, 3, 8, 14. Phase 6 summaries
   with source excerpts in debate rounds for long works (>500 lines).
 - **Error handling:** Retry failed agents once. Proceed with minimum 2 reviewers.
-  Note gaps in report.
+  Note gaps in report. Phase 15.3 has an explicit verification gate (v2.16.4):
+  if the HTML file is missing after the agent returns, retry once before
+  degrading to 2-file output with a manual recovery instruction for the user.
 - **Idempotent:** Safe to re-run on the same content — each invocation produces
   an independent panel with no side effects from previous runs.
 - **Auto-persona algorithm:** Classify → base set → signal scan → add up to 6 →
