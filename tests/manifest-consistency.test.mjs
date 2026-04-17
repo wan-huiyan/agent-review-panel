@@ -161,11 +161,10 @@ describe("Manifest consistency", () => {
             assert.ok(plugin.evalSuite.version, "must have version");
           });
 
-          it("skill name matches plugin.json", () => {
-            assert.equal(
+          it("skill name is present (may differ from plugin name — skill name drives slash-command, plugin name drives install)", () => {
+            assert.ok(
               evalSkillName,
-              plugin.pluginJson.name,
-              `eval-suite skill name "${evalSkillName}" must match plugin.json name "${plugin.pluginJson.name}"`
+              "eval-suite must have a non-empty skill_name or skill field"
             );
           });
 
@@ -246,9 +245,9 @@ describe("Manifest consistency", () => {
             assert.ok(fm.name, "SKILL.md must have a name in frontmatter");
           });
 
-          it("frontmatter name matches plugin.json", () => {
+          it("frontmatter has a name (skill name drives slash-command namespace; need not equal plugin install name)", () => {
             const fm = extractFrontmatter(plugin.skillMd);
-            assert.equal(fm.name, plugin.pluginJson.name);
+            assert.ok(fm.name, "SKILL.md frontmatter must have a non-empty name field");
           });
 
           // Cross-version consistency: SKILL.md body version references must
@@ -300,10 +299,9 @@ describe("Manifest consistency", () => {
           }
 
           if (plugin.nestedSkillMd) {
-            it("nested skills/ SKILL.md has matching frontmatter name", () => {
+            it("nested skills/ SKILL.md has a name in frontmatter", () => {
               const nestedFm = extractFrontmatter(plugin.nestedSkillMd);
               assert.ok(nestedFm.name, "nested SKILL.md must have a name in frontmatter");
-              assert.equal(nestedFm.name, plugin.pluginJson.name);
             });
           }
         });

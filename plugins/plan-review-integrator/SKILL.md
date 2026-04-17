@@ -428,7 +428,7 @@ matching historically-applied patterns get a +0.1 bonus.
 > This section defines the expected input format from `agent-review-panel` to prevent
 > silent misparse when the upstream skill evolves. Version-pinned for compatibility.
 
-**Compatible with:** `agent-review-panel` v2.0+ (v2.9+ for VoltAgent-enriched findings, v2.16.1+ ships in the same `plugin` marketplace bundle as this plugin — install both with `/plugin install agent-review-panel@plugin` + `/plugin install plan-review-integrator@plugin`)
+**Compatible with:** `agent-review-panel` v2.0+ (v2.9+ for VoltAgent-enriched findings, v2.16.1+ ships in the same `plugin` marketplace bundle as this plugin — install both with `/plugin install roundtable@plugin` + `/plugin install plan-review-integrator@plugin`)
 
 **Required fields per finding:**
 - Severity tier: `P0` / `P1` / `P2` (maps to CRITICAL / HIGH / MEDIUM-LOW)
