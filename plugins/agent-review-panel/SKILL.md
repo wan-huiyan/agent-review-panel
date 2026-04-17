@@ -114,7 +114,7 @@ Phase 11:   Severity Verification     → Read actual code for every P0/P1, down
 Phase 12:   Verification Tier Assign  → Confidence draft (12a) + judge-advised refinement (12b)
 Phase 13:   Targeted Verification     → Persona-matched agents dispatched per dispute point
 Phase 14:   Supreme Judge             → Opus arbitrates everything including verification round
-Phase 15:   Output Generation         → (parent) Three output files (15.1 sequential, 15.2/15.3 parallel)
+Phase 15:   Output Generation         → (parent) Three output files (all sequential: 15.1 → 15.2 → 15.3)
   Phase 15.1: Primary Markdown Report → Structured markdown summary (review_panel_report.md)
   Phase 15.2: Process History         → Full director's-cut log (review_panel_process.md)
   Phase 15.3: HTML Report             → Interactive dashboard (review_panel_report.html)
@@ -414,7 +414,7 @@ All launches below MUST pass `model: "opus"` explicitly (v2.14).
 | Tier Refinement Advisor (Phase 12b) | Generic, `model: "opus"` | (must be domain-neutral to refine tiers) |
 | Verification Agents (Phase 13) | Persona-matched — see Phase 13 table, `model: "opus"` | Each agent matched to claim type |
 | Supreme Judge (Phase 14) | Generic, `model: "opus"` | (judge must be domain-neutral) |
-| HTML Report Agent (Phase 15.3) | `voltagent-lang:javascript-pro`, `model: "opus"` | Generate interactive HTML dashboard with expandable issue cards (v2.15). Receives structured data + Phase 15.2 process history. Loads Tailwind, Chart.js, and Prism.js via CDN. |
+| HTML Report Agent (Phase 15.3) | `voltagent-lang:javascript-pro`, `model: "opus"` | Generate interactive HTML dashboard with expandable issue cards (v2.15). Reads from disk: Phase 15.1 report + Phase 15.2 process history + rendering spec from prompt-templates.md (v2.16.4). Loads Tailwind, Chart.js, and Prism.js via CDN. |
 | Merge Agent (Phase 16) | `voltagent-meta:knowledge-synthesizer`, `model: "opus"` | Deduplicate + score stability in multi-run mode (v2.14) |
 
 **Step 3: Suggest installation when beneficial.** If a selected persona would
