@@ -24,8 +24,8 @@ A [Claude Code](https://claude.ai/code) **plugin** that orchestrates multi-agent
 
 ```bash
 claude plugin marketplace add wan-huiyan/agent-review-panel
-claude plugin install roundtable@plugin
-claude plugin install plan-review-integrator@plugin    # optional companion: integrate review findings into plans
+claude plugin install roundtable@agent-review-panel
+claude plugin install plan-review-integrator@agent-review-panel    # optional companion: integrate review findings into plans
 ```
 
 <details>
@@ -35,8 +35,8 @@ Type these at the REPL prompt (note the leading `/` and no `claude` prefix):
 
 ```
 /plugin marketplace add wan-huiyan/agent-review-panel
-/plugin install roundtable@plugin
-/plugin install plan-review-integrator@plugin
+/plugin install roundtable@agent-review-panel
+/plugin install plan-review-integrator@agent-review-panel
 ```
 
 Both forms do the same thing. Pick whichever matches where you are: shell-form `claude plugin …` for terminal, REPL-form `/plugin …` for inside Claude Code.
@@ -120,7 +120,7 @@ The two install commands are shown in [Quick Start](#quick-start) above. This se
 
 ```bash
 claude plugin marketplace add wan-huiyan/agent-review-panel
-claude plugin install roundtable@plugin
+claude plugin install roundtable@agent-review-panel
 ```
 
 Claude Code downloads the plugin to its cache, loads the `agent-review-panel` skill inside it, and activates the trigger phrases automatically. The plugin then activates when you ask for multi-perspective reviews, panel reviews, adversarial reviews, or invoke `/agent-review-panel:agent-review-panel`.
@@ -134,23 +134,23 @@ Claude Code downloads the plugin to its cache, loads the `agent-review-panel` sk
 New releases land on `main`; Claude Code does not auto-pull. Run the update flow after each release (or any time you want the newest features) **in your terminal**:
 
 ```bash
-claude plugin marketplace update plugin
-claude plugin update roundtable@plugin
+claude plugin marketplace update agent-review-panel
+claude plugin update roundtable@agent-review-panel
 ```
 
 <details>
 <summary>Or, if you're already in a Claude Code session, use the slash-command form</summary>
 
 ```
-/plugin marketplace update plugin
-/plugin update roundtable@plugin
+/plugin marketplace update agent-review-panel
+/plugin update roundtable@agent-review-panel
 ```
 
 </details>
 
 **Verify the update worked:**
 ```bash
-cat ~/.claude/plugins/cache/plugin/agent-review-panel/*/.claude-plugin/plugin.json | grep version
+cat ~/.claude/plugins/cache/agent-review-panel/roundtable/*/.claude-plugin/plugin.json | grep version
 ```
 The version should match the latest entry in the [Version History](#version-history) table below. (The cache layout is `cache/<marketplace-name>/<plugin-name>/<version>/` — note that the `plugins/` intermediate directory from the repo is flattened out during install, and a version segment is added. The `*` glob above matches whatever version is installed so you don't have to look it up first.)
 
@@ -166,25 +166,25 @@ If that directory exists, it's loaded *before* the marketplace cache and will pi
 rm -rf ~/.claude/skills/agent-review-panel
 ```
 
-Then restart Claude Code. The marketplace install in `~/.claude/plugins/cache/plugin/` will take over.
+Then restart Claude Code. The marketplace install in `~/.claude/plugins/cache/agent-review-panel/` will take over.
 
 **Fallback — clean reinstall:** If the update commands misbehave, uninstall and reinstall from scratch. From your terminal:
 
 ```bash
-claude plugin uninstall roundtable@plugin
-claude plugin marketplace remove plugin
+claude plugin uninstall roundtable@agent-review-panel
+claude plugin marketplace remove agent-review-panel
 claude plugin marketplace add wan-huiyan/agent-review-panel
-claude plugin install roundtable@plugin
+claude plugin install roundtable@agent-review-panel
 ```
 
 <details>
 <summary>REPL-form equivalent (inside a Claude Code session)</summary>
 
 ```
-/plugin uninstall roundtable@plugin
-/plugin marketplace remove plugin
+/plugin uninstall roundtable@agent-review-panel
+/plugin marketplace remove agent-review-panel
 /plugin marketplace add wan-huiyan/agent-review-panel
-/plugin install roundtable@plugin
+/plugin install roundtable@agent-review-panel
 ```
 
 </details>
@@ -383,11 +383,11 @@ This marketplace ships **two plugins** in one repository. They are independently
 Install both for the full review→integrate pipeline. From your terminal:
 
 ```bash
-claude plugin install roundtable@plugin
-claude plugin install plan-review-integrator@plugin
+claude plugin install roundtable@agent-review-panel
+claude plugin install plan-review-integrator@agent-review-panel
 ```
 
-(Or, inside a Claude Code session, use the REPL form: `/plugin install roundtable@plugin` and `/plugin install plan-review-integrator@plugin`.)
+(Or, inside a Claude Code session, use the REPL form: `/plugin install roundtable@agent-review-panel` and `/plugin install plan-review-integrator@agent-review-panel`.)
 
 `plan-review-integrator` was previously published as a standalone repo at `wan-huiyan/plan-review-integrator`. That repo is now **archived** in favor of the bundled distribution here. See [Migration](#migration-from-previous-marketplaces) for upgrade instructions.
 
@@ -406,8 +406,8 @@ claude plugin marketplace remove wan-huiyan-plan-review-integrator
 
 # New bundled install
 claude plugin marketplace add wan-huiyan/agent-review-panel
-claude plugin install roundtable@plugin
-claude plugin install plan-review-integrator@plugin
+claude plugin install roundtable@agent-review-panel
+claude plugin install plan-review-integrator@agent-review-panel
 ```
 
 <details>
@@ -419,16 +419,16 @@ claude plugin install plan-review-integrator@plugin
 /plugin uninstall plan-review-integrator@wan-huiyan-plan-review-integrator
 /plugin marketplace remove wan-huiyan-plan-review-integrator
 /plugin marketplace add wan-huiyan/agent-review-panel
-/plugin install roundtable@plugin
-/plugin install plan-review-integrator@plugin
+/plugin install roundtable@agent-review-panel
+/plugin install plan-review-integrator@agent-review-panel
 ```
 
 </details>
 
 Verify both are loaded under the new marketplace:
 ```
-ls ~/.claude/plugins/cache/plugin/
-# expected: agent-review-panel  plan-review-integrator
+ls ~/.claude/plugins/cache/agent-review-panel/
+# expected: roundtable  plan-review-integrator
 ```
 
 ## Contributing
@@ -445,11 +445,11 @@ Please open an issue to discuss before submitting large PRs.
 
 **If installed via marketplace**, from your terminal:
 ```bash
-claude plugin uninstall roundtable@plugin
-claude plugin marketplace remove plugin
+claude plugin uninstall roundtable@agent-review-panel
+claude plugin marketplace remove agent-review-panel
 ```
 
-(REPL-form equivalent: `/plugin uninstall roundtable@plugin` and `/plugin marketplace remove plugin`.)
+(REPL-form equivalent: `/plugin uninstall roundtable@agent-review-panel` and `/plugin marketplace remove agent-review-panel`.)
 
 **If installed via manual clone:**
 ```bash
