@@ -1,6 +1,6 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
-  "name": "plugin",
+  "name": "agent-review-panel",
   "description": "Claude Code plugin marketplace for multi-agent review workflows — bundles agent-review-panel (panel-based code/plan review) and plan-review-integrator (integrate review findings into implementation plans). The full review→integrate pipeline in one marketplace.",
   "owner": {
     "name": "wan-huiyan"
