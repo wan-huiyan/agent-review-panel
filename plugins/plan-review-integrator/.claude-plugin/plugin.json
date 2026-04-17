@@ -15,5 +15,5 @@
     "multi-agent",
     "voltagent-integration"
   ],
-  "skills": ["SKILL.md"]
+  "skills": ["./"]
 }
