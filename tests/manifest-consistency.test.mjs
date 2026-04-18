@@ -238,15 +238,23 @@ describe("Manifest consistency", () => {
         });
       }
 
-      if (plugin.skillMd) {
+      // SKILL.md can live at plugins/<name>/SKILL.md (legacy) or at
+      // plugins/<name>/skills/<skill>/SKILL.md (canonical auto-discovery
+      // layout, used when the skills field is omitted from plugin.json).
+      // Drift checks must run against whichever one actually exists — if
+      // we only check the root path, a move to the nested layout would
+      // silently disable the H1/footer version guards.
+      const effectiveSkillMd = plugin.skillMd ?? plugin.nestedSkillMd;
+
+      if (effectiveSkillMd) {
         describe("SKILL.md", () => {
           it("has YAML frontmatter with name", () => {
-            const fm = extractFrontmatter(plugin.skillMd);
+            const fm = extractFrontmatter(effectiveSkillMd);
             assert.ok(fm.name, "SKILL.md must have a name in frontmatter");
           });
 
           it("frontmatter has a name (skill name drives slash-command namespace; need not equal plugin install name)", () => {
-            const fm = extractFrontmatter(plugin.skillMd);
+            const fm = extractFrontmatter(effectiveSkillMd);
             assert.ok(fm.name, "SKILL.md frontmatter must have a non-empty name field");
           });
 
@@ -266,7 +274,7 @@ describe("Manifest consistency", () => {
 
             it("H1 header version matches plugin.json major.minor (if H1 carries a version)", () => {
               // Extract the first H1 with a v<major>.<minor> suffix.
-              const headerMatch = plugin.skillMd.match(
+              const headerMatch = effectiveSkillMd.match(
                 /^#\s+.+?\sv(\d+)\.(\d+)\b/m
               );
               if (!headerMatch) {
@@ -282,7 +290,7 @@ describe("Manifest consistency", () => {
             });
 
             it("HTML footer instruction version matches plugin.json major.minor (if present)", () => {
-              const footerMatch = plugin.skillMd.match(
+              const footerMatch = effectiveSkillMd.match(
                 /HTML footer should read "[^"]+?\sv(\d+)\.(\d+)/
               );
               if (!footerMatch) {
