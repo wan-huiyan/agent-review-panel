@@ -1,5 +1,51 @@
 # Changelog
 
+## v2.16.5 (2026-04-19) — Plugin Skills Layout Fix (Claude Code ≥2.1.112)
+
+Fixes plugin loading on Claude Code 2.1.112, which tightened `skills` field
+validation in a way that rejected both historical values the plugin had used:
+
+- `["./"]`       → *"Path escapes plugin directory: ./ (skills)"*
+- `["SKILL.md"]` → *"Validation errors: skills: Invalid input"*
+
+### Root Cause
+
+Manifest validation in current Claude Code requires component paths to resolve
+strictly inside the plugin directory and rejects bare-file paths missing the
+`./` prefix. The `./` form, while matching the documented spec, also fails the
+path-escape check on this version. Neither value is portable across versions.
+
+### Fix
+
+Adopted the canonical nested skill layout and removed the `skills` field from
+`plugin.json` entirely:
+
+- `SKILL.md` moved from `plugins/<name>/SKILL.md` to
+  `plugins/<name>/skills/<name>/SKILL.md`.
+- Claude Code's default skill auto-discovery now loads the skill without any
+  manifest path declaration, sidestepping both validation bugs.
+
+Resolves [#28](https://github.com/wan-huiyan/agent-review-panel/issues/28)
+via PR [#30](https://github.com/wan-huiyan/agent-review-panel/pull/30).
+
+### Contributor
+
+First external contribution: [@okuuva](https://github.com/okuuva). Thank you.
+
+### Files Changed
+
+- Moved `plugins/agent-review-panel/SKILL.md` → `plugins/agent-review-panel/skills/agent-review-panel/SKILL.md` (and sibling `references/` + `tests/` subdirs)
+- `plugins/agent-review-panel/.claude-plugin/plugin.json` — dropped `skills` field
+- Version bumps across `package.json`, `plugin.json`, `eval-suite.json`,
+  `.claude-plugin/marketplace.json`, SKILL.md header, and HTML footer
+  instruction (2.16.4 → 2.16.5)
+
+### Backward Compatibility
+
+No schema or runtime behavior changes. Purely a plugin-packaging fix.
+
+---
+
 ## v2.16.4 (2026-04-15) — Phase 15.3 Reliability Fix
 
 Fixes a reliability bug where Phase 15.3 (Interactive HTML Report) silently

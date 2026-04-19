@@ -2,6 +2,29 @@
 
 All notable changes to Agent Review Panel.
 
+## [2.16.5] — 2026-04-19
+
+### Fixed — Plugin skills layout for Claude Code ≥2.1.112 manifest validation (PR #30)
+
+Claude Code 2.1.112 rejected both `skills` field values the plugin had historically used: `["./"]` failed with *"Path escapes plugin directory"*, and `["SKILL.md"]` failed with *"Validation errors: skills: Invalid input"*. Neither value was portable across versions.
+
+- **Restructured to canonical nested layout.** `SKILL.md` now lives at `plugins/<name>/skills/<name>/SKILL.md` and the `skills` field has been dropped from `plugin.json` entirely. Claude Code's default skill auto-discovery loads the skill without any manifest path declaration, sidestepping both validation bugs.
+- Resolves #28.
+
+### Thanks
+
+- [@okuuva](https://github.com/okuuva) — first external contribution, via [#30](https://github.com/wan-huiyan/agent-review-panel/pull/30).
+
+### Bumped
+
+- `package.json`: 2.16.4 → 2.16.5
+- `plugins/agent-review-panel/.claude-plugin/plugin.json`: 2.16.4 → 2.16.5
+- `plugins/agent-review-panel/eval-suite.json`: 2.16.4 → 2.16.5
+- `.claude-plugin/marketplace.json` (roundtable entry): 2.16.4 → 2.16.5
+- `plugins/agent-review-panel/skills/agent-review-panel/SKILL.md`: header `v2.16.4` → `v2.16.5`; HTML footer instruction updated to match
+
+---
+
 ## [2.16.4] — 2026-04-15
 
 ### Fixed — Phase 15.3 Reliability (HTML Report Generation)
