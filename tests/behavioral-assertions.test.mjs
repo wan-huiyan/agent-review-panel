@@ -14,6 +14,7 @@ const evalSuite = JSON.parse(
 // Discover SKILL.md in canonical (plugins/<name>/) or legacy layout.
 function findSkillMd() {
   const candidates = [
+    resolve(ROOT, "plugins/agent-review-panel/skills/agent-review-panel/SKILL.md"),
     resolve(ROOT, "plugins/agent-review-panel/SKILL.md"),
     resolve(ROOT, "skills/agent-review-panel/SKILL.md"),
     resolve(ROOT, "SKILL.md"),
