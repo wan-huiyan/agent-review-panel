@@ -95,18 +95,19 @@ timeout. [VERIFIED] against actual code.
 
 ### Requires Claude Code
 
-This plugin **only works inside [Claude Code](https://claude.ai/code)** — the agentic-coding surface that ships the `Agent` tool, subagent spawning, local-filesystem access, and the `/plugin` marketplace machinery. Claude Code is available in several forms:
+This plugin **only works on Claude Code surfaces** — or on the **[Claude Agent SDK](https://code.claude.com/docs/en/agent-sdk/plugins)** — because it needs the `Agent` tool for subagent spawning, local-filesystem access for output files, and a plugin-loader. Supported surfaces:
 
 **Works ✅**
 - ✅ **CLI** — `claude` command in your terminal
 - ✅ **VS Code extension** — Claude Code extension from the VS Code marketplace
 - ✅ **JetBrains IDE extension** — IntelliJ, PyCharm, WebStorm, GoLand, Rider, etc.
-- ✅ **Claude Desktop app → Code tab** — the Desktop app bundles a Claude Code surface in its dedicated "Code" tab; the plugin installs and runs there the same way it does in the CLI.
+- ✅ **Claude Desktop app → Code tab** — the Desktop app bundles a Claude Code surface in its dedicated "Code" tab; the plugin installs and runs there the same way it does in the CLI. ([official docs](https://code.claude.com/docs/en/desktop))
+- ✅ **Claude Agent SDK** — programmatic agent-building library on top of the Anthropic API. Load this plugin with `options.plugins: [{ type: "local", path: "./agent-review-panel" }]` in TypeScript or Python; subagents, skills, slash commands, and filesystem tools all work. See [Plugins in the SDK](https://code.claude.com/docs/en/agent-sdk/plugins).
 
 **Does not work ❌**
-- ❌ **Claude Desktop app → regular chat tabs** — general chat in Desktop has no `Agent` tool and no `/plugin` marketplace, so the plugin can't load there. Use the Code tab instead.
-- ❌ **claude.ai web chat** — same reason: no `Agent` tool, no subagent spawning, no local-filesystem access, no `/plugin` surface.
-- ❌ **Claude API direct** — same reason.
+- ❌ **Claude Desktop app → regular chat tabs** — the chat surface has no `/plugin` marketplace; and although [Agent Skills](https://www.anthropic.com/news/skills) can run there, this plugin's 4–6 parallel reviewers plus three local-file outputs need Claude Code's subagent + filesystem infrastructure. Use the Code tab instead.
+- ❌ **claude.ai web chat** — same reason: no `/plugin` marketplace, and Skills on the web surface can't spawn the parallel subagents or write the `review_panel_*.md`/`.html` files the plugin produces.
+- ❌ **Anthropic Messages API called directly (without the Agent SDK)** — the raw API is a prompt→response interface; it has no plugin loader, no subagent orchestration, and no filesystem. If you want to run the plugin against the API, use the **Claude Agent SDK** entry above.
 
 **Why:** the panel spawns 4–6 reviewer subagents in parallel via Claude Code's `Agent` tool, reads/writes files on your local filesystem to generate the three output reports, and responds to the `/agent-review-panel:agent-review-panel` slash command (or any natural-language "review panel" request). Only Claude Code surfaces expose those capabilities.
 
@@ -489,3 +490,9 @@ See [CHANGELOG.md](CHANGELOG.md) for detailed version history. See [ROADMAP.md](
 - Inspired by [MiroFish](https://github.com/666ghj/MiroFish) — multi-agent prediction engine with heterogeneous agent personalities and memory; influenced auto-persona detection and persona-matched verification agents
 - Eval suite improved using [schliff](https://github.com/Zandereins/schliff)
 - See [HOW_WE_BUILT_THIS.md](HOW_WE_BUILT_THIS.md) for the design journey
+
+### Contributors
+
+External contributions — thank you!
+
+- [@okuuva](https://github.com/okuuva) — [#30](https://github.com/wan-huiyan/agent-review-panel/pull/30) restructured the plugin to the canonical nested skills layout for Claude Code ≥2.1.112 manifest validation (resolves [#28](https://github.com/wan-huiyan/agent-review-panel/issues/28))
