@@ -2,7 +2,7 @@
 
 All notable changes to Agent Review Panel.
 
-## [Unreleased]
+## [2.16.5] — 2026-04-19
 
 ### Fixed — Plugin skills layout for Claude Code ≥2.1.112 manifest validation (PR #30)
 
@@ -14,6 +14,14 @@ Claude Code 2.1.112 rejected both `skills` field values the plugin had historica
 ### Thanks
 
 - [@okuuva](https://github.com/okuuva) — first external contribution, via [#30](https://github.com/wan-huiyan/agent-review-panel/pull/30).
+
+### Bumped
+
+- `package.json`: 2.16.4 → 2.16.5
+- `plugins/agent-review-panel/.claude-plugin/plugin.json`: 2.16.4 → 2.16.5
+- `plugins/agent-review-panel/eval-suite.json`: 2.16.4 → 2.16.5
+- `.claude-plugin/marketplace.json` (roundtable entry): 2.16.4 → 2.16.5
+- `plugins/agent-review-panel/skills/agent-review-panel/SKILL.md`: header `v2.16.4` → `v2.16.5`; HTML footer instruction updated to match
 
 ---
 
