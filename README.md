@@ -489,3 +489,9 @@ See [CHANGELOG.md](CHANGELOG.md) for detailed version history. See [ROADMAP.md](
 - Inspired by [MiroFish](https://github.com/666ghj/MiroFish) — multi-agent prediction engine with heterogeneous agent personalities and memory; influenced auto-persona detection and persona-matched verification agents
 - Eval suite improved using [schliff](https://github.com/Zandereins/schliff)
 - See [HOW_WE_BUILT_THIS.md](HOW_WE_BUILT_THIS.md) for the design journey
+
+### Contributors
+
+External contributions — thank you!
+
+- [@okuuva](https://github.com/okuuva) — [#30](https://github.com/wan-huiyan/agent-review-panel/pull/30) restructured the plugin to the canonical nested skills layout for Claude Code ≥2.1.112 manifest validation (resolves [#28](https://github.com/wan-huiyan/agent-review-panel/issues/28))
