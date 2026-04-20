@@ -23,6 +23,15 @@ Claude Code 2.1.112 rejected both `skills` field values the plugin had historica
 - `.claude-plugin/marketplace.json` (roundtable entry): 2.16.4 → 2.16.5
 - `plugins/agent-review-panel/skills/agent-review-panel/SKILL.md`: header `v2.16.4` → `v2.16.5`; HTML footer instruction updated to match
 
+### Reconciliation — renames and fixes that shipped between 2.16.4 and 2.16.5 without their own CHANGELOG entries
+
+These commits are user-visible and were previously only captured in git history. Recorded here so users and future contributors don't have to reconstruct them from `git log`:
+
+- **[BREAKING — slash commands + install handles] Plugin name `agent-review-panel` → `roundtable`** (commit `a522b00`). The install handle is now `roundtable@agent-review-panel` and the slash command is `/roundtable:agent-review-panel`. Anyone with an older install should follow the "Migration from previous marketplaces" section in the README.
+- **Marketplace name `plugin` → `agent-review-panel`** (commit `00e2149`). The v2.16.1 rename to `plugin` was reverted because `plugin` collided with unrelated marketplaces. Install handle went from `@plugin` back to `@agent-review-panel`.
+- **Phase 15.3 Process Overview corrected** (PR #29, commit `0f8a08b`). SKILL.md's Process Overview diagram previously said 15.2 and 15.3 ran in parallel — this contradicted the v2.16.4 disk-reading implementation, which requires 15.3 to run AFTER 15.2 so the agent can read 15.2's output from disk. Text updated to match the actual behavior ("all sequential: 15.1 → 15.2 → 15.3").
+- **Skills-field flip-flop history** (commits `a841ece`, `a95b022`, `68996f3`). Multiple attempts to set the `plugin.json` `skills` field were made between 2.16.2 and 2.16.4 — `"./"` fails Claude Code ≥2.1.112 validation, `"SKILL.md"` also fails, and no value is portable. The final resolution (2.16.5 via PR #30) is to drop the field entirely and let auto-discovery via the nested `skills/<name>/` directory handle it.
+
 ---
 
 ## [2.16.4] — 2026-04-15
@@ -130,7 +139,7 @@ All 7 test-plan items executed end-to-end using Chrome to render the PR branch R
 - ✅ Anchor: `[Quick Start](#quick-start)` scrolls correctly (from both link instances)
 - ✅ Anchor: `[Updating](#updating-to-the-latest-version)` scrolls correctly
 - ✅ Anchor: `[Manual clone](#manual-clone-development--custom-setup)` scrolls correctly (GitHub's double-hyphen slug for `/` works as predicted)
-- ✅ `grep -c "agent-review-panel@wan-huiyan-agent-review-panel" README.md` returns 7 (was 8 before dedupe)
+- ✅ `grep -c "agent-review-panel@wan-huiyan-agent-review-panel" README.md` returns 7 (was 8 before dedupe) *(note: historical as of v2.16.0 — this count is naturally 0 on current `main` because subsequent marketplace renames removed the pattern; the verification was valid at the time of the PR #20 release)*
 - ✅ All 16 remaining "skill" mentions in README body are contextually correct
 
 ## [2.15.0] — 2026-04-07

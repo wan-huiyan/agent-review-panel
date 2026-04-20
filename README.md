@@ -109,7 +109,7 @@ This plugin **only works on Claude Code surfaces** — or on the **[Claude Agent
 - ❌ **claude.ai web chat** — same reason: no `/plugin` marketplace, and Skills on the web surface can't spawn the parallel subagents or write the `review_panel_*.md`/`.html` files the plugin produces.
 - ❌ **Anthropic Messages API called directly (without the Agent SDK)** — the raw API is a prompt→response interface; it has no plugin loader, no subagent orchestration, and no filesystem. If you want to run the plugin against the API, use the **Claude Agent SDK** entry above.
 
-**Why:** the panel spawns 4–6 reviewer subagents in parallel via Claude Code's `Agent` tool, reads/writes files on your local filesystem to generate the three output reports, and responds to the `/agent-review-panel:agent-review-panel` slash command (or any natural-language "review panel" request). Only Claude Code surfaces expose those capabilities.
+**Why:** the panel spawns 4–6 reviewer subagents in parallel via Claude Code's `Agent` tool, reads/writes files on your local filesystem to generate the three output reports, and responds to the `/roundtable:agent-review-panel` slash command (or any natural-language "review panel" request). Only Claude Code surfaces expose those capabilities.
 
 Don't have Claude Code yet? Install it from **[claude.ai/code](https://claude.ai/code)**, then come back and run the [Quick Start](#quick-start) commands above.
 
@@ -124,9 +124,9 @@ claude plugin marketplace add wan-huiyan/agent-review-panel
 claude plugin install roundtable@agent-review-panel
 ```
 
-Claude Code downloads the plugin to its cache, loads the `agent-review-panel` skill inside it, and activates the trigger phrases automatically. The plugin then activates when you ask for multi-perspective reviews, panel reviews, adversarial reviews, or invoke `/agent-review-panel:agent-review-panel`.
+Claude Code downloads the plugin to its cache, loads the `agent-review-panel` skill inside it, and activates the trigger phrases automatically. The plugin then activates when you ask for multi-perspective reviews, panel reviews, adversarial reviews, or invoke `/roundtable:agent-review-panel`.
 
-> **Command format:** `@<marketplace-name>`, not `@<repo-name>`. The marketplace name is `plugin` (defined in `.claude-plugin/marketplace.json`), which is distinct from the plugin name `agent-review-panel`. Pre-v2.16.1 releases used `@wan-huiyan-agent-review-panel`; pre-v2.16 used `@agent-review-panel`. If you installed under an older marketplace name, see the [Migration](#migration-from-previous-marketplaces) section to switch.
+> **Command format:** `<plugin-name>@<marketplace-name>`. The marketplace name is `agent-review-panel` (defined in `.claude-plugin/marketplace.json`), and the plugin name is `roundtable` (defined in `plugins/agent-review-panel/.claude-plugin/plugin.json`). So the install handle is `roundtable@agent-review-panel` and the slash command is `/roundtable:agent-review-panel`. Pre-v2.16.2 releases briefly used `@plugin` for the marketplace; pre-v2.16.1 releases used `@wan-huiyan-agent-review-panel`; pre-v2.16 used `@agent-review-panel` (with plugin name `agent-review-panel`). If you installed under any older name, see the [Migration](#migration-from-previous-marketplaces) section to switch.
 
 **Why the marketplace path?** The repo ships with `.claude-plugin/marketplace.json` + `plugins/agent-review-panel/.claude-plugin/plugin.json` manifests (v2.16+ canonical layout) that Claude Code reads to register the plugin. The marketplace install handles caching, version tracking, and automatic activation in one step. The manual clone path below still works but doesn't use the manifests — the marketplace flow is the canonical path for v2.14+.
 
@@ -311,7 +311,7 @@ A single reviewer gives you a list. The panel gives you a deliberation — with 
 ```
 > Review this implementation plan from multiple perspectives: docs/my_plan.md
 
-> /agent-review-panel:agent-review-panel
+> /roundtable:agent-review-panel
 
 > Get a panel review of the authentication module — I want to stress-test the design
 
@@ -319,7 +319,7 @@ A single reviewer gives you a list. The panel gives you a deliberation — with 
 
 > Have agents debate whether this refactor is worth the complexity
 
-> /agent-review-panel:agent-review-panel deep   # adds web research for domain best practices
+> /roundtable:agent-review-panel deep   # adds web research for domain best practices
 
 > Do a deep review of this ML pipeline          # also triggers deep research mode
 ```
@@ -354,10 +354,10 @@ Agent Review Panel is grounded in [9 peer-reviewed papers](docs/research-foundat
 
 ## Tests
 
-The project includes a comprehensive test suite (393 tests) using Node.js built-in test runner (zero dependencies):
+The project includes a comprehensive test suite (354 tests) using Node.js built-in test runner (zero dependencies):
 
 ```bash
-npm test                    # run all 393 tests
+npm test                    # run all 354 tests
 npm run test:triggers       # trigger classification (55+ prompts)
 npm run test:manifest       # manifest consistency + phase/opus enforcement
 npm run test:eval-suite     # eval suite integrity + v2.14/v2.15 coverage
@@ -394,18 +394,26 @@ claude plugin install plan-review-integrator@agent-review-panel
 
 ## Migration from previous marketplaces
 
-If you installed before v2.16.1, you used one of the old marketplace names. Migrate from your terminal:
+If you installed under any older marketplace or plugin name, migrate from your terminal. Pick the block matching the version you installed under:
 
 ```bash
-# Old agent-review-panel install
+# A) Pre-v2.16 — plugin name "agent-review-panel", marketplace "agent-review-panel"
+claude plugin uninstall agent-review-panel@agent-review-panel
+claude plugin marketplace remove agent-review-panel
+
+# B) v2.16.0 — marketplace renamed to "wan-huiyan-agent-review-panel"
 claude plugin uninstall agent-review-panel@wan-huiyan-agent-review-panel
 claude plugin marketplace remove wan-huiyan-agent-review-panel
 
-# Old plan-review-integrator standalone install (if applicable)
+# C) v2.16.1 — marketplace briefly named "plugin" (before the v2.16.2 rename-back)
+claude plugin uninstall agent-review-panel@plugin
+claude plugin marketplace remove plugin
+
+# D) Old plan-review-integrator standalone install (if applicable, any version)
 claude plugin uninstall plan-review-integrator@wan-huiyan-plan-review-integrator
 claude plugin marketplace remove wan-huiyan-plan-review-integrator
 
-# New bundled install
+# New bundled install (v2.16.2+ — plugin "roundtable", marketplace "agent-review-panel")
 claude plugin marketplace add wan-huiyan/agent-review-panel
 claude plugin install roundtable@agent-review-panel
 claude plugin install plan-review-integrator@agent-review-panel

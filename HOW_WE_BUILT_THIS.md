@@ -759,7 +759,7 @@ The solution: bundle `plan-review-integrator` INTO `agent-review-panel`'s repo a
 
 ### Implementation
 
-**Marketplace name.** `wan-huiyan-agent-review-panel` → `plugin`. The install command becomes `/plugin install <name>@plugin` — memorable, short, no owner prefix to typo.
+**Marketplace name.** `wan-huiyan-agent-review-panel` → `plugin` (at v2.16.1). The install command became `/plugin install <name>@plugin` — memorable, short, no owner prefix to typo. *(See Step 21: `plugin` collided with unrelated marketplaces and was renamed back to `agent-review-panel` at v2.16.2.)*
 
 **Bundled plugin.** `plugins/plan-review-integrator/` added alongside `plugins/agent-review-panel/`. The upstream `wan-huiyan/plan-review-integrator` repo got archived with a pointer README. plan-review-integrator bumped 1.4.0 → 2.0.0 to mark the marketplace move (a breaking change for the install URL, not plugin behavior). Its eval-suite had drifted from `plugin.json` since the first commit (`eval-suite.json` was at 1.0.0 while `plugin.json` was at 1.4.0) — fixed in the same commit by bumping eval-suite to 2.0.0 in lockstep.
 
@@ -796,27 +796,55 @@ Each plugin's drift was caught **independently** — the refactor did not silent
 
 ---
 
+## Step 21: Hardening Between v2.16.2 and v2.16.5 (2026-04-08 → 2026-04-19)
+
+The two weeks after the multi-plugin bundle shipped surfaced four user-visible issues that didn't warrant their own Step but compounded into a pattern worth documenting.
+
+**v2.16.2 (2026-04-08) — Marketplace rename-back + plugin.json skills-field hotfix.** The `plugin` marketplace name from v2.16.1 (intended to be short and memorable) turned out to collide with other users' marketplaces — "install from `@plugin`" isn't discoverable if half the plugin ecosystem calls theirs the same. Renamed back to `agent-review-panel` (commit `00e2149`). Simultaneously: PR #18's canonical layout move had silently broken all marketplace installs because `plugins/<name>/.claude-plugin/plugin.json` wasn't declaring a `skills` field, and Claude Code's plugin loader only auto-discovers `skills/<name>/SKILL.md` — the root-level `SKILL.md` was never registered. Users who had a pre-PR-#18 manual clone at `~/.claude/skills/agent-review-panel/` didn't notice because the loose-skill install shadowed the broken plugin (same stale-clone gotcha PR #19 documented). PR #24 fixed it by adding `"skills": ["./"]` to plugin.json. Also fixed the README's `/agent-review-panel` slash-command references to the namespaced `/agent-review-panel:agent-review-panel` form.
+
+**v2.16.3 (2026-04-09) — Phase 11 external-domain web verification.** Motivated by a real audit (PUMA GA4) where all 4 reviewers unanimously P0'd "50 months retention = GA4 360" without verifying whether 50 months is even a valid GA4 setting. The Phase 13 verification round only triggers on **disputes**, so consensus findings with shared-model blind spots bypass it entirely. Fix: Phase 11 severity-verification now classifies each P0/P1 as external-domain-claim or internal, and runs a bounded web search (2 queries × 5 claims max) for external claims. New labels `[WEB-VERIFIED]`, `[WEB-CONTRADICTED]` (auto-demotes 1 severity level), `[WEB-INCONCLUSIVE]`.
+
+**v2.16.4 (2026-04-15) — Phase 15.3 reliability fix (PR #26).** Phase 15.3 (HTML report) was silently failing in most runs because the orchestrator's context window was near capacity after 14 phases. The subagent launch would return without writing the file. Four-part fix: (1) sequential 15.1→15.2→15.3 (was parallel — Phase 15.3 now runs AFTER Phase 15.2 so its agent can read 15.2's output from disk instead of receiving it in-context), (2) disk-reading data strategy (orchestrator prompt drops from 700+ lines to ~10 lines — the agent reads `review_panel_report.md`, `review_panel_process.md`, and the rendering spec from `references/prompt-templates.md` directly), (3) mandatory verification gate before completion (`ls -la` the 3 output files, auto-retry once if HTML missing), (4) manual recovery path (user can say "generate the HTML review report" to re-launch). Also unified the version string in SKILL.md's H1 header and HTML footer instruction — both now must match the full semver from `plugin.json`, not the version that introduced the HTML features.
+
+**v2.16.5 (2026-04-19) — Skills layout for Claude Code ≥2.1.112 (PR #30, first external contribution from @okuuva).** Claude Code 2.1.112 hardened its plugin-manifest validator and rejected both `skills` field values the plugin had historically used: `["./"]` fails with *"Path escapes plugin directory"*, `["SKILL.md"]` fails with *"Validation errors: skills: Invalid input"*. Neither value was portable. Fix: restructure to the canonical nested layout (`plugins/<name>/skills/<name>/SKILL.md`) and drop the `skills` field from `plugin.json` entirely, letting auto-discovery handle it. This also had the benefit of being fully spec-compliant — no manifest declarations needed for the default layout.
+
+**Alongside these functional fixes: a plugin rename (v2.16.2).** `agent-review-panel` → `roundtable` for the install handle (commit `a522b00`). The product is still called Agent Review Panel; but the short, memorable install token (`roundtable@agent-review-panel`) matches what users actually type at the REPL. Slash commands correspondingly became `/roundtable:agent-review-panel`.
+
+### Lessons
+
+43. **Rename-back is cheaper than living with a bad name.** v2.16.1's `plugin` marketplace name was intended as an improvement but collided with half the plugin ecosystem naming their marketplaces the same thing. Reverting three days later was straightforward because the migration-block pattern already existed from v2.16.0 → v2.16.1. The lesson: if a name change doesn't improve discoverability, don't wait for more users to install under it.
+
+44. **The `skills` field in plugin.json is a sharp edge.** Between v2.16.2 (`["./"]` added via PR #24 to make SKILL.md load at plugin root) and v2.16.5 (field dropped entirely, SKILL.md moved to nested subdir via PR #30), the field was modified four times in three weeks — every change breaking something. The real fix was structural: stop declaring the field and use the auto-discovery convention. When a manifest field's validation keeps changing across Claude Code versions, prefer a layout that doesn't need the field at all.
+
+45. **Doc drift compounds.** This is the 4th release in a row where README, CHANGELOG, ROADMAP, and HOW_WE_BUILT_THIS.md fell behind the canonical version files. A self-review run with the panel on its own repo (2026-04-19) surfaced three P0 contradictions (stale slash commands, mislabeled marketplace name, incomplete CHANGELOG) and four P1 issues (wrong test count, stale dir diagram, missing migration block, ROADMAP frozen at 2.16.4). The structural fix is a pre-release grep script (`scripts/release-check.sh` added in 2.16.6) that catches prior-version strings + stale install commands across non-canonical files — manual doc upkeep does not scale with release cadence.
+
+---
+
 ## File Inventory
 
 ```
 ├── .claude-plugin/
-│   └── marketplace.json                # Marketplace manifest (name: "plugin", 2 bundled plugins)
+│   └── marketplace.json                # Marketplace manifest (name: "agent-review-panel", 2 bundled plugins)
 ├── plugins/
-│   ├── agent-review-panel/             # This plugin — the multi-agent review panel
+│   ├── agent-review-panel/             # This plugin — the multi-agent review panel (install name: "roundtable")
 │   │   ├── .claude-plugin/
-│   │   │   └── plugin.json             # Plugin metadata (v2.16.1)
-│   │   ├── SKILL.md                    # The skill itself (~1220 lines — 16 phases + sub-phases)
+│   │   │   └── plugin.json             # Plugin metadata (name: "roundtable", v2.16.5)
+│   │   ├── skills/                     # Nested skills layout (v2.16.5, PR #30) — required by Claude Code ≥2.1.112
+│   │   │   └── agent-review-panel/
+│   │   │       ├── SKILL.md            # The skill itself (~1380 lines — 16 phases + sub-phases)
+│   │   │       └── references/         # Companion reference files (moved under skill in v2.16.5)
+│   │   │           ├── signals-and-checklists.md
+│   │   │           ├── prompt-templates.md
+│   │   │           ├── changelog.md
+│   │   │           └── research-v28.md
 │   │   └── eval-suite.json             # Schliff eval suite (triggers + assertions)
-│   └── plan-review-integrator/         # Bundled companion plugin (v2.16.1+)
+│   └── plan-review-integrator/         # Bundled companion plugin (v2.0.1)
 │       ├── .claude-plugin/
-│       │   └── plugin.json             # Plugin metadata (v2.0.0)
-│       ├── SKILL.md                    # The integrator skill
+│       │   └── plugin.json             # Plugin metadata (v2.0.1)
+│       ├── skills/
+│       │   └── plan-review-integrator/
+│       │       └── SKILL.md            # The integrator skill
 │       └── eval-suite.json             # Per-plugin eval suite
-├── references/
-│   ├── signals-and-checklists.md       # 11 signal groups + domain checklists (includes v2.14 Transform + Data Flow Invariants checklists)
-│   ├── prompt-templates.md             # All phase prompt templates (incl. Phase 2 Data Flow Tracer + Phase 16 Merge + Phase 15.3 10-section expandable cards)
-│   ├── changelog.md                    # Version history (v2–v2.15)
-│   └── research-v28.md                 # 19-source v2.8 research compilation
 ├── tests/
 │   ├── trigger-classification.test.mjs   # Multi-plugin — iterates every plugins/<name>/eval-suite.json
 │   ├── manifest-consistency.test.mjs     # Multi-plugin — per-plugin cross-version assertions (PR #21+PR #22)
@@ -835,12 +863,14 @@ Each plugin's drift was caught **independently** — the refactor did not silent
 │       ├── SKILL.v2.md, SKILL.v2.1.md  # Old skill versions
 │       ├── review_panel_report.md      # v2.8 roadmap panel review
 │       └── v25-vs-v26-comparison.md    # A/B test results
+├── scripts/
+│   └── release-check.sh                # Pre-release doc-drift check (v2.16.6+) — greps for stale versions + slash commands
 ├── .github/workflows/
 │   └── test.yml                        # GitHub Actions — runs `npm test` on every push/PR
 ├── README.md                           # User-facing documentation (install via /plugin marketplace add)
-├── HOW_WE_BUILT_THIS.md                # This file (Steps 1–20 chronicling v1–v2.16.1)
+├── HOW_WE_BUILT_THIS.md                # This file (Steps 1–21 chronicling v1–v2.16.5)
 ├── ROADMAP.md                          # Unified research + trust roadmap (22+ papers, 14 projects)
-├── CHANGELOG.md                        # Top-level changelog (v1.0 → v2.16.1)
-├── package.json                        # Node.js test runner config (v2.16.1, locked to agent-review-panel)
+├── CHANGELOG.md                        # Top-level changelog (v1.0 → v2.16.5)
+├── package.json                        # Node.js test runner config (v2.16.5, 354 tests)
 └── LICENSE                             # MIT
 ```
