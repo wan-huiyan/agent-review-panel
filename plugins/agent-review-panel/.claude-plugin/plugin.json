@@ -1,6 +1,6 @@
 {
-  "name": "roundtable",
-  "version": "2.16.5",
+  "name": "agent-review-panel",
+  "version": "2.16.6",
   "description": "Multi-agent adversarial review panel — 4-6 AI reviewers debate your code/plans, then a judge delivers a structured verdict with epistemic labels",
   "author": {
     "name": "wan-huiyan",

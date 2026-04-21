@@ -808,11 +808,11 @@ The two weeks after the multi-plugin bundle shipped surfaced four user-visible i
 
 **v2.16.5 (2026-04-19) — Skills layout for Claude Code ≥2.1.112 (PR #30, first external contribution from @okuuva).** Claude Code 2.1.112 hardened its plugin-manifest validator and rejected both `skills` field values the plugin had historically used: `["./"]` fails with *"Path escapes plugin directory"*, `["SKILL.md"]` fails with *"Validation errors: skills: Invalid input"*. Neither value was portable. Fix: restructure to the canonical nested layout (`plugins/<name>/skills/<name>/SKILL.md`) and drop the `skills` field from `plugin.json` entirely, letting auto-discovery handle it. This also had the benefit of being fully spec-compliant — no manifest declarations needed for the default layout.
 
-**Alongside these functional fixes: a plugin rename (v2.16.2).** `agent-review-panel` → `roundtable` for the install handle (commit `a522b00`). The product is still called Agent Review Panel; but the short, memorable install token (`roundtable@agent-review-panel`) matches what users actually type at the REPL. Slash commands correspondingly became `/roundtable:agent-review-panel`.
+**Alongside these functional fixes: a plugin rename (v2.16.2) that was later reverted (v2.16.6).** `agent-review-panel` → `roundtable` for the install handle (commit `a522b00`) at v2.16.2; then `roundtable` → `agent-review-panel` at v2.16.6. The v2.16.2 rename was motivated by wanting a shorter, more memorable install token — `roundtable@agent-review-panel` instead of the doubled `agent-review-panel@agent-review-panel`. The v2.16.6 revert was motivated by the realization that the short name introduced three-layer naming divergence (skill=`agent-review-panel`, plugin=`roundtable`, marketplace=`agent-review-panel`) that made every piece of user documentation more complex for a single-character-count win. Collapsing all three layers to the same name produces `agent-review-panel@agent-review-panel` and `/agent-review-panel:agent-review-panel` — doubled but self-explanatory.
 
 ### Lessons
 
-43. **Rename-back is cheaper than living with a bad name.** v2.16.1's `plugin` marketplace name was intended as an improvement but collided with half the plugin ecosystem naming their marketplaces the same thing. Reverting three days later was straightforward because the migration-block pattern already existed from v2.16.0 → v2.16.1. The lesson: if a name change doesn't improve discoverability, don't wait for more users to install under it.
+43. **Rename-back is cheaper than living with a bad name — corollary: don't introduce naming divergence across layers without a strong reason.** v2.16.1's `plugin` marketplace name was reverted three days later (colliding with ecosystem defaults). v2.16.2's `roundtable` plugin rename was reverted two weeks later — it was shorter but introduced skill/plugin/marketplace divergence that made every doc page more complex. The `agent-review-panel@agent-review-panel` doubled form is uglier but explains itself. Rule of thumb: if the plugin does one thing and the skill inside it is the thing, name them the same and let the `<plugin>:<skill>` namespacing be visibly redundant. Clever short names cost more in documentation than they save in typing.
 
 44. **The `skills` field in plugin.json is a sharp edge.** Between v2.16.2 (`["./"]` added via PR #24 to make SKILL.md load at plugin root) and v2.16.5 (field dropped entirely, SKILL.md moved to nested subdir via PR #30), the field was modified four times in three weeks — every change breaking something. The real fix was structural: stop declaring the field and use the auto-discovery convention. When a manifest field's validation keeps changing across Claude Code versions, prefer a layout that doesn't need the field at all.
 
@@ -826,9 +826,9 @@ The two weeks after the multi-plugin bundle shipped surfaced four user-visible i
 ├── .claude-plugin/
 │   └── marketplace.json                # Marketplace manifest (name: "agent-review-panel", 2 bundled plugins)
 ├── plugins/
-│   ├── agent-review-panel/             # This plugin — the multi-agent review panel (install name: "roundtable")
+│   ├── agent-review-panel/             # This plugin — the multi-agent review panel (install name: "agent-review-panel")
 │   │   ├── .claude-plugin/
-│   │   │   └── plugin.json             # Plugin metadata (name: "roundtable", v2.16.5)
+│   │   │   └── plugin.json             # Plugin metadata (name: "agent-review-panel", v2.16.6)
 │   │   ├── skills/                     # Nested skills layout (v2.16.5, PR #30) — required by Claude Code ≥2.1.112
 │   │   │   └── agent-review-panel/
 │   │   │       ├── SKILL.md            # The skill itself (~1380 lines — 16 phases + sub-phases)
@@ -868,9 +868,9 @@ The two weeks after the multi-plugin bundle shipped surfaced four user-visible i
 ├── .github/workflows/
 │   └── test.yml                        # GitHub Actions — runs `npm test` on every push/PR
 ├── README.md                           # User-facing documentation (install via /plugin marketplace add)
-├── HOW_WE_BUILT_THIS.md                # This file (Steps 1–21 chronicling v1–v2.16.5)
+├── HOW_WE_BUILT_THIS.md                # This file (Steps 1–21 chronicling v1–v2.16.6)
 ├── ROADMAP.md                          # Unified research + trust roadmap (22+ papers, 14 projects)
-├── CHANGELOG.md                        # Top-level changelog (v1.0 → v2.16.5)
-├── package.json                        # Node.js test runner config (v2.16.5, 354 tests)
+├── CHANGELOG.md                        # Top-level changelog (v1.0 → v2.16.6)
+├── package.json                        # Node.js test runner config (v2.16.6, 354 tests)
 └── LICENSE                             # MIT
 ```

@@ -1,6 +1,6 @@
 {
-  "name": "roundtable",
-  "version": "2.16.5",
+  "name": "agent-review-panel",
+  "version": "2.16.6",
   "private": true,
   "description": "Multi-agent adversarial review panel for Claude Code",
   "scripts": {

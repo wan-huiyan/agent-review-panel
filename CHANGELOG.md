@@ -2,6 +2,55 @@
 
 All notable changes to Agent Review Panel.
 
+## [2.16.6] — 2026-04-19
+
+### Changed — Plugin name reverted: `roundtable` → `agent-review-panel`
+
+The v2.16.2 rename of the plugin install handle from `agent-review-panel` to `roundtable` (commit `a522b00`) is **reverted**. The plugin is once again named `agent-review-panel`, matching the skill name, the repo name, and the marketplace name. All three layers — skill, plugin, marketplace — are now consistently named `agent-review-panel`.
+
+- **Install handle** is now `agent-review-panel@agent-review-panel` (was `roundtable@agent-review-panel` in v2.16.2–v2.16.5).
+- **Slash command** is now `/agent-review-panel:agent-review-panel` (was `/roundtable:agent-review-panel`). The doubled form reflects the `/<plugin>:<skill>` namespacing with plugin==skill==`agent-review-panel`.
+- **Breaking change for anyone who installed under `@roundtable`.** See the expanded "Migration from previous marketplaces" section in the README for the one-line `uninstall roundtable@agent-review-panel` → reinstall flow.
+
+**Why the revert.** The `roundtable` name was short and memorable but introduced three-layer naming divergence (skill=`agent-review-panel`, plugin=`roundtable`, marketplace=`agent-review-panel`) that (a) turned the slash command into a non-obvious `/roundtable:agent-review-panel` with no visible connection to the product name, (b) required every doc to explain the mapping, (c) diverged the install token from the discovery path (users who search for "agent review panel" wouldn't find `roundtable`). Reverting collapses all three layers to the same name; the slash command `/agent-review-panel:agent-review-panel` is doubled but self-explanatory.
+
+### Fixed — Documentation sweep for v2.16.2–v2.16.5 drift (the same PR)
+
+A self-review panel run on this repo (2026-04-19) surfaced 3 P0 + 4 P1 + 2 P2 + 1 P3 doc inconsistencies accumulated across the previous four releases. All fixed in this PR:
+
+- **[P0]** 4× stale `/agent-review-panel:agent-review-panel` slash commands at [README.md:112,127,314,322](README.md) — no longer stale after this revert; the references are correct again.
+- **[P0]** [README.md:129](README.md:129) marketplace-name callout had said "marketplace name is `plugin`" — rewritten with full rename history and the correct current names.
+- **[P0]** [CHANGELOG.md:5-25](CHANGELOG.md:5) 2.16.5 entry omitted the `roundtable` rename (a522b00), marketplace rename-back (00e2149), Phase 15.3 Process-Overview fix (0f8a08b), and skills-field flip-flop history — added as a Reconciliation block in the 2.16.5 section.
+- **[P1]** Test count claim in [README.md:357,360](README.md:357): "393 tests" → "354 tests" (actual).
+- **[P1]** [HOW_WE_BUILT_THIS.md:807-844](HOW_WE_BUILT_THIS.md:807) directory diagram was documenting the pre-v2.16.5 broken layout; updated to nested skills layout. Added Step 21 covering v2.16.2–v2.16.6.
+- **[P1]** Migration section in README expanded from one path (`@wan-huiyan-agent-review-panel`) to five (`@agent-review-panel` pre-v2.16, `@wan-huiyan-agent-review-panel`, `@plugin`, old `plan-review-integrator` standalone, `@roundtable`).
+- **[P1]** ROADMAP version table extended with v2.16.5 + v2.16.6 rows; v2.16.1 stale phrasing corrected; v2.16.2 row now covers the full hotfix bundle.
+- **[P2]** `.claude-plugin/marketplace.json` bundle description re-points to `agent-review-panel` (after the revert).
+- **[P2]** [CHANGELOG.md:133](CHANGELOG.md:133) historical grep assertion annotated as valid at time of PR #20 (count is 0 on current main after subsequent renames).
+
+### Added — `scripts/release-check.sh`
+
+A pre-release doc-drift detector that would have caught every P0 in this PR as a CI regression. Asserts:
+
+1. Slash-command consistency (derives correct form from `plugin.json` plugin name).
+2. Marketplace-name callout consistency (derives canonical name from `marketplace.json`).
+3. Test-count claim matches actual `npm test` output.
+4. Canonical version from `plugin.json` matches version strings in `package.json`, `eval-suite.json`, SKILL.md h1 header, SKILL.md HTML footer instruction, and marketplace.json entry.
+5. ROADMAP version table has a row for the canonical version.
+6. CHANGELOG has a section for the canonical version.
+
+Not yet wired into CI — follow-up PR will add it to `.github/workflows/test.yml`.
+
+### Bumped
+
+- `package.json`: 2.16.5 → 2.16.6 (+ `"name": "roundtable"` → `"name": "agent-review-panel"`)
+- `plugins/agent-review-panel/.claude-plugin/plugin.json`: 2.16.5 → 2.16.6 (+ `"name": "roundtable"` → `"name": "agent-review-panel"`)
+- `plugins/agent-review-panel/eval-suite.json`: 2.16.5 → 2.16.6
+- `.claude-plugin/marketplace.json` (agent-review-panel entry): 2.16.5 → 2.16.6 (+ entry name `roundtable` → `agent-review-panel`, + description updated)
+- `plugins/agent-review-panel/skills/agent-review-panel/SKILL.md`: header `v2.16.5` → `v2.16.6`; HTML footer instruction updated to match
+
+---
+
 ## [2.16.5] — 2026-04-19
 
 ### Fixed — Plugin skills layout for Claude Code ≥2.1.112 manifest validation (PR #30)

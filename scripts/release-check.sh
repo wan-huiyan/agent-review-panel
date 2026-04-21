@@ -133,12 +133,12 @@ if [ -n "$FOOTER_LINE" ]; then
   fi
 fi
 
-# Marketplace entry version
-MP_ENTRY_VERSION=$(grep -A3 '"name": "roundtable"' .claude-plugin/marketplace.json | grep '"version"' | sed -E 's/.*"([^"]+)".*/\1/' || true)
+# Marketplace entry version — match by the current plugin name (auto-detected above)
+MP_ENTRY_VERSION=$(grep -A3 "\"name\": \"${PLUGIN_NAME}\"" .claude-plugin/marketplace.json | grep '"version"' | head -1 | sed -E 's/.*"([^"]+)".*/\1/' || true)
 if [ -n "$MP_ENTRY_VERSION" ] && [ "$MP_ENTRY_VERSION" != "$CANON_VERSION" ]; then
-  fail "marketplace.json roundtable entry version ($MP_ENTRY_VERSION) does NOT match canonical ($CANON_VERSION)"
+  fail "marketplace.json ${PLUGIN_NAME} entry version ($MP_ENTRY_VERSION) does NOT match canonical ($CANON_VERSION)"
 elif [ -n "$MP_ENTRY_VERSION" ]; then
-  pass "marketplace.json roundtable entry version matches canonical"
+  pass "marketplace.json ${PLUGIN_NAME} entry version matches canonical"
 fi
 
 # --- 6. ROADMAP has a row for the canonical version --------------------------
