@@ -75,6 +75,22 @@ else
 fi
 
 # --- 3. Marketplace-name callout consistency ---------------------------------
+#
+# Two-way invariant (added v3.0.x): the README must contain a stable HTML-comment
+# marker around the marketplace-name callout. The marker exists so that deletion
+# of the callout fails CI rather than silently neutering this lint. (See review
+# panel verdict 2026-04-27 — a previous proposal would have deleted the callout
+# without notice; the value-disagreement check below would have continued to pass
+# because the grep returns empty when the string is absent.)
+
+MARKER_OPEN="<!-- release-check:marketplace-name-callout"
+MARKER_CLOSE="<!-- /release-check:marketplace-name-callout"
+
+if grep -qF "$MARKER_OPEN" README.md && grep -qF "$MARKER_CLOSE" README.md; then
+  pass "Marketplace-name callout marker present in README.md"
+else
+  fail "README.md is missing the release-check:marketplace-name-callout marker pair. Either restore the callout (with both opening and closing markers) or update this script to remove the invariant. See lines around the README's '@<marketplace-name>' callout."
+fi
 
 # Look for "marketplace name is X" claims that disagree with actual marketplace.json name
 BAD_CALLOUTS=$(grep -n "marketplace name is" README.md HOW_WE_BUILT_THIS.md 2>/dev/null \

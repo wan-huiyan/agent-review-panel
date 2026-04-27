@@ -92,7 +92,7 @@ Restart your Claude Code session after install.
 > /roundtable:agent-review-panel
 ```
 
-> ⚠️ **Plugin slash commands are namespaced as `/<plugin>:<skill>`**. The plugin is `roundtable` (the bundle); the bundled skills are `agent-review-panel` and `plan-review-integrator`. So the slash forms are `/roundtable:agent-review-panel` and `/roundtable:plan-review-integrator` — they read as "the X skill of the roundtable." Natural-language invocation (the first example above — "Review this implementation plan from multiple perspectives: ...") works without the slash command because it triggers by the skill's description, not by exact slash match. Use whichever feels more natural.
+> ⚠️ Slash commands are `/<plugin>:<skill>` — `/roundtable:agent-review-panel` and `/roundtable:plan-review-integrator`. Natural-language invocation also works (the skill's description triggers it), so use whichever feels natural.
 
 **What you get:** Three output files:
 - `review_panel_report.md` — executive summary, consensus, disagreements (with judge rulings), prioritized action items tagged with epistemic labels
@@ -156,20 +156,20 @@ Don't have Claude Code yet? Install it from **[claude.ai/code](https://claude.ai
 
 ### Claude Code marketplace (recommended)
 
-The two install commands are shown in [Quick Start](#quick-start) above. This section explains what they do, covers the shell/CLI equivalent, and links to [Updating](#updating-to-the-latest-version) + [Manual clone](#manual-clone-development--custom-setup) alternatives.
-
-**Shell / CLI equivalent** (instead of typing slash commands in the Claude Code REPL):
+Install commands appear in [Quick Start](#quick-start). The shell-form equivalent (for users running in a terminal rather than the Claude Code REPL):
 
 ```bash
 claude plugin marketplace add wan-huiyan/agent-review-panel
 claude plugin install roundtable@agent-review-panel
 ```
 
-Claude Code downloads the plugin to its cache, loads the `agent-review-panel` skill inside it, and activates the trigger phrases automatically. The plugin then activates when you ask for multi-perspective reviews, panel reviews, adversarial reviews, or invoke `/roundtable:agent-review-panel`.
+Claude Code caches the plugin, loads its skills, and activates trigger phrases automatically.
 
-> **Command format:** `@<marketplace-name>`, not `@<repo-name>`. The marketplace name is `agent-review-panel` (defined in `.claude-plugin/marketplace.json`); the plugin install name inside it is `roundtable` (the bundle). Hence `roundtable@agent-review-panel`. Pre-v2.16.1 releases used `@wan-huiyan-agent-review-panel`; pre-v2.16 used `@agent-review-panel`. If you installed under an older marketplace name, see the [Migration](#migration-from-previous-marketplaces) section to switch.
+<!-- release-check:marketplace-name-callout — load-bearing for scripts/release-check.sh; do not delete without updating both -->
+> **Command format:** `@<marketplace-name>`, not `@<repo-name>`. The marketplace name is `agent-review-panel` (defined in `.claude-plugin/marketplace.json`); the plugin install name inside it is `roundtable`. Hence `roundtable@agent-review-panel`. Pre-v2.16.1 releases used `@wan-huiyan-agent-review-panel`; pre-v2.16 used `@agent-review-panel`. If you installed under an older marketplace name, see [Migration](#migration-from-previous-marketplaces).
+<!-- /release-check:marketplace-name-callout -->
 
-**Why the marketplace path?** The repo ships with `.claude-plugin/marketplace.json` + `.claude-plugin/plugin.json` manifests at the repo root (v3.0+ single-plugin layout) that Claude Code reads to register the plugin. The marketplace install handles caching, version tracking, and automatic activation in one step. The manual clone path below still works but doesn't use the manifests — the marketplace flow is the canonical path for v2.14+.
+**Why the marketplace path?** The repo ships `.claude-plugin/marketplace.json` + `.claude-plugin/plugin.json` manifests (v3.0+ single-plugin layout) that Claude Code reads to register the plugin — the marketplace install handles caching, version tracking, and activation in one step. Manual clone (below) works but bypasses the manifests.
 
 ### Updating to the latest version
 
