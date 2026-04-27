@@ -283,4 +283,4 @@ Techniques evaluated and rejected for our use case.
 
 ---
 
-*This roadmap is maintained alongside the plugin at `plugins/agent-review-panel/SKILL.md`. For the bundled `plan-review-integrator` plugin, see `plugins/plan-review-integrator/SKILL.md`.*
+*This roadmap is maintained alongside the marquee skill at `skills/agent-review-panel/SKILL.md`. For the bundled `plan-review-integrator` skill, see `skills/plan-review-integrator/SKILL.md`. (v3.0+ single-plugin layout — pre-v3.0 these lived under `plugins/<name>/`.)*

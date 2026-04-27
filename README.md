@@ -25,7 +25,6 @@ A [Claude Code](https://claude.ai/code) **plugin** that orchestrates multi-agent
 ```bash
 claude plugin marketplace add wan-huiyan/agent-review-panel
 claude plugin install roundtable@agent-review-panel
-claude plugin install plan-review-integrator@agent-review-panel    # optional companion: integrate review findings into plans
 ```
 
 <details>
@@ -36,13 +35,12 @@ Type these at the REPL prompt (note the leading `/` and no `claude` prefix):
 ```
 /plugin marketplace add wan-huiyan/agent-review-panel
 /plugin install roundtable@agent-review-panel
-/plugin install plan-review-integrator@agent-review-panel
 ```
 
 Both forms do the same thing. Pick whichever matches where you are: shell-form `claude plugin …` for terminal, REPL-form `/plugin …` for inside Claude Code.
 </details>
 
-> The marketplace bundles **two plugins**: `roundtable` (this project) and `plan-review-integrator` (the review→integrate companion). See [Bundled plugins](#bundled-plugins) below.
+> The `roundtable` plugin bundles **two skills**: `agent-review-panel` (the review panel) and `plan-review-integrator` (the review→integrate companion). One install gets you both. See [Bundled skills](#bundled-skills) below.
 
 **Use:**
 ```
@@ -126,9 +124,9 @@ claude plugin install roundtable@agent-review-panel
 
 Claude Code downloads the plugin to its cache, loads the `agent-review-panel` skill inside it, and activates the trigger phrases automatically. The plugin then activates when you ask for multi-perspective reviews, panel reviews, adversarial reviews, or invoke `/agent-review-panel:agent-review-panel`.
 
-> **Command format:** `@<marketplace-name>`, not `@<repo-name>`. The marketplace name is `plugin` (defined in `.claude-plugin/marketplace.json`), which is distinct from the plugin name `agent-review-panel`. Pre-v2.16.1 releases used `@wan-huiyan-agent-review-panel`; pre-v2.16 used `@agent-review-panel`. If you installed under an older marketplace name, see the [Migration](#migration-from-previous-marketplaces) section to switch.
+> **Command format:** `@<marketplace-name>`, not `@<repo-name>`. The marketplace name is `agent-review-panel` (defined in `.claude-plugin/marketplace.json`), which happens to coincide with the marquee skill name; the plugin install name is `roundtable`. Pre-v2.16.1 releases used `@wan-huiyan-agent-review-panel`; pre-v2.16 used `@agent-review-panel`. If you installed under an older marketplace name, see the [Migration](#migration-from-previous-marketplaces) section to switch.
 
-**Why the marketplace path?** The repo ships with `.claude-plugin/marketplace.json` + `plugins/agent-review-panel/.claude-plugin/plugin.json` manifests (v2.16+ canonical layout) that Claude Code reads to register the plugin. The marketplace install handles caching, version tracking, and automatic activation in one step. The manual clone path below still works but doesn't use the manifests — the marketplace flow is the canonical path for v2.14+.
+**Why the marketplace path?** The repo ships with `.claude-plugin/marketplace.json` + `.claude-plugin/plugin.json` manifests at the repo root (v3.0+ single-plugin layout) that Claude Code reads to register the plugin. The marketplace install handles caching, version tracking, and automatic activation in one step. The manual clone path below still works but doesn't use the manifests — the marketplace flow is the canonical path for v2.14+.
 
 ### Updating to the latest version
 
@@ -370,27 +368,22 @@ Manifest tests enforce key invariants introduced in v2.14/v2.15:
 - All 16 phases present in SKILL.md (Phase 1 through Phase 16, no decimal numbering)
 - Every `subagent_type:` launch co-occurs with `model: "opus"` (force-opus enforcement)
 - Phase 15.3 spec documents all 10 expandable-card accordion sections
-- The canonical `SKILL.md` lives at `plugins/agent-review-panel/SKILL.md` (v2.16+ plugin layout, see PR #18)
+- The canonical `SKILL.md` lives at `skills/agent-review-panel/SKILL.md` (v3.0+ single-plugin layout)
 
-## Bundled plugins
+## Bundled skills
 
-This marketplace ships **two plugins** in one repository. They are independently installable; install only what you need.
+The `roundtable` plugin ships **two skills** in one install. Both load together; you don't install them separately.
 
-| Plugin | Source | What It Does | When to Use |
+| Skill | Source | What It Does | When to Use |
 |---|---|---|---|
-| `agent-review-panel` | [`plugins/agent-review-panel/`](plugins/agent-review-panel/) | Multi-agent adversarial review panel — 4–6 reviewers debate, judge renders final verdict (this project, v2.16.1) | When you need a structured review of code, plans, docs, or configs |
-| `plan-review-integrator` | [`plugins/plan-review-integrator/`](plugins/plan-review-integrator/) | Takes review panel output and integrates findings into an implementation plan — classifies each finding, applies concrete edits, produces a traceability summary (v2.0.0) | After a panel review of a plan document, when you need findings reflected in the plan with traceability |
+| `agent-review-panel` | [`skills/agent-review-panel/`](skills/agent-review-panel/) | Multi-agent adversarial review panel — 4–6 reviewers debate, judge renders final verdict (v3.0.0) | When you need a structured review of code, plans, docs, or configs |
+| `plan-review-integrator` | [`skills/plan-review-integrator/`](skills/plan-review-integrator/) | Takes review panel output and integrates findings into an implementation plan — classifies each finding, applies concrete edits, produces a traceability summary (v2.0.1) | After a panel review of a plan document, when you need findings reflected in the plan with traceability |
 
-Install both for the full review→integrate pipeline. From your terminal:
+Both are activated by their natural-language descriptions or via slash commands `/roundtable:agent-review-panel` and `/roundtable:plan-review-integrator`.
 
-```bash
-claude plugin install roundtable@agent-review-panel
-claude plugin install plan-review-integrator@agent-review-panel
-```
+> **v3.0 layout change:** Pre-v3.0 these were two independently-installable plugins (`roundtable` and `plan-review-integrator`). v3.0 collapsed them into one plugin (`roundtable`) bundling both skills, mirroring the single-plugin pattern used by [obra/superpowers](https://github.com/obra/superpowers). One install command, both skills available. If you previously ran `claude plugin install plan-review-integrator@agent-review-panel`, that command no longer exists — install just `roundtable@agent-review-panel` and you'll get both skills. See [Migration](#migration-from-previous-marketplaces).
 
-(Or, inside a Claude Code session, use the REPL form: `/plugin install roundtable@agent-review-panel` and `/plugin install plan-review-integrator@agent-review-panel`.)
-
-`plan-review-integrator` was previously published as a standalone repo at `wan-huiyan/plan-review-integrator`. That repo is now **archived** in favor of the bundled distribution here. See [Migration](#migration-from-previous-marketplaces) for upgrade instructions.
+`plan-review-integrator` was previously published as a standalone repo at `wan-huiyan/plan-review-integrator`. That repo is **archived** in favor of the bundled distribution here.
 
 ## Migration from previous marketplaces
 
@@ -405,10 +398,9 @@ claude plugin marketplace remove wan-huiyan-agent-review-panel
 claude plugin uninstall plan-review-integrator@wan-huiyan-plan-review-integrator
 claude plugin marketplace remove wan-huiyan-plan-review-integrator
 
-# New bundled install
+# New bundled install (v3.0+: one plugin, both skills bundled)
 claude plugin marketplace add wan-huiyan/agent-review-panel
 claude plugin install roundtable@agent-review-panel
-claude plugin install plan-review-integrator@agent-review-panel
 ```
 
 <details>
@@ -421,7 +413,6 @@ claude plugin install plan-review-integrator@agent-review-panel
 /plugin marketplace remove wan-huiyan-plan-review-integrator
 /plugin marketplace add wan-huiyan/agent-review-panel
 /plugin install roundtable@agent-review-panel
-/plugin install plan-review-integrator@agent-review-panel
 ```
 
 </details>

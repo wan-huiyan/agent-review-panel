@@ -1,6 +1,6 @@
 ---
 name: plan-review-integrator
-version: 2.0.0
+version: 2.0.1
 author: wan-huiyan
 description: >
   Integrate structured review panel findings into an implementation plan document.

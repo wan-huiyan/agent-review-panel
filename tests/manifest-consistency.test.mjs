@@ -1,10 +1,14 @@
 /**
- * Manifest Consistency Tests — Multi-Plugin Marketplace
+ * Manifest Consistency Tests — Single-Plugin Layout
  *
- * Cross-validates version, name, and description across all manifest files
- * for ALL plugins in this marketplace. Iterates over plugins/<name>/ entries
- * and validates each plugin's manifests independently against the marketplace
- * entry, plus shared root files (package.json) where applicable.
+ * As of v3.0.0 the repo is a single Claude Code plugin (".claude-plugin/plugin.json"
+ * at root) that bundles multiple skills under "skills/<name>/SKILL.md". Marketplace
+ * source path is "./". This test cross-validates:
+ *   - root plugin.json has required fields and valid semver
+ *   - marketplace.json's single entry resolves source to repo root and matches plugin.json
+ *   - every "skills/<name>/SKILL.md" has frontmatter with a name
+ *   - every "skills/<name>/eval-suite.json" has well-formed top-level fields and unique IDs
+ *   - the "marquee" skill that shares its name with the plugin tracks plugin.json version
  */
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
@@ -32,83 +36,14 @@ function extractFrontmatter(md) {
 }
 
 // ---------------------------------------------------------------------------
-// Discover ALL plugins under plugins/<name>/.claude-plugin/plugin.json
+// Discover the single root plugin and its bundled skills
 // ---------------------------------------------------------------------------
 
-function discoverPlugins() {
-  const pluginsRoot = resolve(ROOT, "plugins");
-  const plugins = [];
+const pluginJsonPath = resolve(ROOT, ".claude-plugin/plugin.json");
+const pluginJson = existsSync(pluginJsonPath)
+  ? JSON.parse(readFileSync(pluginJsonPath, "utf-8"))
+  : null;
 
-  if (existsSync(pluginsRoot)) {
-    for (const entry of readdirSync(pluginsRoot, { withFileTypes: true })) {
-      if (!entry.isDirectory()) continue;
-      const dir = resolve(pluginsRoot, entry.name);
-      const pluginJsonPath = resolve(dir, ".claude-plugin/plugin.json");
-      if (!existsSync(pluginJsonPath)) continue;
-
-      const skillMdPath = resolve(dir, "SKILL.md");
-      const evalSuitePath = resolve(dir, "eval-suite.json");
-
-      // Optional secondary nested SKILL.md at plugins/<name>/skills/<sub>/SKILL.md
-      let nestedSkillMdPath = null;
-      const skillsSubdir = resolve(dir, "skills");
-      if (existsSync(skillsSubdir)) {
-        try {
-          for (const sub of readdirSync(skillsSubdir, { withFileTypes: true })) {
-            if (!sub.isDirectory()) continue;
-            const candidate = resolve(skillsSubdir, sub.name, "SKILL.md");
-            if (existsSync(candidate)) {
-              nestedSkillMdPath = candidate;
-              break;
-            }
-          }
-        } catch { /* ignore */ }
-      }
-
-      plugins.push({
-        dirName: entry.name,
-        pluginJsonPath,
-        pluginJson: JSON.parse(readFileSync(pluginJsonPath, "utf-8")),
-        skillMdPath: existsSync(skillMdPath) ? skillMdPath : null,
-        skillMd: existsSync(skillMdPath) ? readFileSync(skillMdPath, "utf-8") : null,
-        evalSuitePath: existsSync(evalSuitePath) ? evalSuitePath : null,
-        evalSuite: existsSync(evalSuitePath)
-          ? JSON.parse(readFileSync(evalSuitePath, "utf-8"))
-          : null,
-        nestedSkillMdPath,
-        nestedSkillMd: nestedSkillMdPath ? readFileSync(nestedSkillMdPath, "utf-8") : null,
-      });
-    }
-  }
-
-  // Legacy fallback: a single plugin.json at the marketplace root
-  if (plugins.length === 0) {
-    const legacyPluginJson = resolve(ROOT, ".claude-plugin/plugin.json");
-    if (existsSync(legacyPluginJson)) {
-      const legacySkillMd = resolve(ROOT, "SKILL.md");
-      const legacyEvalSuite = resolve(ROOT, "eval-suite.json");
-      plugins.push({
-        dirName: "(legacy-root)",
-        pluginJsonPath: legacyPluginJson,
-        pluginJson: JSON.parse(readFileSync(legacyPluginJson, "utf-8")),
-        skillMdPath: existsSync(legacySkillMd) ? legacySkillMd : null,
-        skillMd: existsSync(legacySkillMd) ? readFileSync(legacySkillMd, "utf-8") : null,
-        evalSuitePath: existsSync(legacyEvalSuite) ? legacyEvalSuite : null,
-        evalSuite: existsSync(legacyEvalSuite)
-          ? JSON.parse(readFileSync(legacyEvalSuite, "utf-8"))
-          : null,
-        nestedSkillMdPath: null,
-        nestedSkillMd: null,
-      });
-    }
-  }
-
-  return plugins;
-}
-
-const plugins = discoverPlugins();
-
-// Shared root files
 const marketplaceJsonPath = resolve(ROOT, ".claude-plugin/marketplace.json");
 const marketplaceJson = existsSync(marketplaceJsonPath)
   ? JSON.parse(readFileSync(marketplaceJsonPath, "utf-8"))
@@ -119,73 +54,158 @@ const packageJson = existsSync(packageJsonPath)
   ? JSON.parse(readFileSync(packageJsonPath, "utf-8"))
   : null;
 
+function discoverSkills() {
+  const skillsRoot = resolve(ROOT, "skills");
+  const skills = [];
+  if (!existsSync(skillsRoot)) return skills;
+
+  for (const entry of readdirSync(skillsRoot, { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue;
+    const dir = resolve(skillsRoot, entry.name);
+    const skillMdPath = resolve(dir, "SKILL.md");
+    if (!existsSync(skillMdPath)) continue;
+    const evalSuitePath = resolve(dir, "eval-suite.json");
+
+    skills.push({
+      dirName: entry.name,
+      skillMdPath,
+      skillMd: readFileSync(skillMdPath, "utf-8"),
+      evalSuitePath: existsSync(evalSuitePath) ? evalSuitePath : null,
+      evalSuite: existsSync(evalSuitePath)
+        ? JSON.parse(readFileSync(evalSuitePath, "utf-8"))
+        : null,
+    });
+  }
+  return skills;
+}
+
+const skills = discoverSkills();
+
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
 
 describe("Manifest consistency", () => {
-  describe("Plugin discovery", () => {
-    it("found at least one plugin", () => {
-      assert.ok(plugins.length > 0, "must discover at least one plugin");
+  describe("Root plugin.json", () => {
+    it("exists at .claude-plugin/plugin.json", () => {
+      assert.ok(pluginJson, "root .claude-plugin/plugin.json must exist");
+    });
+
+    it("has required fields", () => {
+      assert.ok(pluginJson.name, "must have name");
+      assert.ok(pluginJson.version, "must have version");
+      assert.ok(pluginJson.description, "must have description");
+    });
+
+    it("has valid semver version", () => {
+      assert.match(
+        pluginJson.version,
+        /^\d+\.\d+\.\d+$/,
+        "version must be semver (e.g., 1.2.3)"
+      );
     });
   });
 
-  // ---------------------------------------------------------------------------
-  // Per-plugin assertions: every plugin's manifests are internally consistent
-  // ---------------------------------------------------------------------------
-  for (const plugin of plugins) {
-    describe(`Plugin: ${plugin.dirName}`, () => {
-      describe("plugin.json", () => {
-        it("has required fields", () => {
-          assert.ok(plugin.pluginJson.name, "must have name");
-          assert.ok(plugin.pluginJson.version, "must have version");
-          assert.ok(plugin.pluginJson.description, "must have description");
+  describe("Skill discovery", () => {
+    it("found at least one skill under skills/", () => {
+      assert.ok(skills.length > 0, "must discover at least one skill");
+    });
+  });
+
+  for (const skill of skills) {
+    describe(`Skill: ${skill.dirName}`, () => {
+      describe("SKILL.md", () => {
+        const fm = extractFrontmatter(skill.skillMd);
+
+        it("has YAML frontmatter with name", () => {
+          assert.ok(fm.name, "SKILL.md must have a name in frontmatter");
         });
 
-        it("has valid semver version", () => {
-          assert.match(
-            plugin.pluginJson.version,
-            /^\d+\.\d+\.\d+$/,
-            "version must be semver (e.g., 1.2.3)"
+        it("frontmatter name matches directory name", () => {
+          assert.equal(
+            fm.name,
+            skill.dirName,
+            `SKILL.md frontmatter name "${fm.name}" must match directory "${skill.dirName}"`
           );
         });
+
+        // The "marquee" skill that shares its name with the plugin tracks
+        // plugin.json's major.minor in any H1/footer version reference. Other
+        // skills version independently.
+        const isMarquee = skill.dirName === pluginJson?.name;
+        const semverMatch = pluginJson?.version?.match(/^(\d+)\.(\d+)\.\d+/);
+
+        if (isMarquee && semverMatch) {
+          const [, pluginMajor, pluginMinor] = semverMatch;
+
+          it("H1 header version matches plugin.json major.minor (if H1 carries a version)", () => {
+            const headerMatch = skill.skillMd.match(
+              /^#\s+.+?\sv(\d+)\.(\d+)\b/m
+            );
+            if (!headerMatch) return;
+            const [, headerMajor, headerMinor] = headerMatch;
+            assert.equal(
+              `${headerMajor}.${headerMinor}`,
+              `${pluginMajor}.${pluginMinor}`,
+              `SKILL.md H1 header reads "v${headerMajor}.${headerMinor}" but plugin.json is "${pluginJson.version}" — expected "v${pluginMajor}.${pluginMinor}"`
+            );
+          });
+
+          it("HTML footer instruction version matches plugin.json major.minor (if present)", () => {
+            const footerMatch = skill.skillMd.match(
+              /HTML footer should read "[^"]+?\sv(\d+)\.(\d+)/
+            );
+            if (!footerMatch) return;
+            const [, footerMajor, footerMinor] = footerMatch;
+            assert.equal(
+              `${footerMajor}.${footerMinor}`,
+              `${pluginMajor}.${pluginMinor}`,
+              `SKILL.md HTML footer instruction reads "v${footerMajor}.${footerMinor}" but plugin.json is "${pluginJson.version}" — expected "v${pluginMajor}.${pluginMinor}"`
+            );
+          });
+        }
       });
 
-      if (plugin.evalSuite) {
+      if (skill.evalSuite) {
         describe("eval-suite.json", () => {
           const evalSkillName =
-            plugin.evalSuite.skill_name || plugin.evalSuite.skill;
+            skill.evalSuite.skill_name || skill.evalSuite.skill;
 
           it("has required top-level fields", () => {
             assert.ok(evalSkillName, "must have skill_name or skill field");
-            assert.ok(plugin.evalSuite.version, "must have version");
+            assert.ok(skill.evalSuite.version, "must have version");
           });
 
-          it("skill name is present (may differ from plugin name — skill name drives slash-command, plugin name drives install)", () => {
-            assert.ok(
-              evalSkillName,
-              "eval-suite must have a non-empty skill_name or skill field"
-            );
-          });
-
-          it("eval-suite version matches plugin.json version", () => {
+          it("eval-suite skill name matches directory name", () => {
             assert.equal(
-              plugin.evalSuite.version,
-              plugin.pluginJson.version,
-              `eval-suite version "${plugin.evalSuite.version}" must match plugin.json version "${plugin.pluginJson.version}"`
+              evalSkillName,
+              skill.dirName,
+              `eval-suite skill_name "${evalSkillName}" must match directory "${skill.dirName}"`
             );
           });
 
-          if (plugin.evalSuite.triggers) {
-            it("has triggers array with entries", () => {
-              assert.ok(
-                plugin.evalSuite.triggers.length > 0,
-                "triggers must not be empty"
+          it("eval-suite version is valid semver", () => {
+            assert.match(
+              skill.evalSuite.version,
+              /^\d+\.\d+\.\d+$/,
+              "eval-suite version must be semver"
+            );
+          });
+
+          // Marquee skill's eval-suite tracks plugin.json version
+          if (skill.dirName === pluginJson?.name) {
+            it("marquee skill eval-suite version matches plugin.json version", () => {
+              assert.equal(
+                skill.evalSuite.version,
+                pluginJson.version,
+                `marquee eval-suite version "${skill.evalSuite.version}" must match plugin.json version "${pluginJson.version}"`
               );
             });
+          }
 
+          if (skill.evalSuite.triggers) {
             it("trigger IDs are unique (where present)", () => {
-              const ids = plugin.evalSuite.triggers
+              const ids = skill.evalSuite.triggers
                 .map((t) => t.id)
                 .filter(Boolean);
               if (ids.length > 0) {
@@ -195,9 +215,9 @@ describe("Manifest consistency", () => {
             });
           }
 
-          if (plugin.evalSuite.test_cases) {
+          if (skill.evalSuite.test_cases) {
             it("test_case IDs are unique", () => {
-              const ids = plugin.evalSuite.test_cases.map((t) => t.id).filter(Boolean);
+              const ids = skill.evalSuite.test_cases.map((t) => t.id).filter(Boolean);
               if (ids.length > 0) {
                 const unique = new Set(ids);
                 assert.equal(ids.length, unique.size, "all test_case IDs must be unique");
@@ -205,9 +225,9 @@ describe("Manifest consistency", () => {
             });
           }
 
-          if (plugin.evalSuite.edge_cases) {
+          if (skill.evalSuite.edge_cases) {
             it("edge_case IDs are unique", () => {
-              const ids = plugin.evalSuite.edge_cases.map((t) => t.id).filter(Boolean);
+              const ids = skill.evalSuite.edge_cases.map((t) => t.id).filter(Boolean);
               if (ids.length > 0) {
                 const unique = new Set(ids);
                 assert.equal(ids.length, unique.size, "all edge_case IDs must be unique");
@@ -217,9 +237,9 @@ describe("Manifest consistency", () => {
 
           it("no duplicate IDs across all sections", () => {
             const allIds = [
-              ...(plugin.evalSuite.triggers || []).map((t) => t.id),
-              ...(plugin.evalSuite.test_cases || []).map((t) => t.id),
-              ...(plugin.evalSuite.edge_cases || []).map((e) => e.id),
+              ...(skill.evalSuite.triggers || []).map((t) => t.id),
+              ...(skill.evalSuite.test_cases || []).map((t) => t.id),
+              ...(skill.evalSuite.edge_cases || []).map((e) => e.id),
             ].filter(Boolean);
             if (allIds.length > 0) {
               const seen = new Set();
@@ -237,89 +257,9 @@ describe("Manifest consistency", () => {
           });
         });
       }
-
-      // SKILL.md can live at plugins/<name>/SKILL.md (legacy) or at
-      // plugins/<name>/skills/<skill>/SKILL.md (canonical auto-discovery
-      // layout, used when the skills field is omitted from plugin.json).
-      // Drift checks must run against whichever one actually exists — if
-      // we only check the root path, a move to the nested layout would
-      // silently disable the H1/footer version guards.
-      const effectiveSkillMd = plugin.skillMd ?? plugin.nestedSkillMd;
-
-      if (effectiveSkillMd) {
-        describe("SKILL.md", () => {
-          it("has YAML frontmatter with name", () => {
-            const fm = extractFrontmatter(effectiveSkillMd);
-            assert.ok(fm.name, "SKILL.md must have a name in frontmatter");
-          });
-
-          it("frontmatter has a name (skill name drives slash-command namespace; need not equal plugin install name)", () => {
-            const fm = extractFrontmatter(effectiveSkillMd);
-            assert.ok(fm.name, "SKILL.md frontmatter must have a non-empty name field");
-          });
-
-          // Cross-version consistency: SKILL.md body version references must
-          // match plugin.json version. Catches the silent drift documented in
-          // PR #20 where PR #18 bumped plugin.json but SKILL.md still read
-          // the previous major.minor in its H1 and footer instruction.
-          //
-          // Convention: version references in SKILL.md body use v<major>.<minor>
-          // (no patch segment). The H1 check is generic — any "# <title> v<X>.<Y>"
-          // pattern. The HTML footer check fires only if the SKILL.md actually
-          // contains a Phase-15-style 'HTML footer should read "<title> v<X>.<Y>"'
-          // instruction (so plugins without HTML output skip cleanly).
-          const semverMatch = plugin.pluginJson.version?.match(/^(\d+)\.(\d+)\.\d+/);
-          if (semverMatch) {
-            const [, pluginMajor, pluginMinor] = semverMatch;
-
-            it("H1 header version matches plugin.json major.minor (if H1 carries a version)", () => {
-              // Extract the first H1 with a v<major>.<minor> suffix.
-              const headerMatch = effectiveSkillMd.match(
-                /^#\s+.+?\sv(\d+)\.(\d+)\b/m
-              );
-              if (!headerMatch) {
-                // SKILL.md H1 has no version suffix — nothing to drift.
-                return;
-              }
-              const [, headerMajor, headerMinor] = headerMatch;
-              assert.equal(
-                `${headerMajor}.${headerMinor}`,
-                `${pluginMajor}.${pluginMinor}`,
-                `SKILL.md H1 header reads "v${headerMajor}.${headerMinor}" but plugin.json is "${plugin.pluginJson.version}" — expected "v${pluginMajor}.${pluginMinor}"`
-              );
-            });
-
-            it("HTML footer instruction version matches plugin.json major.minor (if present)", () => {
-              const footerMatch = effectiveSkillMd.match(
-                /HTML footer should read "[^"]+?\sv(\d+)\.(\d+)/
-              );
-              if (!footerMatch) {
-                // No HTML footer instruction — plugin doesn't render HTML reports.
-                return;
-              }
-              const [, footerMajor, footerMinor] = footerMatch;
-              assert.equal(
-                `${footerMajor}.${footerMinor}`,
-                `${pluginMajor}.${pluginMinor}`,
-                `SKILL.md HTML footer instruction reads "v${footerMajor}.${footerMinor}" but plugin.json is "${plugin.pluginJson.version}" — expected "v${pluginMajor}.${pluginMinor}"`
-              );
-            });
-          }
-
-          if (plugin.nestedSkillMd) {
-            it("nested skills/ SKILL.md has a name in frontmatter", () => {
-              const nestedFm = extractFrontmatter(plugin.nestedSkillMd);
-              assert.ok(nestedFm.name, "nested SKILL.md must have a name in frontmatter");
-            });
-          }
-        });
-      }
     });
   }
 
-  // ---------------------------------------------------------------------------
-  // marketplace.json must reference every plugin and match versions
-  // ---------------------------------------------------------------------------
   if (marketplaceJson) {
     describe("marketplace.json", () => {
       it("has required top-level fields", () => {
@@ -329,79 +269,50 @@ describe("Manifest consistency", () => {
         assert.ok(marketplaceJson.plugins.length > 0, "must have at least one plugin");
       });
 
-      it("each marketplace entry has required fields", () => {
-        for (const entry of marketplaceJson.plugins) {
-          assert.ok(entry.name, `plugin entry must have name (got ${JSON.stringify(entry)})`);
-          assert.ok(entry.description, `plugin entry "${entry.name}" must have description`);
-          assert.ok(entry.source, `plugin entry "${entry.name}" must have source`);
-        }
-      });
-
-      it("marketplace plugin count matches discovered plugins", () => {
+      it("contains exactly one plugin entry (single-plugin layout)", () => {
         assert.equal(
           marketplaceJson.plugins.length,
-          plugins.length,
-          `marketplace lists ${marketplaceJson.plugins.length} plugins but discovered ${plugins.length} on disk`
+          1,
+          `single-plugin layout expects 1 marketplace entry, got ${marketplaceJson.plugins.length}`
         );
       });
 
-      // Per-entry version + source path validation
-      for (const entry of marketplaceJson.plugins) {
-        describe(`marketplace entry: ${entry.name}`, () => {
-          const matchedPlugin = plugins.find(
-            (p) => p.pluginJson.name === entry.name
-          );
-
-          it("matches a discovered plugin by name", () => {
-            assert.ok(
-              matchedPlugin,
-              `marketplace entry "${entry.name}" has no matching plugin on disk`
-            );
-          });
-
-          if (matchedPlugin && entry.version) {
-            it("version matches plugin.json version", () => {
-              assert.equal(
-                entry.version,
-                matchedPlugin.pluginJson.version,
-                `marketplace entry version "${entry.version}" must match plugin.json version "${matchedPlugin.pluginJson.version}"`
-              );
-            });
-          }
-
-          if (matchedPlugin && entry.source) {
-            it("source path resolves to the plugin directory", () => {
-              const sourceAbs = resolve(ROOT, entry.source);
-              const expected = resolve(ROOT, "plugins", matchedPlugin.dirName);
-              assert.equal(
-                sourceAbs,
-                expected,
-                `marketplace source "${entry.source}" must resolve to ${expected}`
-              );
-            });
-          }
-
-          if (entry.skills) {
-            it("skills paths resolve to existing locations", () => {
-              for (const skillPath of entry.skills) {
-                const fullPath = resolve(ROOT, skillPath);
-                assert.ok(
-                  existsSync(fullPath),
-                  `skill path "${skillPath}" must exist at ${fullPath}`
-                );
-              }
-            });
-          }
+      const entry = marketplaceJson.plugins[0];
+      describe("marketplace entry", () => {
+        it("has required fields", () => {
+          assert.ok(entry.name, "must have name");
+          assert.ok(entry.description, "must have description");
+          assert.ok(entry.source, "must have source");
         });
-      }
+
+        it("name matches root plugin.json name", () => {
+          assert.equal(
+            entry.name,
+            pluginJson.name,
+            `marketplace entry name "${entry.name}" must match plugin.json name "${pluginJson.name}"`
+          );
+        });
+
+        it("version matches root plugin.json version", () => {
+          assert.equal(
+            entry.version,
+            pluginJson.version,
+            `marketplace entry version "${entry.version}" must match plugin.json version "${pluginJson.version}"`
+          );
+        });
+
+        it("source resolves to repo root", () => {
+          const sourceAbs = resolve(ROOT, entry.source);
+          assert.equal(
+            sourceAbs,
+            ROOT,
+            `marketplace source "${entry.source}" must resolve to repo root ${ROOT}`
+          );
+        });
+      });
     });
   }
 
-  // ---------------------------------------------------------------------------
-  // package.json: a workspace-level test runner. We only verify it has a test
-  // script and (where the workspace package name matches a plugin) that the
-  // version stays in lockstep with that plugin.
-  // ---------------------------------------------------------------------------
   if (packageJson) {
     describe("package.json", () => {
       it("has test script", () => {
@@ -411,15 +322,12 @@ describe("Manifest consistency", () => {
         );
       });
 
-      const matchingPlugin = plugins.find(
-        (p) => p.pluginJson.name === packageJson.name
-      );
-      if (matchingPlugin && packageJson.version) {
+      if (packageJson.name === pluginJson?.name && packageJson.version) {
         it(`version matches plugin.json version for "${packageJson.name}"`, () => {
           assert.equal(
             packageJson.version,
-            matchingPlugin.pluginJson.version,
-            `package.json version "${packageJson.version}" must match plugin.json version "${matchingPlugin.pluginJson.version}"`
+            pluginJson.version,
+            `package.json version "${packageJson.version}" must match plugin.json version "${pluginJson.version}"`
           );
         });
       }
