@@ -248,7 +248,7 @@ A single reviewer gives you a list. The panel gives you a deliberation — with 
 
 ## How It Works
 
-16 phases + optional multi-run merge. Phase numbers are sequential integers (v2.14 cleanup — old decimal numbering like Phase 4.55 retired).
+16 top-level phases + optional multi-run merge, numbered as sequential integers (Phase 1 through Phase 16). Phase 15 is a parent step with three sub-steps — Phase 15.1 (markdown report), Phase 15.2 (process history), Phase 15.3 (HTML dashboard) — written sequentially per the v2.16.4 disk-reading architecture. The v2.14 cleanup retired purely artifactual intermediate decimals like the old Phase 4.55; the load-bearing 15.x sub-steps are deliberate.
 
 | Stage | Phase | Action |
 |---|---|---|
@@ -386,7 +386,14 @@ Numbers are rough — Opus pricing varies and reviewer count auto-scales 4–6 b
 
 ## Research Foundations
 
-Agent Review Panel is grounded in [9 peer-reviewed papers](docs/research-foundations.md) on multi-agent debate and evaluation quality (ChatEval/ICLR 2024, Du et al./ICML 2024, MachineSoM/ACL 2024, and more). Additionally inspired by [MiroFish](https://github.com/666ghj/MiroFish) (multi-agent prediction engine with heterogeneous agent personalities) — MiroFish's research patterns influenced the v2.1 auto-persona detection and the v2.11 persona-matched verification agent design. See [ROADMAP.md](ROADMAP.md) for the full research roadmap.
+Agent Review Panel is grounded in [9 peer-reviewed papers](docs/research-foundations.md) on multi-agent debate and evaluation quality. The full enumeration with venue, link, and per-paper contribution lives in [`docs/research-foundations.md`](docs/research-foundations.md); a few load-bearing paper→architecture mappings, to give a sense of what's actually adopted:
+
+- **ChatEval (ICLR 2024)** — Phase 7 (Blind Final Assessments) implements ChatEval's strongest anti-groupthink mechanism: each reviewer commits a final verdict in writing, before seeing peers' finals. Without this, debate would converge to the loudest position.
+- **MachineSoM (ACL 2024)** — Phase 4 (Private Reflection) is MachineSoM's `tf/ft/tt/ff` conformity-tracking pattern. Reviewers reflect privately *before* the debate round, which makes a position flip in Phase 5 detectable as a signal rather than untraceable convergence.
+- **Trust or Escalate (ICLR 2025 Oral)** — the judge's `Verdict Confidence: High|Medium|Low` field comes from this paper's escalation calculus. Low-confidence verdicts get a `⚠️ HUMAN REVIEW RECOMMENDED` flag rather than a forced call, instead of forcing a definitive ruling under high panel disagreement or novel domain.
+- **DMAD (ICLR 2025)** — Each persona ships with a distinct `reasoning_strategy` (systematic enumeration, backward reasoning, adversarial simulation, etc.) injected into the Phase 3 prompt. Diverse strategies outperformed homogeneous panels by 12–18% in DMAD's benchmarks.
+
+Additionally inspired by [MiroFish](https://github.com/666ghj/MiroFish) (multi-agent prediction engine with heterogeneous agent personalities) — MiroFish's research patterns influenced the v2.1 auto-persona detection and the v2.11 persona-matched verification agent design. See [ROADMAP.md](ROADMAP.md) for the full research roadmap, and [`docs/research-foundations.md`](docs/research-foundations.md) for the complete table of all 9 papers with venues, links, and contributions.
 
 ## Prerequisites
 
@@ -409,7 +416,7 @@ npm run test:golden         # golden-file structural snapshots
 ```
 
 Manifest tests enforce key invariants introduced in v2.14/v2.15:
-- All 16 phases present in SKILL.md (Phase 1 through Phase 16, no decimal numbering)
+- All 16 top-level phases present in SKILL.md (Phase 1 through Phase 16; Phase 15 has the three sequential sub-steps 15.1/15.2/15.3 — see [How It Works](#how-it-works))
 - Every `subagent_type:` launch co-occurs with `model: "opus"` (force-opus enforcement)
 - Phase 15.3 spec documents all 10 expandable-card accordion sections
 - The canonical `SKILL.md` lives at `skills/agent-review-panel/SKILL.md` (v3.0+ single-plugin layout)
