@@ -796,30 +796,66 @@ Each plugin's drift was caught **independently** — the refactor did not silent
 
 ---
 
+## Step 21: Single-Plugin Layout + Release-Check (v3.0, 2026-04-27)
+
+### Motivation
+
+Two months after Step 20 bundled `plan-review-integrator` as a second plugin, a real install-failure debug session surfaced that the multi-plugin layout was ceremony, not value. The user reported "my plugin install doesn't work" and asked to mirror [obra/superpowers](https://github.com/obra/superpowers) — a single-plugin repo. Inspecting superpowers vs. this repo revealed: when a marketplace ships exactly one plugin and that plugin bundles its skills, the extra `plugins/<plugin-name>/` nesting layer adds nothing. Both skills load the same way; users still install one plugin; tests still validate the same invariants. The nesting was there because Step 20 anticipated more plugins arriving — but six weeks in, only the two existed and they were tightly producer/consumer-coupled.
+
+PR #33 collapsed the layout. PR #34 added an upgrade-friendly install path after a real upgrade hiccup (cached marketplace name from pre-v2.16.1 short-circuited `marketplace add`). PR #32 was opened in parallel with a plugin-name revert (`roundtable` → `agent-review-panel`); the revert was considered and rejected — see Lesson 44 below.
+
+### Implementation
+
+**PR #33 — Single-plugin collapse.** Moved `plugins/<plugin>/skills/<skill>/SKILL.md` → `skills/<skill>/SKILL.md`. Created `.claude-plugin/plugin.json` at the repo root (was at `plugins/agent-review-panel/.claude-plugin/plugin.json`). Marketplace source path changed from `./plugins/agent-review-panel` to `./`. The `plugins/` directory was deleted entirely.
+
+**PR #30's auto-discovery fix preserved.** The convention from Step 19's PR #30 (skills live at `<plugin-root>/skills/<skill-name>/SKILL.md` with no `skills` field declared in `plugin.json`) is intact. Only the plugin root location changed, not the relative path from plugin root to SKILL.md.
+
+**Test discovery rewritten.** `manifest-consistency.test.mjs` now walks `skills/<name>/` under one root `plugin.json` instead of iterating `plugins/<name>/`. Introduced a "marquee skill" concept: when a skill's directory name matches the plugin's name, that skill's eval-suite tracks `plugin.json` version exactly; other bundled skills version independently. `trigger-classification.test.mjs` got the same skills/-walking refactor. `eval-suite-integrity.test.mjs` and `behavioral-assertions.test.mjs` only needed hardcoded path updates (still agent-review-panel-specific).
+
+**`scripts/release-check.sh`** (folded in from PR #32). Pre-release doc-drift detector. Asserts slash-command consistency, marketplace-name consistency, test-count accuracy, canonical-version match across 5 files, ROADMAP row presence, CHANGELOG section presence. Auto-detects plugin name from `plugin.json` so future renames don't break it. Caught real drift items multiple times during this PR's development.
+
+**PR #34 — Path A install instructions.** Added a new install path to README's Quick Start that uses Claude Code itself to run the cleanup-and-install flow. Motivated by a real v3.0 upgrade hiccup: the installer's `~/.claude/plugins/known_marketplaces.json` had the marketplace registered under its pre-v2.16.1 name `"plugin"` (Step 19 renamed the marketplace, but the user's local cache predated that). `claude plugin marketplace add` saw the repo was already registered and short-circuited without re-reading the new name. The install command then looked for marketplace `agent-review-panel`, didn't find it, and failed. Path A's prompt scans `known_marketplaces.json`, removes stale registrations, scans for orphan marketplace dirs and loose-clone shadows, and reinstalls — all inside a Claude Code session, so the user just confirms the destructive `rm`s.
+
+### Lessons
+
+43. **Layout decisions that "anticipate future scale" age into ceremony.** Step 20's `plugins/<plugin-name>/` nesting was correct *if* a third or fourth plugin landed. Six weeks later, only two existed and they were so tightly coupled that a third was never going to be a sibling — it would either fold into one of them or split into a separate marketplace. Anticipatory nesting is fine when it's free, but it stops being free as soon as it shows up in test code, doc paths, install commands, and CI scripts. The cost of carrying it should be evaluated against the probability the anticipated scale arrives. When in doubt, ship the simpler layout and add nesting when the third entity actually shows up.
+
+44. **The right naming changes when the layout changes.** PR #32 proposed reverting `roundtable` → `agent-review-panel` to eliminate the three-layer plugin/skill/marketplace name divergence. Under the multi-plugin layout (where `roundtable` was one of two plugin names) the divergence created friction. Under the single-plugin bundle layout the calculus inverts: a distinct collective bundle name *helps* — `roundtable` works as a collective noun, `/roundtable:agent-review-panel` reads as "the agent-review-panel skill of the roundtable," and `/roundtable:plan-review-integrator` reads naturally for the second skill. The alternative `/agent-review-panel:agent-review-panel` is stutter; `/agent-review-panel:plan-review-integrator` falsely implies plan-review-integrator is a sub-component of agent-review-panel rather than a peer. CHANGELOG documents the decision in a "Considered but rejected" section so the reasoning isn't lost when someone proposes the rename again.
+
+45. **A failed `marketplace add` can leave silent traps.** Three classes of stale state on the user machine can break a fresh install with no error from the installer:
+    - **Old marketplace name in `~/.claude/plugins/known_marketplaces.json`** — `marketplace add` short-circuits if the repo URL matches an existing registration, regardless of name. Renames in the marketplace.json don't propagate to existing registrations.
+    - **Orphan directories under `~/.claude/plugins/marketplaces/`** with weird names like a literal trailing space (e.g. `wan-huiyan-agent-review-panel `).
+    - **Loose-clone shadows under `~/.claude/skills/`** from pre-marketplace-era manual clones — these load *before* and shadow marketplace-installed skills.
+
+    All three coexisted on the v3.0 test machine. None of them produced an error message during the failed install. The reusable diagnostic recipe is now captured in the user-level skill `claude-code-plugin-install-shadow-diagnosis` and in README Path A.
+
+46. **Self-pacing the rename decision.** In one session: shipped the layout collapse (PR #33), folded in PR #32's rename revert, then reversed course on the rename after the user asked which I preferred and gave permission to push back. The reversal felt like wasted work but wasn't — the round-trip surfaced Lesson 44, which wouldn't have been articulated if the rename had stayed shipped. When you have permission to argue against a proposed change, take it; the disagreement extracts more reasoning than agreement does.
+
+---
+
 ## File Inventory
 
 ```
 ├── .claude-plugin/
-│   └── marketplace.json                # Marketplace manifest (name: "plugin", 2 bundled plugins)
-├── plugins/
-│   ├── agent-review-panel/             # This plugin — the multi-agent review panel
-│   │   ├── .claude-plugin/
-│   │   │   └── plugin.json             # Plugin metadata (v2.16.1)
+│   ├── marketplace.json                # Marketplace manifest (name: "agent-review-panel", 1 plugin entry, source "./")
+│   └── plugin.json                     # Plugin manifest at repo root (v3.0+ single-plugin layout, name: "roundtable")
+├── skills/
+│   ├── agent-review-panel/             # The marquee skill — multi-agent review panel
 │   │   ├── SKILL.md                    # The skill itself (~1220 lines — 16 phases + sub-phases)
-│   │   └── eval-suite.json             # Schliff eval suite (triggers + assertions)
-│   └── plan-review-integrator/         # Bundled companion plugin (v2.16.1+)
-│       ├── .claude-plugin/
-│       │   └── plugin.json             # Plugin metadata (v2.0.0)
+│   │   ├── eval-suite.json             # Schliff eval suite (triggers + assertions)
+│   │   └── references/
+│   │       ├── signals-and-checklists.md  # 11 signal groups + domain checklists (incl. v2.14 Transform + Data Flow Invariants)
+│   │       ├── prompt-templates.md        # All phase prompt templates (incl. Phase 2 Data Flow Tracer + Phase 16 Merge + Phase 15.3 expandable cards)
+│   │       ├── changelog.md               # Version history (v2–v3.0)
+│   │       └── research-v28.md            # 19-source v2.8 research compilation
+│   └── plan-review-integrator/         # Bundled companion skill (v2.0.1, integrates panel findings into plans)
 │       ├── SKILL.md                    # The integrator skill
-│       └── eval-suite.json             # Per-plugin eval suite
-├── references/
-│   ├── signals-and-checklists.md       # 11 signal groups + domain checklists (includes v2.14 Transform + Data Flow Invariants checklists)
-│   ├── prompt-templates.md             # All phase prompt templates (incl. Phase 2 Data Flow Tracer + Phase 16 Merge + Phase 15.3 10-section expandable cards)
-│   ├── changelog.md                    # Version history (v2–v2.15)
-│   └── research-v28.md                 # 19-source v2.8 research compilation
+│       └── eval-suite.json             # Per-skill eval suite
+├── scripts/
+│   └── release-check.sh                # Pre-release doc-drift detector (v3.0+, folded in from PR #32)
 ├── tests/
-│   ├── trigger-classification.test.mjs   # Multi-plugin — iterates every plugins/<name>/eval-suite.json
-│   ├── manifest-consistency.test.mjs     # Multi-plugin — per-plugin cross-version assertions (PR #21+PR #22)
+│   ├── trigger-classification.test.mjs   # Walks skills/<name>/eval-suite.json (one plugin, N skills)
+│   ├── manifest-consistency.test.mjs     # Single-plugin manifest validation + per-skill cross-version checks
 │   ├── eval-suite-integrity.test.mjs     # agent-review-panel-specific — v2.9/v2.14/v2.15 coverage blocks
 │   ├── behavioral-assertions.test.mjs    # agent-review-panel-specific — fixture-based behavioral assertions
 │   ├── report-structure.test.mjs         # agent-review-panel-specific — report format validation
@@ -838,9 +874,9 @@ Each plugin's drift was caught **independently** — the refactor did not silent
 ├── .github/workflows/
 │   └── test.yml                        # GitHub Actions — runs `npm test` on every push/PR
 ├── README.md                           # User-facing documentation (install via /plugin marketplace add)
-├── HOW_WE_BUILT_THIS.md                # This file (Steps 1–20 chronicling v1–v2.16.1)
+├── HOW_WE_BUILT_THIS.md                # This file (Steps 1–21 chronicling v1–v3.0)
 ├── ROADMAP.md                          # Unified research + trust roadmap (22+ papers, 14 projects)
-├── CHANGELOG.md                        # Top-level changelog (v1.0 → v2.16.1)
-├── package.json                        # Node.js test runner config (v2.16.1, locked to agent-review-panel)
+├── CHANGELOG.md                        # Top-level changelog (v1.0 → v3.0.0)
+├── package.json                        # Node.js test runner config (v3.0.0, name "roundtable")
 └── LICENSE                             # MIT
 ```

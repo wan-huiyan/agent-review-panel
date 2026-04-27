@@ -20,7 +20,19 @@ A [Claude Code](https://claude.ai/code) **plugin** that orchestrates multi-agent
 
 ## Quick Start
 
-**Install (recommended — Claude Code marketplace).** Run these **in your terminal** (bash/zsh):
+Pick the install path that matches where you are. **Path A is the easiest if you already have a Claude Code session open** — Claude does the cleanup, install, and verification for you, which sidesteps the most common upgrade gotchas (stale marketplace cache from old names, loose-clone shadows in `~/.claude/skills/`).
+
+### Path A — Ask Claude Code to install it (easiest, recommended for upgrades)
+
+Open any Claude Code session and paste this prompt:
+
+> Install the `agent-review-panel` plugin from `wan-huiyan/agent-review-panel`. Before installing, check `~/.claude/plugins/known_marketplaces.json` for any existing registration of this repo (it may be cached under an old name like `plugin` from pre-v2.16.1) — if found, run `claude plugin marketplace remove <old-name>` first. Also check `~/.claude/plugins/marketplaces/` for orphan directories with trailing whitespace and `~/.claude/skills/` for loose-clone shadows of `agent-review-panel`, `agent-review-panel-workspace`, `plan-review-integrator`, or `roundtable` — remove any found. Then run `claude plugin marketplace add wan-huiyan/agent-review-panel` and `claude plugin install roundtable@agent-review-panel`. Verify the install by listing `~/.claude/plugins/cache/agent-review-panel/roundtable/3.0.0/skills/` and confirming both `agent-review-panel/SKILL.md` and `plan-review-integrator/SKILL.md` are present. Restart-required reminder at the end. Report each step's outcome.
+
+Claude Code reads this prompt, runs the bash itself (you'll be asked to confirm the destructive `rm`s), and reports back. Restart your Claude Code session afterward — skills load at session start.
+
+### Path B — Run the commands yourself (fresh installs)
+
+**In your terminal** (bash/zsh):
 
 ```bash
 claude plugin marketplace add wan-huiyan/agent-review-panel
@@ -38,6 +50,37 @@ Type these at the REPL prompt (note the leading `/` and no `claude` prefix):
 ```
 
 Both forms do the same thing. Pick whichever matches where you are: shell-form `claude plugin …` for terminal, REPL-form `/plugin …` for inside Claude Code.
+</details>
+
+<details>
+<summary><strong>Upgrading from v2.x?</strong> The marketplace name and plugin layout changed — bash recipe to clean up</summary>
+
+If you installed before v3.0, your `~/.claude/` directory likely has stale state that will silently break or shadow the new install. Path A handles this automatically; if you'd rather run it manually:
+
+```bash
+# Old marketplace name (pre-v2.16.1 was "plugin")
+claude plugin marketplace remove plugin 2>/dev/null
+
+# Orphan marketplace dirs (sometimes have trailing whitespace in the name)
+rm -rf "$HOME/.claude/plugins/marketplaces/wan-huiyan-agent-review-panel "  # note trailing space
+rm -rf "$HOME/.claude/plugins/marketplaces/wan-huiyan-agent-review-panel"   # no space (also possible)
+
+# Loose-clone shadows from pre-marketplace-era manual clones
+rm -rf "$HOME/.claude/skills/agent-review-panel" \
+       "$HOME/.claude/skills/agent-review-panel-workspace" \
+       "$HOME/.claude/skills/plan-review-integrator" \
+       "$HOME/.claude/skills/roundtable"
+
+# Fresh install
+claude plugin marketplace add wan-huiyan/agent-review-panel
+claude plugin install roundtable@agent-review-panel
+
+# Verify
+ls ~/.claude/plugins/cache/agent-review-panel/roundtable/*/skills/
+# expected: agent-review-panel/  plan-review-integrator/
+```
+
+Restart your Claude Code session after install.
 </details>
 
 > The `roundtable` plugin bundles **two skills**: `agent-review-panel` (the review panel) and `plan-review-integrator` (the review→integrate companion). One install gets you both. See [Bundled skills](#bundled-skills) below.
