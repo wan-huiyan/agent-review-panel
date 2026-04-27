@@ -396,10 +396,10 @@ Agent Review Panel is grounded in [9 peer-reviewed papers](docs/research-foundat
 
 ## Tests
 
-The project includes a comprehensive test suite (379 tests) using Node.js built-in test runner (zero dependencies):
+The project includes a comprehensive test suite (386 tests) using Node.js built-in test runner (zero dependencies):
 
 ```bash
-npm test                    # run all 379 tests
+npm test                    # run all 386 tests
 npm run test:triggers       # trigger classification (55+ prompts)
 npm run test:manifest       # manifest consistency + phase/opus enforcement
 npm run test:eval-suite     # eval suite integrity + v2.14/v2.15 coverage

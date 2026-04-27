@@ -2,6 +2,43 @@
 
 All notable changes to Agent Review Panel.
 
+## [3.2.0] — 2026-04-27 — post-judge verification gate + Chart.js wrapper-div mandate (#41, #42)
+
+### Added — Phase 14.5: Post-Judge Verification Gate
+
+Resolves [#41](https://github.com/wan-huiyan/agent-review-panel/issues/41). The Supreme Judge in Phase 14 could introduce **new** P0/P1 findings in its Step-0 Verification Review — findings the panel never raised — that bypassed Phase 11 (Severity Verification) entirely, since Phase 11 only re-verifies panel-raised findings. A 2026-04-27 README run produced a hallucinated "12 unresolved git conflict markers" P0 (the file was clean — `wc -l` returned the expected count and `grep -c '<<<<<<<\|=======$\|>>>>>>>'` returned 0) and that single fabricated finding drove a 3/10 REJECT-AND-REWRITE verdict.
+
+Phase 14.5 runs after Phase 14 and before Phase 15.1. A single Opus agent classifies every P0/P1 in the judge ruling as `[PANEL-RAISED]` (skip — covered by Phase 11) or `[JUDGE-INTRODUCED]` (verify here), then runs an appropriate ground-truth check (grep, Read, git status, git diff, wc) per claim type. Each judge-introduced finding gets one of three verdicts: `[JUDGE-CONFIRMED]` (replicates, passes through), `[JUDGE-HALLUCINATED]` (does not replicate — demoted to P3 or removed), or `[JUDGE-PARTIAL]` (some sub-claims replicate — demoted one level, edited to retain only the verified portion).
+
+When any P0 is demoted to `[JUDGE-HALLUCINATED]` or removed, the verdict score is recomputed against the panel mean (rounded to one decimal) and a `> ⚠️ Judge Verification:` banner appears at the top of `review_panel_report.md` and the HTML dashboard. Affected action items keep the `[JUDGE-HALLUCINATED]` epistemic-label suffix in both formats.
+
+### Added — Chart.js wrapper-div mandate in Phase 15.3 rendering spec
+
+Resolves [#42](https://github.com/wan-huiyan/agent-review-panel/issues/42). Every Chart.js `<canvas>` in `review_panel_report.html` now MUST be wrapped in a `<div style="position: relative; height: 220px; width: 100%;">`. The bare `<canvas height="...">` attribute is a no-op when `responsive: true` (Chart.js overrides the canvas's internal pixel buffer on first paint), and the dashboard always uses `maintainAspectRatio: false`. Without a height-bounded relative parent, the canvas grows on every layout pass — infinite vertical growth on open, scroll, resize, or interaction.
+
+User report from the 2026-04-27 README run: *"the top section kept on expanding to be longer and longer as i open the html"*. Verified that wrapping the two reproduction-failing canvases in 220px-tall relative parents stabilized the layout completely. The mandate is in `references/prompt-templates.md` Phase 15.3 section, surfaced in `SKILL.md` Phase 15.3 architecture, and asserted by a new behavioral test that greps the prompt for the position-relative + explicit-pixel-height pattern.
+
+### Tests
+
+- New describe blocks in `tests/behavioral-assertions.test.mjs`: `v3.2.0 post-judge verification gate (Phase 14.5)` and `v3.2.0 Chart.js wrapper-div mandate (Phase 15.3)`. 7 new tests, total 379 → 386.
+- Asserts SKILL.md declares Phase 14.5 between Phase 14 and Phase 15, lists it in the orchestration block, includes `[JUDGE-HALLUCINATED]` in the epistemic-labels list, and references `phase_14_5_judge_verification.md` in the state-file inventory.
+- Asserts `prompt-templates.md` defines a Phase 14.5 prompt block with all three judge-finding verdict labels, the score-recomputation step, and the disk-write protocol.
+- Asserts `prompt-templates.md` Phase 15.3 mandates `position: relative` + explicit `height: NNNpx` + WHY explanation, and `SKILL.md` surfaces the same mandate.
+
+### Breaking changes
+
+None. Adding Phase 14.5 is purely additive — runs a new agent in a step that previously had no agent. Existing reports without `[JUDGE-HALLUCINATED]` action items render identically. The `state/phase_14_5_judge_verification.md` file is net-new (a stub is written even when no judge-introduced findings exist, so Phase 15.1's disk-read always succeeds).
+
+### Design references
+
+- Issue [#41](https://github.com/wan-huiyan/agent-review-panel/issues/41) (Phase 14 hallucinated P0s)
+- Issue [#42](https://github.com/wan-huiyan/agent-review-panel/issues/42) (Chart.js infinite-growth bug)
+- Memory: `feedback_judge_can_hallucinate_p0s.md`, `feedback_chartjs_canvas_unbounded_growth.md`
+- Chart.js Responsive docs: https://www.chartjs.org/docs/latest/configuration/responsive.html
+- Canonical Chart.js issue thread: https://github.com/chartjs/Chart.js/issues/4156
+
+---
+
 ## [3.1.0] — 2026-04-27 — silent-phase-compression fix (#35)
 
 ### Fixed — silent compression of mandatory Phases 4 / 5 / 7
