@@ -605,6 +605,10 @@ brief, and the full work content inside injection boundaries.
 
 Collect all N independent reviews.
 
+**Output (v3.1.0+):** Each reviewer subagent writes its full review to
+`state/reviewer_<name>_phase_3.md` and returns only the path + a 100-word
+summary. The orchestrator does NOT hold verbatim reviews in its window.
+
 ---
 
 ## Phase 4: Private Reflection
@@ -613,12 +617,21 @@ Launch all reviewers **in parallel**, each receiving ONLY their own review.
 They re-read source, rate confidence per finding (High/Medium/Low), note new
 issues, identify most/least defensible findings. See `references/prompt-templates.md`.
 
+**Output (v3.1.0+):** Each reviewer's reflection is written to
+`state/reviewer_<name>_phase_4.md`. Subagent returns only path + 100-word
+summary.
+
 ---
 
 ## Phase 5: Debate (Rounds 1-3, adaptive)
 
 Launch all reviewers **in parallel** each round. Each receives their own review
 + reflection, all others' feedback, and unresolved points from previous round.
+
+**Output (v3.1.0+):** Each reviewer's per-round debate response is written
+to `state/reviewer_<name>_phase_5_round<R>.md` (R = 1, 2, or 3). Round 1 is
+mandatory; rounds 2 and 3 follow the existing convergence-based skip rules.
+Subagent returns only path + 100-word summary.
 
 ### Phase 6: Round Summarization
 
@@ -648,6 +661,10 @@ sycophancy alert into next round prompt for all reviewers.
 Launch all reviewers one final time in parallel. Each gives final score, top 3
 points, recommendation, one-line verdict. Others do NOT see these.
 
+**Output (v3.1.0+):** Each reviewer's blind final is written to
+`state/reviewer_<name>_phase_7.md`. Subagent returns only path + 100-word
+summary of new findings.
+
 ---
 
 ## Phase 8: Completeness Audit
@@ -662,6 +679,9 @@ See `references/prompt-templates.md` for full prompt.
   each is handled. Example: "excludes Christmas" with 2 years of data must
   exclude BOTH Christmases. This is the #1 class of bug that reviewers miss
   because they focus on the method, not the temporal arithmetic.
+
+**Output (v3.1.0+):** Subagent writes full output to `state/phase_8_audit.md`
+and returns only path + 100-word summary.
 
 ---
 
@@ -680,6 +700,9 @@ Skip this phase if no verification commands were provided.
 Single agent (`model: "opus"`) checks all reviewer citations against source.
 Classifies each as [VERIFIED], [INACCURATE], [MISATTRIBUTED], [HALLUCINATED],
 or [UNVERIFIABLE]. Results feed into judge prompt.
+
+**Output (v3.1.0+):** Subagent writes full output to `state/phase_10_claim_verification.md`
+and returns only path + 100-word summary.
 
 ---
 
@@ -765,6 +788,9 @@ benchmark: 2/3 P0 findings were overstated after code investigation).
 
 Results feed into the Supreme Judge prompt. The judge MUST reference the
 verification table when ruling on disagreements.
+
+**Output (v3.1.0+):** Subagent writes full output to `state/phase_11_severity_verification.md`
+and returns only path + 100-word summary.
 
 ---
 
@@ -890,10 +916,75 @@ This table is passed to Phase 14 as input item 8.
 
 ---
 
+## Phase 13.5: Pre-Judge Verification Gate (v3.1.0)
+
+Before launching the Supreme Judge (Phase 14), the orchestrator MUST verify
+that all mandatory phase outputs exist on disk. This gate is the load-bearing
+guardrail against silent compression of Phases 4 / 5 / 7.
+
+**Gate logic (orchestrator-executed, no subagent dispatch):**
+
+For each reviewer in the panel, verify these files exist under `state/`
+(or `state/run_<N>/` in multi-run mode):
+
+| Required file | Phase | Mandatory |
+|---|---|---|
+| `reviewer_<name>_phase_3.md` | Independent review | Always |
+| `reviewer_<name>_phase_4.md` | Private reflection | Always |
+| `reviewer_<name>_phase_5_round1.md` | Debate round 1 | Always (rounds 2/3 per existing skip rules) |
+| `reviewer_<name>_phase_7.md` | Blind final | Always |
+
+Plus panel-level files:
+- `phase_8_audit.md`
+- `phase_10_claim_verification.md`
+- `phase_11_severity_verification.md`
+
+**For each required file, run three checks:**
+
+1. **Existence check** — file is present on disk.
+2. **Minimum-bytes check** — file size ≥ 500 bytes. Below this is empirically
+   a stub (subagent crashed mid-write or returned a placeholder).
+3. **Required-headers check** — parse the file and confirm it contains the
+   required schema sections for that phase (e.g., a Phase 3 review must
+   contain a Score, a Findings section, and severity tags). The exact required
+   sections per phase are defined in `references/prompt-templates.md`.
+
+**On gate failure for any file:**
+
+1. Log loudly: `GATE FAIL: <file> missing | stub | malformed`
+2. Re-dispatch the subagent for the missing/malformed phase output.
+3. Re-run the gate after re-dispatch.
+4. **Single retry only.** If the second attempt also fails, do NOT block the
+   run. Mark the phase as unrecoverable, write the COMPRESSED RUN header in
+   Phase 15.1 (see Phase 15.1 spec), and proceed to Phase 14 with the
+   partial input. The deliverable is produced with explicit warning rather
+   than failing entirely — partial review with loud warning beats no review.
+
+**On full gate pass:** proceed to Phase 14. The COMPRESSED RUN header is NOT
+emitted (its absence is the green light).
+
+**Why bytes + headers, not just existence:** A subagent can write a stub and
+crash, leaving an empty/partial file. Existence alone passes the gate on a
+stub. Bytes + required-headers makes the check load-bearing. This mirrors
+how the Phase 15 verification gate (v2.16.4) validates HTML output
+structurally, not just by file presence.
+
+---
+
 ## Phase 14: Supreme Judge
 
-Single agent (`model: "opus"`). Receives all prior outputs (including the
-Verification Round Summary from Phase 13 as input item 8). Steps (in order):
+Single agent (`model: "opus"`). The launch prompt is ~200 tokens of metadata:
+the paths to the state files produced by Phases 3, 4, 5, 7, 8, 10, 11, and
+13. The judge **reads state files on demand** using the Read tool — it does
+NOT receive verbatim phase outputs pre-stuffed into its launch prompt. This
+mirrors the Phase 15.3 HTML-agent pattern (v2.16.4) and caps the judge's
+window load even when the panel has produced hundreds of kilobytes of
+material.
+
+The judge's ruling is materialized to `state/phase_14_judge_ruling.md` so
+Phase 15.1 can later consume it from disk (rather than from chat).
+
+Steps (in order):
 0. Review verification results (claims, severity, commands, **and verification round**)
 0.5a-b. Verify audit findings, anti-rhetoric assessment
 0.5c. Severity dampening — minimum evidence-justified severity. **In Precise mode, findings without code citations cannot exceed P2.**
@@ -902,6 +993,7 @@ Verification Round Summary from Phase 13 as input item 8). Steps (in order):
 4-5. Absent-safeguard check, independent gap scan, score assessment
 6-7. Epistemic label classification, final verdict
 8-9. Action items, meta-observation
+10. **Write ruling to `{state_dir}/phase_14_judge_ruling.md`** (v3.1.0+).
 
 See `references/prompt-templates.md` for the full judge prompt.
 
@@ -922,6 +1014,26 @@ process history into the agent prompt from its own context window.
 
 Write structured summary to `review_panel_report.md` (or user-specified name).
 This is the main deliverable — concise, structured, action-oriented.
+
+**Compressed-run warning (v3.1.0+):** If the Phase 13.5 verification gate
+detected any unrecoverable missing phase output, Phase 15.1 MUST emit this
+block as the FIRST content of the report (before any other section,
+including Executive Summary):
+
+```markdown
+> ⚠️ **COMPRESSED RUN — Phases skipped: <comma-separated list, e.g., "4 (security), 5 (security, devils-advocate)">**
+>
+> This run did not complete the full panel protocol. The Supreme Judge ruled
+> on partial input. Findings below should be treated as **lower confidence**
+> than a full-run report. Re-run the panel for a complete review.
+```
+
+Additionally, in compressed runs, every action item MUST have `[COMPRESSED]`
+appended to its epistemic label (e.g., `[CONSENSUS][COMPRESSED]`,
+`[VERIFIED][COMPRESSED]`).
+
+For full runs, the warning block is absent. Its absence is the green-light
+signal that the panel completed the full protocol.
 
 ```markdown
 # Review Panel Report
@@ -1152,6 +1264,20 @@ This keeps the orchestrator's launch prompt under 200 tokens instead of
 See `references/prompt-templates.md` for the Phase 15.3 agent prompt with the
 full 10-section schema and rendering spec.
 
+**Compressed-run banner (v3.1.0+):** If the source Phase 15.1 markdown
+report begins with the `⚠️ COMPRESSED RUN` blockquote, Phase 15.3 MUST render
+a prominent red banner at the top of the HTML body containing the same
+warning text. Suggested CSS:
+
+```html
+<div role="alert" style="background:#FEE2E2; color:#991B1B; padding:1rem 1.25rem; margin:1rem 0; border:2px solid #DC2626; border-radius:6px;">
+  <strong>⚠️ COMPRESSED RUN — Phases skipped: <list></strong>
+  <p>This run did not complete the full panel protocol. ... Re-run the panel for a complete review.</p>
+</div>
+```
+
+The banner appears above the report header summary card.
+
 ---
 
 ### Phase 15 Verification Gate (MANDATORY — v2.16.4)
@@ -1326,6 +1452,60 @@ See `references/prompt-templates.md` for the full Phase 16 Merge Agent prompt.
 ---
 
 ## Implementation Notes
+
+### State files (v3.1.0+)
+
+Subagent outputs for Phases 3, 4, 5, 7, 8, 10, 11, and 14 are written to disk
+under a `state/` subdirectory of the review output directory, then the
+subagent returns only the file path plus a 100-word summary. The orchestrator
+reads files on demand rather than holding verbatim subagent outputs in its
+context window.
+
+Reviewer state files use the naming convention
+`state/reviewer_<name>_phase_<N>.md` (where `<name>` is the persona slug and
+`<N>` is the phase number); orchestrator-level state files include
+`state/phase_8_audit.md`, `state/phase_10_claim_verification.md`,
+`state/phase_11_severity_verification.md`, and `state/phase_14_judge_ruling.md`.
+
+**Single-run layout:**
+
+```
+docs/reviews/<date>-<topic>/
+├── state/
+│   ├── reviewer_<name>_phase_3.md         # independent review
+│   ├── reviewer_<name>_phase_4.md         # private reflection
+│   ├── reviewer_<name>_phase_5_round1.md  # debate response
+│   ├── reviewer_<name>_phase_7.md         # blind final assessment
+│   ├── phase_8_audit.md
+│   ├── phase_10_claim_verification.md
+│   ├── phase_11_severity_verification.md
+│   └── phase_14_judge_ruling.md
+├── review_panel_report.md                  # Phase 15.1
+├── review_panel_process.md                 # Phase 15.2
+└── review_panel_report.html                # Phase 15.3
+```
+
+**Multi-run layout (Phase 16):**
+
+```
+docs/reviews/<date>-<topic>/
+├── state/
+│   ├── run_1/reviewer_<name>_phase_3.md
+│   ├── run_1/reviewer_<name>_phase_4.md
+│   ├── ...
+│   ├── run_2/reviewer_<name>_phase_3.md
+│   └── ...
+```
+
+Each run's state lives under `state/run_<N>/` (e.g.
+`state/run_1/reviewer_<name>_phase_3.md`,
+`state/run_2/reviewer_<name>_phase_3.md`). The merge step (Phase 16) reads
+state files from each run independently when computing union findings.
+
+This pattern mirrors `overnight-insight-discovery`, `successor-handoff`, and
+`cloud-run-results-bq-postsync` — every long-running multi-agent skill in the
+local catalog routes intermediate outputs through disk to keep the
+orchestrator window small.
 
 - **Parallel execution:** Phases 3, 4, 5, 7 use single message with multiple
   Agent tool calls. Phases 2, 8, 9, 10, 11, 12, 13, 14 are sequential (Phase 9 is

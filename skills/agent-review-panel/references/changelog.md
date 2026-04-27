@@ -1,5 +1,9 @@
 # Changelog
 
+## v3.1.0 (2026-04-27) — Silent-Phase-Compression Fix (#35)
+
+Eliminates silent compression of mandatory Phases 4 / 5 / 7 under context pressure. Subagent outputs now route through `state/<file>.md` on disk; orchestrator returns only path + 100-word summary. New Phase 13.5 verification gate confirms all mandatory phase outputs exist + meet bytes/header checks before the Supreme Judge launches; failures trigger a fail-loud `⚠️ COMPRESSED RUN` header in the report rather than a silently incomplete deliverable. Phase 14 reads state files on demand (mirrors Phase 15.3 v2.16.4 pattern) and materializes its ruling to `state/phase_14_judge_ruling.md`. Multi-run mode namespaces state under `state/run_<N>/`. 379/379 tests pass. Empirical motivation: a v3.0.0 compressed run missed 6 net-new findings (including 1 P0 FERPA / DPA gap) versus the full-run corrective review on the same input. See `docs/plans/2026-04-27-silent-phase-compression-fix-design.md` for full design.
+
 ## v2.16.5 (2026-04-19) — Plugin Skills Layout Fix (Claude Code ≥2.1.112)
 
 Fixes plugin loading on Claude Code 2.1.112, which tightened `skills` field

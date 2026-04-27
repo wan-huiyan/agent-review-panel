@@ -9,7 +9,7 @@
     {
       "name": "roundtable",
       "source": "./",
-      "version": "3.0.0",
+      "version": "3.1.0",
       "description": "Orchestrate a multi-agent adversarial review panel. 4-6 reviewers with distinct personas independently evaluate work, debate findings across 1-3 rounds, then a supreme judge renders the final verdict. Bundles plan-review-integrator for applying findings back into implementation plans. Auto-detected Precise/Exhaustive mode, severity verification, tiered L0/L1/L2 knowledge mining, 10 signal groups with domain checklists. Based on ChatEval, AutoGen, DMAD, CONSENSAGENT, and Trust or Escalate research."
     }
   ]

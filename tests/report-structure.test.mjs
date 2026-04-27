@@ -45,6 +45,19 @@ function parseReport(markdown) {
     }
   }
 
+  // --- Compressed-run warning (v3.1.0+) ---
+  const compressedMatch = markdown.match(
+    /^>\s*⚠️\s*\*\*COMPRESSED RUN — Phases skipped:\s*(.+?)\*\*/m
+  );
+  if (compressedMatch) {
+    report.compressedRun = {
+      detected: true,
+      phasesSkipped: compressedMatch[1].trim(),
+    };
+  } else {
+    report.compressedRun = { detected: false, phasesSkipped: null };
+  }
+
   // --- Required sections ---
   const requiredSections = [
     "Executive Summary",
@@ -378,6 +391,35 @@ describe("Report structure validation", () => {
         "Action Items section must have content"
       );
     });
+  });
+});
+
+describe("compressed-run fixture", () => {
+  it("parses the COMPRESSED RUN warning block", () => {
+    const fixturePath = resolve(FIXTURES, "sample-report-compressed-run.md");
+    const md = readFileSync(fixturePath, "utf-8");
+    const report = parseReport(md);
+    assert.equal(
+      report.compressedRun?.detected,
+      true,
+      "parser must set report.compressedRun.detected = true"
+    );
+    assert.match(
+      report.compressedRun.phasesSkipped,
+      /4|5|7/,
+      "parser must extract the phases-skipped list"
+    );
+  });
+
+  it("non-compressed fixtures have compressedRun.detected = false", () => {
+    const fixturePath = resolve(FIXTURES, "sample-report-valid.md");
+    const md = readFileSync(fixturePath, "utf-8");
+    const report = parseReport(md);
+    assert.equal(
+      report.compressedRun?.detected ?? false,
+      false,
+      "non-compressed fixture must report compressedRun.detected = false"
+    );
   });
 });
 
