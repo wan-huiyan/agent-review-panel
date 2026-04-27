@@ -1327,6 +1327,60 @@ See `references/prompt-templates.md` for the full Phase 16 Merge Agent prompt.
 
 ## Implementation Notes
 
+### State files (v3.1.0+)
+
+Subagent outputs for Phases 3, 4, 5, 7, 8, 10, 11, and 14 are written to disk
+under a `state/` subdirectory of the review output directory, then the
+subagent returns only the file path plus a 100-word summary. The orchestrator
+reads files on demand rather than holding verbatim subagent outputs in its
+context window.
+
+Reviewer state files use the naming convention
+`state/reviewer_<name>_phase_<N>.md` (where `<name>` is the persona slug and
+`<N>` is the phase number); orchestrator-level state files include
+`state/phase_8_audit.md`, `state/phase_10_claim_verification.md`,
+`state/phase_11_severity_verification.md`, and `state/phase_14_judge_ruling.md`.
+
+**Single-run layout:**
+
+```
+docs/reviews/<date>-<topic>/
+├── state/
+│   ├── reviewer_<name>_phase_3.md         # independent review
+│   ├── reviewer_<name>_phase_4.md         # private reflection
+│   ├── reviewer_<name>_phase_5_round1.md  # debate response
+│   ├── reviewer_<name>_phase_7.md         # blind final assessment
+│   ├── phase_8_audit.md
+│   ├── phase_10_claim_verification.md
+│   ├── phase_11_severity_verification.md
+│   └── phase_14_judge_ruling.md
+├── review_panel_report.md                  # Phase 15.1
+├── review_panel_process.md                 # Phase 15.2
+└── review_panel_report.html                # Phase 15.3
+```
+
+**Multi-run layout (Phase 16):**
+
+```
+docs/reviews/<date>-<topic>/
+├── state/
+│   ├── run_1/reviewer_<name>_phase_3.md
+│   ├── run_1/reviewer_<name>_phase_4.md
+│   ├── ...
+│   ├── run_2/reviewer_<name>_phase_3.md
+│   └── ...
+```
+
+Each run's state lives under `state/run_<N>/` (e.g.
+`state/run_1/reviewer_<name>_phase_3.md`,
+`state/run_2/reviewer_<name>_phase_3.md`). The merge step (Phase 16) reads
+state files from each run independently when computing union findings.
+
+This pattern mirrors `overnight-insight-discovery`, `successor-handoff`, and
+`cloud-run-results-bq-postsync` — every long-running multi-agent skill in the
+local catalog routes intermediate outputs through disk to keep the
+orchestrator window small.
+
 - **Parallel execution:** Phases 3, 4, 5, 7 use single message with multiple
   Agent tool calls. Phases 2, 8, 9, 10, 11, 12, 13, 14 are sequential (Phase 9 is
   orchestrator-driven via Bash, not a subagent). Phase 12a is orchestrator

@@ -367,5 +367,28 @@ describe("SKILL.md behavioral contract validation", () => {
   });
 });
 
+describe("v3.1.0 file-based state convention", () => {
+  it("documents the state/ directory layout in Implementation Notes", () => {
+    assert.match(
+      skillMd,
+      /state\/reviewer_<name>_phase_<N>\.md/,
+      "SKILL.md must document the state file naming convention"
+    );
+    assert.match(
+      skillMd,
+      /Implementation Notes[\s\S]+?state\/.+?phase_14_judge_ruling\.md/,
+      "Implementation Notes must list phase_14_judge_ruling.md as a materialized state file"
+    );
+  });
+
+  it("documents multi-run namespacing under state/", () => {
+    assert.match(
+      skillMd,
+      /state\/run_\d+\/reviewer/,
+      "SKILL.md must document run_<N>/ namespacing for multi-run mode"
+    );
+  });
+});
+
 // Export utilities for other test files
 export { makeAssertionChecker, runAssertions };
