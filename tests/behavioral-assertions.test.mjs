@@ -535,5 +535,117 @@ describe("v3.1.0 file-based state convention", () => {
   });
 });
 
+describe("v3.2.0 post-judge verification gate (Phase 14.5)", () => {
+  it("SKILL.md documents Phase 14.5 between Phase 14 and Phase 15", () => {
+    assert.match(
+      skillMd,
+      /## Phase 14\.5: Post-Judge Verification Gate/,
+      "SKILL.md must declare Phase 14.5: Post-Judge Verification Gate"
+    );
+    assert.match(
+      skillMd,
+      /Phase 14\.5: Post-Judge Verification[\s\S]+?Phase 15: Output Generation/,
+      "Phase 14.5 must appear between Phase 14 and Phase 15 in SKILL.md"
+    );
+  });
+
+  it("SKILL.md orchestration list includes Phase 14.5", () => {
+    assert.match(
+      skillMd,
+      /Phase 14\.5: Post-Judge Verification[\s\S]+?judge-introduced/,
+      "SKILL.md orchestration block must list Phase 14.5 with its purpose"
+    );
+  });
+
+  it("SKILL.md adds [JUDGE-HALLUCINATED] to epistemic labels", () => {
+    assert.match(
+      skillMd,
+      /Epistemic labels:[\s\S]+?\[JUDGE-HALLUCINATED\]/,
+      "Epistemic-labels list in Phase 15.1 schema must include [JUDGE-HALLUCINATED]"
+    );
+  });
+
+  it("SKILL.md state-file inventory mentions phase_14_5_judge_verification.md", () => {
+    assert.match(
+      skillMd,
+      /phase_14_5_judge_verification\.md/,
+      "SKILL.md state directory documentation must list phase_14_5_judge_verification.md"
+    );
+  });
+
+  it("prompt-templates.md defines the Phase 14.5 agent prompt", () => {
+    const promptTemplates = readFileSync(
+      resolve(ROOT, "skills/agent-review-panel/references/prompt-templates.md"),
+      "utf-8"
+    );
+    assert.match(
+      promptTemplates,
+      /## Phase 14\.5: Post-Judge Verification Gate/,
+      "prompt-templates.md must define a Phase 14.5 prompt block"
+    );
+    const phase14_5 = promptTemplates
+      .split(/^## Phase 14\.5/m)[1]
+      .split(/^## Phase 15\.2/m)[0];
+    assert.match(
+      phase14_5,
+      /\[PANEL-RAISED\][\s\S]+?\[JUDGE-INTRODUCED\]/,
+      "Phase 14.5 prompt must distinguish [PANEL-RAISED] from [JUDGE-INTRODUCED]"
+    );
+    assert.match(
+      phase14_5,
+      /\[JUDGE-CONFIRMED\][\s\S]+?\[JUDGE-HALLUCINATED\][\s\S]+?\[JUDGE-PARTIAL\]/,
+      "Phase 14.5 prompt must define all three verdict labels"
+    );
+    assert.match(
+      phase14_5,
+      /Score Recomputation|panel mean/i,
+      "Phase 14.5 prompt must mandate score recomputation against panel mean"
+    );
+    assert.match(
+      phase14_5,
+      /phase_14_5_judge_verification\.md/,
+      "Phase 14.5 prompt must direct disk-write to state/phase_14_5_judge_verification.md"
+    );
+  });
+});
+
+describe("v3.2.0 Chart.js wrapper-div mandate (Phase 15.3)", () => {
+  it("prompt-templates.md mandates wrapper-div around every <canvas>", () => {
+    const promptTemplates = readFileSync(
+      resolve(ROOT, "skills/agent-review-panel/references/prompt-templates.md"),
+      "utf-8"
+    );
+    const phase15_3 = promptTemplates.split(/^## Phase 15\.3/m)[1] || "";
+    assert.match(
+      phase15_3,
+      /Chart\.js canvas wrapping/i,
+      "Phase 15.3 spec must include a Chart.js canvas wrapping section"
+    );
+    assert.match(
+      phase15_3,
+      /position:\s*relative[\s\S]+?height:\s*\d+px/i,
+      "Phase 15.3 spec must mandate position: relative + explicit pixel height on the canvas wrapper"
+    );
+    assert.match(
+      phase15_3,
+      /infinite[\s\S]+?growth|grows? .*on every layout/i,
+      "Phase 15.3 spec must explain WHY (infinite growth) so future edits don't drop the wrapper"
+    );
+  });
+
+  it("SKILL.md surfaces the Chart.js mandate in its Phase 15.3 section", () => {
+    assert.match(
+      skillMd,
+      /Chart\.js wrapper-div mandate/i,
+      "SKILL.md must reference the Chart.js wrapper-div mandate"
+    );
+    assert.match(
+      skillMd,
+      /position:\s*relative[\s\S]{0,80}?height:\s*\d+px/i,
+      "SKILL.md mandate must show the position: relative + explicit pixel height pattern"
+    );
+  });
+});
+
 // Export utilities for other test files
 export { makeAssertionChecker, runAssertions };
