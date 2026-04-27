@@ -52,38 +52,7 @@ Type these at the REPL prompt (note the leading `/` and no `claude` prefix):
 Both forms do the same thing. Pick whichever matches where you are: shell-form `claude plugin …` for terminal, REPL-form `/plugin …` for inside Claude Code.
 </details>
 
-<details>
-<summary><strong>Upgrading from v2.x?</strong> The marketplace name and plugin layout changed — bash recipe to clean up</summary>
-
-If you installed before v3.0, your `~/.claude/` directory likely has stale state that will silently break or shadow the new install. Path A handles this automatically; if you'd rather run it manually:
-
-```bash
-# Old marketplace name (pre-v2.16.1 was "plugin")
-claude plugin marketplace remove plugin 2>/dev/null
-
-# Orphan marketplace dirs (sometimes have trailing whitespace in the name)
-rm -rf "$HOME/.claude/plugins/marketplaces/wan-huiyan-agent-review-panel "  # note trailing space
-rm -rf "$HOME/.claude/plugins/marketplaces/wan-huiyan-agent-review-panel"   # no space (also possible)
-
-# Loose-clone shadows from pre-marketplace-era manual clones
-rm -rf "$HOME/.claude/skills/agent-review-panel" \
-       "$HOME/.claude/skills/agent-review-panel-workspace" \
-       "$HOME/.claude/skills/plan-review-integrator" \
-       "$HOME/.claude/skills/roundtable"
-
-# Fresh install
-claude plugin marketplace add wan-huiyan/agent-review-panel
-claude plugin install roundtable@agent-review-panel
-
-# Verify
-ls ~/.claude/plugins/cache/agent-review-panel/roundtable/*/skills/
-# expected: agent-review-panel/  plan-review-integrator/
-```
-
-Restart your Claude Code session after install.
-</details>
-
-> The `roundtable` plugin bundles **two skills**: `agent-review-panel` (the review panel) and `plan-review-integrator` (the review→integrate companion). One install gets you both. See [Bundled skills](#bundled-skills) below.
+> The `roundtable` plugin bundles **two skills**: `agent-review-panel` (the review panel) and `plan-review-integrator` (the review→integrate companion). One install gets you both. See [Bundled skills](#bundled-skills) below. Upgrading from v2.x? See [Migration](#migration-from-previous-marketplaces).
 
 **Use:**
 ```
@@ -99,38 +68,7 @@ Restart your Claude Code session after install.
 - `review_panel_process.md` — full "director's cut" log of every agent's verbatim output with persona profiles
 - `review_panel_report.html` — interactive dashboard with **expandable 10-section issue cards** (Narrative, Code Evidence, Debate, Judge Ruling, Fix Recommendation, and more — new in v2.15), filterable issue cards, charts, and a Panel Gallery
 
-<details>
-<summary><strong>Example report output (truncated)</strong></summary>
-
-```markdown
-# Review Panel Report
-**Work reviewed:** src/auth/middleware.ts  |  **Date:** 2026-03-28
-**Panel:** 4 reviewers + Auditor + Judge
-**Verdict:** Approve with Revisions  |  **Confidence:** High
-**Review mode:** Precise (auto-detected from content type: code)
-
-## Executive Summary
-The authentication middleware is well-structured with proper token validation
-and rate limiting. Two substantive issues emerged: the session store lacks
-TTL enforcement (P1, [VERIFIED]) and the CORS configuration is overly
-permissive for production (P1, [CONSENSUS]). Score: 7/10.
-
-## Consensus Points
-- Token rotation logic is correct and handles edge cases well
-- Error responses follow RFC 7807 format consistently
-
-## Disagreement Points
-**Session store TTL:** Security Auditor (P0) vs Architecture Critic (P2)
-Judge ruling: P1 — the risk is real but mitigated by the upstream API gateway
-timeout. [VERIFIED] against actual code.
-
-## Action Items
-- [P1] [VERIFIED] Add TTL to session store entries (src/auth/session.ts:47)
-- [P1] [CONSENSUS] Restrict CORS origins in production config
-- [P2] [SINGLE-SOURCE] Consider adding request signing for internal APIs
-```
-
-</details>
+_See the [demo GIFs](#agent-review-panel) at the top of this README for what the markdown report and HTML dashboard look like._
 
 ## Installation
 
@@ -156,20 +94,13 @@ Don't have Claude Code yet? Install it from **[claude.ai/code](https://claude.ai
 
 ### Claude Code marketplace (recommended)
 
-Install commands appear in [Quick Start](#quick-start). The shell-form equivalent (for users running in a terminal rather than the Claude Code REPL):
-
-```bash
-claude plugin marketplace add wan-huiyan/agent-review-panel
-claude plugin install roundtable@agent-review-panel
-```
-
-Claude Code caches the plugin, loads its skills, and activates trigger phrases automatically.
+Install commands are in [Quick Start](#quick-start) above. Claude Code caches the plugin, loads its skills, and activates trigger phrases automatically. Two things worth knowing about the install handle:
 
 <!-- release-check:marketplace-name-callout — load-bearing for scripts/release-check.sh; do not delete without updating both -->
 > **Command format:** `@<marketplace-name>`, not `@<repo-name>`. The marketplace name is `agent-review-panel` (defined in `.claude-plugin/marketplace.json`); the plugin install name inside it is `roundtable`. Hence `roundtable@agent-review-panel`. Pre-v2.16.1 releases used `@wan-huiyan-agent-review-panel`; pre-v2.16 used `@agent-review-panel`. If you installed under an older marketplace name, see [Migration](#migration-from-previous-marketplaces).
 <!-- /release-check:marketplace-name-callout -->
 
-**Why the marketplace path?** The repo ships `.claude-plugin/marketplace.json` + `.claude-plugin/plugin.json` manifests (v3.0+ single-plugin layout) that Claude Code reads to register the plugin — the marketplace install handles caching, version tracking, and activation in one step. Manual clone (below) works but bypasses the manifests.
+**Why the marketplace path?** The repo ships `.claude-plugin/marketplace.json` + `.claude-plugin/plugin.json` manifests (v3.0+ single-plugin layout) that Claude Code reads to register the plugin — the marketplace install handles caching, version tracking, and activation in one step. [Manual clone](#manual-clone-development--custom-setup) works but bypasses the manifests.
 
 ### Updating to the latest version
 
@@ -465,6 +396,33 @@ Verify both are loaded under the new marketplace:
 ls ~/.claude/plugins/cache/agent-review-panel/
 # expected: roundtable  (one plugin dir; both skills live inside it)
 ```
+
+<details>
+<summary><strong>Plugin install isn't working after migration?</strong> Bash recipe to clear stale state</summary>
+
+If you installed before v3.0, your `~/.claude/` directory may have stale state that silently shadows the new install ([Path A](#path-a--ask-claude-code-to-install-it-easiest-recommended-for-upgrades) in Quick Start handles this automatically — this is the manual equivalent):
+
+```bash
+# Old marketplace name (pre-v2.16.1 was "plugin")
+claude plugin marketplace remove plugin 2>/dev/null
+
+# Orphan marketplace dirs (sometimes have trailing whitespace in the name)
+rm -rf "$HOME/.claude/plugins/marketplaces/wan-huiyan-agent-review-panel "  # note trailing space
+rm -rf "$HOME/.claude/plugins/marketplaces/wan-huiyan-agent-review-panel"   # no space (also possible)
+
+# Loose-clone shadows from pre-marketplace-era manual clones
+rm -rf "$HOME/.claude/skills/agent-review-panel" \
+       "$HOME/.claude/skills/agent-review-panel-workspace" \
+       "$HOME/.claude/skills/plan-review-integrator" \
+       "$HOME/.claude/skills/roundtable"
+
+# Fresh install
+claude plugin marketplace add wan-huiyan/agent-review-panel
+claude plugin install roundtable@agent-review-panel
+```
+
+Restart your Claude Code session after install.
+</details>
 
 ## Contributing
 
