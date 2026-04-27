@@ -507,6 +507,24 @@ describe("v3.1.0 file-based state convention", () => {
       "Phase 14 must write its ruling to state/phase_14_judge_ruling.md"
     );
   });
+
+  it("Phase 15.1 documents COMPRESSED RUN header schema", () => {
+    assert.match(
+      skillMd,
+      /COMPRESSED RUN/,
+      "SKILL.md must mention the COMPRESSED RUN header"
+    );
+    assert.match(
+      skillMd,
+      /## Phase 15\.1[\s\S]+?⚠️[\s\S]+?COMPRESSED RUN[\s\S]+?Phases skipped/,
+      "Phase 15.1 must define the warning header format with phases-skipped list"
+    );
+    assert.match(
+      skillMd,
+      /\[COMPRESSED\]/,
+      "SKILL.md must define the [COMPRESSED] epistemic label suffix for action items in compressed runs"
+    );
+  });
 });
 
 // Export utilities for other test files

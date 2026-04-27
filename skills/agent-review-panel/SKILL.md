@@ -1015,6 +1015,26 @@ process history into the agent prompt from its own context window.
 Write structured summary to `review_panel_report.md` (or user-specified name).
 This is the main deliverable — concise, structured, action-oriented.
 
+**Compressed-run warning (v3.1.0+):** If the Phase 13.5 verification gate
+detected any unrecoverable missing phase output, Phase 15.1 MUST emit this
+block as the FIRST content of the report (before any other section,
+including Executive Summary):
+
+```markdown
+> ⚠️ **COMPRESSED RUN — Phases skipped: <comma-separated list, e.g., "4 (security), 5 (security, devils-advocate)">**
+>
+> This run did not complete the full panel protocol. The Supreme Judge ruled
+> on partial input. Findings below should be treated as **lower confidence**
+> than a full-run report. Re-run the panel for a complete review.
+```
+
+Additionally, in compressed runs, every action item MUST have `[COMPRESSED]`
+appended to its epistemic label (e.g., `[CONSENSUS][COMPRESSED]`,
+`[VERIFIED][COMPRESSED]`).
+
+For full runs, the warning block is absent. Its absence is the green-light
+signal that the panel completed the full protocol.
+
 ```markdown
 # Review Panel Report
 **Work reviewed:** {title/path}  |  **Date:** {today}
