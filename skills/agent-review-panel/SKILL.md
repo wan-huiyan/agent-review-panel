@@ -680,6 +680,9 @@ See `references/prompt-templates.md` for full prompt.
   exclude BOTH Christmases. This is the #1 class of bug that reviewers miss
   because they focus on the method, not the temporal arithmetic.
 
+**Output (v3.1.0+):** Subagent writes full output to `state/phase_8_audit.md`
+and returns only path + 100-word summary.
+
 ---
 
 ## Phase 9: Verification Command Execution (v2.8)
@@ -697,6 +700,9 @@ Skip this phase if no verification commands were provided.
 Single agent (`model: "opus"`) checks all reviewer citations against source.
 Classifies each as [VERIFIED], [INACCURATE], [MISATTRIBUTED], [HALLUCINATED],
 or [UNVERIFIABLE]. Results feed into judge prompt.
+
+**Output (v3.1.0+):** Subagent writes full output to `state/phase_10_claim_verification.md`
+and returns only path + 100-word summary.
 
 ---
 
@@ -782,6 +788,9 @@ benchmark: 2/3 P0 findings were overstated after code investigation).
 
 Results feed into the Supreme Judge prompt. The judge MUST reference the
 verification table when ruling on disagreements.
+
+**Output (v3.1.0+):** Subagent writes full output to `state/phase_11_severity_verification.md`
+and returns only path + 100-word summary.
 
 ---
 

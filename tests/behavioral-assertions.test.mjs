@@ -451,6 +451,28 @@ describe("v3.1.0 file-based state convention", () => {
       "Phase 7 prompt must direct disk-write to state/reviewer_<name>_phase_7.md"
     );
   });
+
+  it("Phases 8, 10, 11 verifier prompts write outputs to disk", () => {
+    const promptTemplates = readFileSync(
+      resolve(ROOT, "skills/agent-review-panel/references/prompt-templates.md"),
+      "utf-8"
+    );
+    assert.match(
+      promptTemplates,
+      /phase_8_audit\.md/,
+      "Phase 8 audit prompt must direct disk-write"
+    );
+    assert.match(
+      promptTemplates,
+      /phase_10_claim_verification\.md/,
+      "Phase 10 verification prompt must direct disk-write"
+    );
+    assert.match(
+      promptTemplates,
+      /phase_11_severity_verification\.md/,
+      "Phase 11 severity verification prompt must direct disk-write"
+    );
+  });
 });
 
 // Export utilities for other test files

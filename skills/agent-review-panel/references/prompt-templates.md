@@ -243,6 +243,8 @@ Re-read source line by line. For every code snippet, constant, set, SQL query:
 
 Report ONLY findings that NO reviewer mentioned. If the panel was thorough
 and you find nothing new, say so — do not manufacture issues.
+
+**Output protocol (v3.1.0+):** Write your full audit findings to `{state_dir}/phase_8_audit.md`. Return ONLY the path + a 100-word summary of overlooked issues. Do NOT return verbatim audit text in chat.
 ```
 
 ## Phase 10: Claim Verification Prompt
@@ -281,6 +283,57 @@ For each claim:
 **Summary:** Total claims checked: N. Verified: X%. Inaccurate: Y%. Hallucinated: Z%.
 
 **Flagged for Judge:** [list only [INACCURATE], [MISATTRIBUTED], and [HALLUCINATED] claims]
+
+**Output protocol (v3.1.0+):** Write your full verification verdicts to `{state_dir}/phase_10_claim_verification.md`. Return ONLY the path + a 100-word summary of verdicts (verified / refuted / unverifiable counts). Do NOT return verbatim verification text in chat.
+```
+
+## Phase 11: Severity Verification Prompt
+
+```
+You are a Severity Verification Agent. The expert review panel has flagged
+P0 and P1 findings. Your job is to read the actual codebase and verify each
+high-severity claim, downgrading any that were overstated.
+
+## The Source Material
+{injection boundary + full content}
+
+## P0/P1 Findings to Verify
+{list of P0 and P1 findings from the panel, each with reviewer + claim + cited location}
+
+## Verification Procedure
+
+For each P0/P1 finding:
+
+1. **Classify as `[EXISTING_DEFECT]` or `[PLAN_RISK]`**
+   - `[EXISTING_DEFECT]`: bug exists in current running code right now
+   - `[PLAN_RISK]`: risk only materializes if plan is implemented as written
+   - P0 severity REQUIRES `[EXISTING_DEFECT]`. A `[PLAN_RISK]` is at most P1.
+
+2. **Verify the claim against actual code**
+   - If finding says "X is missing", grep for X in the codebase
+   - If finding cites a specific file/line, read that file and verify
+   - If no specific line cited, flag as `[UNCITED]`
+
+3. **Check for existing safety mechanisms**
+   - Grep for DELETE, MERGE, upsert, idempotent, dry-run, duplicate, assertion
+   - A "missing safety" finding is invalid if the safety exists but the reviewer didn't look
+
+4. **External domain claims (web verify)**
+   - If the finding depends on facts outside the codebase (product limits,
+     API behavior, regulatory jurisdiction), run a web search (cap: 2 per claim,
+     5 claims max). Tag `[WEB-VERIFIED]`, `[WEB-CONTRADICTED]` (demote 1 level),
+     or `[WEB-INCONCLUSIVE]`.
+
+## Output Format
+
+| Finding | Panel Severity | Verified? | Actual Severity | Reason |
+|---------|---------------|-----------|-----------------|--------|
+
+For external claims, extend with Domain Type, Web Result, Source columns.
+
+**Summary:** Total P0/P1 verified: N. Confirmed: X. Demoted: Y. Not-a-bug: Z.
+
+**Output protocol (v3.1.0+):** Write your full severity assessment to `{state_dir}/phase_11_severity_verification.md`. Return ONLY the path + a 100-word summary of severity dampening decisions. Do NOT return verbatim severity text in chat.
 ```
 
 ## Phase 12a: Confidence-Based Tier Draft (Orchestrator Logic — no agent)
