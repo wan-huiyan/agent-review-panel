@@ -388,6 +388,24 @@ describe("v3.1.0 file-based state convention", () => {
       "SKILL.md must document run_<N>/ namespacing for multi-run mode"
     );
   });
+
+  it("Phase 3 reviewer prompt writes output to disk", () => {
+    const promptTemplates = readFileSync(
+      resolve(ROOT, "skills/agent-review-panel/references/prompt-templates.md"),
+      "utf-8"
+    );
+    const phase3 = promptTemplates.split(/^## Phase 4/m)[0];
+    assert.match(
+      phase3,
+      /Write your full (output|review) to.*reviewer_.*phase_3\.md/i,
+      "Phase 3 prompt must direct the reviewer to write to state/reviewer_<name>_phase_3.md"
+    );
+    assert.match(
+      phase3,
+      /100[- ]word summary/i,
+      "Phase 3 prompt must request a 100-word summary in the chat return"
+    );
+  });
 });
 
 // Export utilities for other test files

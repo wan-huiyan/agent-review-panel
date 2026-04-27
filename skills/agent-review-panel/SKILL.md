@@ -605,6 +605,10 @@ brief, and the full work content inside injection boundaries.
 
 Collect all N independent reviews.
 
+**Output (v3.1.0+):** Each reviewer subagent writes its full review to
+`state/reviewer_<name>_phase_3.md` and returns only the path + a 100-word
+summary. The orchestrator does NOT hold verbatim reviews in its window.
+
 ---
 
 ## Phase 4: Private Reflection
