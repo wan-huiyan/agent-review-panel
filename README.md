@@ -8,7 +8,9 @@
 
 A [Claude Code](https://claude.ai/code) **plugin** that orchestrates multi-agent adversarial review panels backed by [9 research papers](#research-foundations) on multi-agent debate.
 
-> Packaged as a Claude Code plugin (containing the `agent-review-panel` skill). Install once via marketplace; it activates automatically on slash command or natural-language request. **Requires Claude Code** — the CLI, an IDE extension, or the **Code tab inside the Claude Desktop app**. Does not work with the regular claude.ai web chat or Claude API direct ([details below](#requires-claude-code)).
+> Packaged as a Claude Code plugin (`roundtable`) that bundles **two skills**: `agent-review-panel` (the panel itself) and `plan-review-integrator` (applies findings back into a plan). One install gets you both; details under [Bundled skills](#bundled-skills).
+>
+> **Runs only on Claude Code surfaces** — CLI, IDE extension, or the **Code tab inside the Claude Desktop app**. Does not work with claude.ai web chat or the Anthropic API direct ([why](#requires-claude-code)).
 
 [![Agent Review Panel — pipeline architecture](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/hero-flow.svg?v=1)](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/hero-flow.svg?v=1)
 
@@ -16,21 +18,10 @@ A [Claude Code](https://claude.ai/code) **plugin** that orchestrates multi-agent
 
 [![Agent Review Panel — interactive HTML dashboard with expandable issue cards](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/html-demo.gif?v=1)](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/html-demo.gif?v=1)
 
-*The v2.15 HTML report: expandable 10-section issue cards with narrative, code evidence (Prism.js highlighted), debate transcripts, judge rulings, fix recommendations, and cross-references — all deep-linkable, keyboard-navigable, and print-friendly.*
+*The HTML report: expandable 10-section issue cards (narrative, code evidence with Prism.js syntax highlighting, debate transcripts, judge rulings, fix recommendations, cross-references), deep-linkable, keyboard-navigable, print-friendly.*
 
+<a id="quick-start"></a>
 ## Quick Start
-
-Pick the install path that matches where you are. **Path A is the easiest if you already have a Claude Code session open** — Claude does the cleanup, install, and verification for you, which sidesteps the most common upgrade gotchas (stale marketplace cache from old names, loose-clone shadows in `~/.claude/skills/`).
-
-### Path A — Ask Claude Code to install it (easiest, recommended for upgrades)
-
-Open any Claude Code session and paste this prompt:
-
-> Install the `agent-review-panel` plugin from `wan-huiyan/agent-review-panel`. Before installing, check `~/.claude/plugins/known_marketplaces.json` for any existing registration of this repo (it may be cached under an old name like `plugin` from pre-v2.16.1) — if found, run `claude plugin marketplace remove <old-name>` first. Also check `~/.claude/plugins/marketplaces/` for orphan directories with trailing whitespace and `~/.claude/skills/` for loose-clone shadows of `agent-review-panel`, `agent-review-panel-workspace`, `plan-review-integrator`, or `roundtable` — remove any found. Then run `claude plugin marketplace add wan-huiyan/agent-review-panel` and `claude plugin install roundtable@agent-review-panel`. Verify the install by listing `~/.claude/plugins/cache/agent-review-panel/roundtable/3.0.0/skills/` and confirming both `agent-review-panel/SKILL.md` and `plan-review-integrator/SKILL.md` are present. Restart-required reminder at the end. Report each step's outcome.
-
-Claude Code reads this prompt, runs the bash itself (you'll be asked to confirm the destructive `rm`s), and reports back. Restart your Claude Code session afterward — skills load at session start.
-
-### Path B — Run the commands yourself (fresh installs)
 
 **In your terminal** (bash/zsh):
 
@@ -38,6 +29,8 @@ Claude Code reads this prompt, runs the bash itself (you'll be asked to confirm 
 claude plugin marketplace add wan-huiyan/agent-review-panel
 claude plugin install roundtable@agent-review-panel
 ```
+
+Then restart your Claude Code session — skills load at session start.
 
 <details>
 <summary>Already inside a Claude Code session? Use the slash-command form instead</summary>
@@ -50,6 +43,24 @@ Type these at the REPL prompt (note the leading `/` and no `claude` prefix):
 ```
 
 Both forms do the same thing. Pick whichever matches where you are: shell-form `claude plugin …` for terminal, REPL-form `/plugin …` for inside Claude Code.
+</details>
+
+<a id="upgrading-from-v2x"></a>
+<details>
+<summary><strong>Upgrading from v2.x?</strong> Have Claude Code do the cleanup + install for you (recommended)</summary>
+
+If you already installed under an older marketplace name (`@wan-huiyan-agent-review-panel`, `@agent-review-panel` pre-v2.16.1, or the bare `plugin` name pre-v2.16) you may have stale state that silently shadows the new install. The fastest fix is to paste the prompt below into any Claude Code session and let Claude do the cleanup, install, and verification:
+
+> Install the `agent-review-panel` plugin from `wan-huiyan/agent-review-panel`. Before installing:
+> 1. Check `~/.claude/plugins/known_marketplaces.json` for any cached registration of this repo under an old name (`plugin`, `wan-huiyan-agent-review-panel`) — if found, `claude plugin marketplace remove <old-name>` first.
+> 2. Check `~/.claude/plugins/marketplaces/` for orphan directories with trailing whitespace.
+> 3. Check `~/.claude/skills/` for loose-clone shadows of `agent-review-panel`, `agent-review-panel-workspace`, `plan-review-integrator`, or `roundtable` — back up to `*.bak.<timestamp>` then remove.
+> 4. Then run `claude plugin marketplace add wan-huiyan/agent-review-panel` and `claude plugin install roundtable@agent-review-panel`.
+> 5. Verify the install by listing `~/.claude/plugins/cache/agent-review-panel/roundtable/*/skills/` and confirming both `agent-review-panel/SKILL.md` and `plan-review-integrator/SKILL.md` are present.
+> 6. Remind me to restart my Claude Code session.
+> Report each step's outcome.
+
+Claude will ask you to confirm any destructive `rm` actions before running them. Manual equivalent is in [Migration](#migration-from-previous-marketplaces).
 </details>
 
 > The `roundtable` plugin bundles **two skills**: `agent-review-panel` (the review panel) and `plan-review-integrator` (the review→integrate companion). One install gets you both. See [Bundled skills](#bundled-skills) below. Upgrading from v2.x? See [Migration](#migration-from-previous-marketplaces).
@@ -164,16 +175,16 @@ claude plugin install roundtable@agent-review-panel
 
 ### Manual clone (development / custom setup)
 
-For local development, forking, or air-gapped environments:
+For local development, forking, or air-gapped environments. **Do NOT clone into `~/.claude/skills/`** — that path shadows marketplace installs and is the destructive-cleanup target in [Updating](#updating-to-the-latest-version) above. Use a separate workspace path instead:
 
 ```bash
-git clone https://github.com/wan-huiyan/agent-review-panel.git ~/.claude/skills/agent-review-panel
+git clone https://github.com/wan-huiyan/agent-review-panel.git ~/projects/agent-review-panel-dev
 ```
 
-Or load a cloned repo as a local plugin for testing without committing to marketplace install:
+Then load the cloned repo as a local plugin for testing without committing to a marketplace install:
 
 ```bash
-claude --plugin-dir ./agent-review-panel
+claude --plugin-dir ~/projects/agent-review-panel-dev
 ```
 
 ### Claude Code version requirement
@@ -326,10 +337,10 @@ Agent Review Panel is grounded in [9 peer-reviewed papers](docs/research-foundat
 
 ## Tests
 
-The project includes a comprehensive test suite (342 tests) using Node.js built-in test runner (zero dependencies):
+The project includes a comprehensive test suite (379 tests) using Node.js built-in test runner (zero dependencies):
 
 ```bash
-npm test                    # run all 342 tests
+npm test                    # run all 379 tests
 npm run test:triggers       # trigger classification (55+ prompts)
 npm run test:manifest       # manifest consistency + phase/opus enforcement
 npm run test:eval-suite     # eval suite integrity + v2.14/v2.15 coverage
@@ -400,7 +411,7 @@ ls ~/.claude/plugins/cache/agent-review-panel/
 <details>
 <summary><strong>Plugin install isn't working after migration?</strong> Bash recipe to clear stale state</summary>
 
-If you installed before v3.0, your `~/.claude/` directory may have stale state that silently shadows the new install ([Path A](#path-a--ask-claude-code-to-install-it-easiest-recommended-for-upgrades) in Quick Start handles this automatically — this is the manual equivalent):
+If you installed before v3.0, your `~/.claude/` directory may have stale state that silently shadows the new install (the [Upgrading from v2.x?](#upgrading-from-v2x) callout in Quick Start handles this automatically — this is the manual equivalent):
 
 ```bash
 # Old marketplace name (pre-v2.16.1 was "plugin")
@@ -423,6 +434,76 @@ claude plugin install roundtable@agent-review-panel
 
 Restart your Claude Code session after install.
 </details>
+
+## Troubleshooting
+
+### After install, `/roundtable:agent-review-panel` is not recognized
+
+Restart your Claude Code session — skills load at session start, not on install completion. If the slash command still doesn't appear after restart, see "Old version keeps loading" below.
+
+### The panel ran but no output files appeared
+
+The three output files (`review_panel_report.md`, `review_panel_process.md`, `review_panel_report.html`) are written to your Claude Code session's **current working directory**. Run `pwd` in the session to confirm where you are. If you start the session from one directory and `cd` elsewhere, files land in the original cwd. Only one panel can run per directory at a time — concurrent runs in the same directory will overwrite each other.
+
+### Old version keeps loading after `claude plugin update`
+
+A loose clone in `~/.claude/skills/agent-review-panel/` shadows the marketplace install and pins you to whatever version was cloned. Verify, back up, then remove:
+
+```bash
+ls ~/.claude/skills/agent-review-panel 2>/dev/null && \
+  mv "$HOME/.claude/skills/agent-review-panel" "$HOME/.claude/skills/agent-review-panel.bak.$(date +%s)"
+```
+
+Then restart Claude Code. The marketplace install in `~/.claude/plugins/cache/agent-review-panel/` will take over. The backup is reversible — delete it once you've confirmed the marketplace version works.
+
+### `review_panel_report.html` is missing or empty
+
+Phase 15.3 generates the HTML in a separate pass and may retry once on transient failures. If still missing after a run, the markdown report contains the same findings — the HTML is a presentation layer. To regenerate the HTML manually, ask Claude Code in the same session: *"generate the HTML review report"*.
+
+### The HTML report renders unstyled or charts are blank
+
+The dashboard pulls Tailwind, Chart.js, and Prism.js from CDN; first open requires internet. For air-gapped review, use `review_panel_report.md` — same content, no CDN dependency. (The three CDN libraries are MIT-licensed.)
+
+### `npm test` fails locally with `Cannot find module 'node:test'` or similar
+
+The test suite uses Node's built-in test runner, which requires **Node ≥ 18** (stable from 20). Check with `node --version` and upgrade if needed.
+
+### Panel hangs partway through Phase 3
+
+A reviewer subagent may have timed out. The panel doesn't auto-retry across runs — interrupt the session and re-invoke the panel. If it reproduces, file an issue with the content type (code/plan/docs) and approximate size.
+
+### Migration / install state from older marketplace names
+
+If you installed before v2.16.1 or v3.0 and `claude plugin update` misbehaves, the simplest fix is the "Upgrading from v2.x?" prompt in [Quick Start](#quick-start) — Claude Code does the cleanup and reinstall for you. Manual recipe is in [Migration](#migration-from-previous-marketplaces).
+
+## Reading the Report
+
+The panel produces three files per run; here's how to read them.
+
+**Severity rubric.** Every finding is tagged with one severity:
+
+- **P0** — ship-blocker. Affects correctness, data integrity, or security. Must fix before merging/releasing.
+- **P1** — should fix soon. Real defect, real cost, but not a release-blocker.
+- **P2** — nice to have. Stylistic, structural, or future-rot avoidance.
+- **P3** — nit. Optional polish.
+
+**Epistemic labels.** Each finding is also tagged with how confident the panel is in the underlying evidence:
+
+| Label | Meaning |
+|---|---|
+| `[VERIFIED]` | Confirmed against source — line citation matches actual code/text |
+| `[CONSENSUS]` | Three or more reviewers raised it independently |
+| `[SINGLE-SOURCE]` | One reviewer raised it, no one refuted |
+| `[DISPUTED]` | Reviewers split on whether it's a real issue |
+| `[UNVERIFIED]` | Stated without a checkable citation; treat with care |
+| `[WEB-VERIFIED]` | External fact (product feature, regulation, API behavior) confirmed by an authoritative web source |
+| `[WEB-CONTRADICTED]` | External fact contradicted by an authoritative web source — severity demoted |
+| `[WEB-INCONCLUSIVE]` | External fact could not be confirmed via web search — flagged for human judgement |
+| `[CMD_CONFIRMED]` / `[CMD_CONTRADICTED]` | Reviewer's `verification_command` (read-only grep/cat/head) was run and the result confirmed/contradicted the claim |
+
+**Defect type.** Code/plan reviews additionally label findings as `[EXISTING_DEFECT]` (bug exists right now) or `[PLAN_RISK]` (risk only materializes if the plan is implemented as written). P0 severity requires `[EXISTING_DEFECT]` evidence.
+
+**How to read in priority order:** start with the Executive Summary, then the Action Items table (sorted P0 → P3). Use the HTML dashboard's filter bar to narrow by severity or epistemic label. Process history (`review_panel_process.md`) is the verbatim director's-cut log — read this only when you need to see *why* a finding got a particular ruling.
 
 ## Contributing
 
@@ -455,8 +536,16 @@ See [CHANGELOG.md](CHANGELOG.md) for detailed version history. See [ROADMAP.md](
 
 | Version | Highlights |
 |---------|------------|
-| **v2.15** | Expandable 10-section issue cards in HTML dashboard (narrative, code evidence, debate, judge ruling, fix, cross-refs, prior runs); Prism.js syntax highlighting; deep-linking; keyboard nav; print-friendly |
-| **v2.14** | Phase 2 Data Flow Trace (composition bug detector, 3 tiers); Multi-Run Union Protocol + Phase 16 Merge; force `model: "opus"` on all launches; integer phase renumbering (1–16) |
+| **v3.1** | Silent-phase-compression fix (#35) — file-based subagent state under `state/<phase>.md`, Phase 13.5 Pre-Judge Verification Gate, `⚠️ COMPRESSED RUN` header when phase loss is detected. Eliminates the v3.0 failure mode where context pressure silently inlined Phases 4 / 5 / 7 into the judge step (PR #39) |
+| v3.0 | Single-plugin layout (BREAKING) — collapses the multi-plugin marketplace into one plugin (`roundtable`) bundling both skills, mirroring [obra/superpowers](https://github.com/obra/superpowers). Install UX is one command instead of two. `release-check.sh` doc-drift detector folded in (PR #33) |
+| v2.16.5 | Plugin skills layout fixed for Claude Code ≥ 2.1.112 manifest validation (PR #30 by @okuuva) |
+| v2.16.4 | Phase 15.3 reliability — disk-reading prompt strategy + verification gate; manual HTML report recovery |
+| v2.16.3 | External domain claim web verification in Phase 11 — `[WEB-VERIFIED]` / `[WEB-CONTRADICTED]` / `[WEB-INCONCLUSIVE]` labels |
+| v2.16.2 | Hotfix for plugin layout bug that silently broke all marketplace installs since 2026-04-07 |
+| v2.16.1 | Marketplace bundle (PR #22) |
+| v2.16.0 | Plugin layout (PR #18) |
+| v2.15 | Expandable 10-section issue cards in HTML dashboard (narrative, code evidence, debate, judge ruling, fix, cross-refs, prior runs); Prism.js syntax highlighting; deep-linking; keyboard nav; print-friendly |
+| v2.14 | Phase 2 Data Flow Trace (composition bug detector, 3 tiers); Multi-Run Union Protocol + Phase 16 Merge; force `model: "opus"` on all launches; integer phase renumbering (1–16) |
 | v2.13 | Persona profiles in process history + Panel Gallery in HTML dashboard |
 | v2.12 | Triple output: primary report + process history + interactive HTML dashboard |
 | v2.11 | Verification round: tiered (Light/Standard/Deep) persona-matched agents per dispute |
