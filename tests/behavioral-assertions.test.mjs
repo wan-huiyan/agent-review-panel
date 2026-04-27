@@ -491,6 +491,22 @@ describe("v3.1.0 file-based state convention", () => {
       "Phase 13.5 must document the single-retry policy"
     );
   });
+
+  it("Phase 14 reads state files on demand", () => {
+    assert.match(
+      skillMd,
+      /## Phase 14: Supreme Judge[\s\S]+?reads? .*state.*on demand/i,
+      "Phase 14 must document reading state files on demand"
+    );
+  });
+
+  it("Phase 14 materializes ruling to phase_14_judge_ruling.md", () => {
+    assert.match(
+      skillMd,
+      /phase_14_judge_ruling\.md/,
+      "Phase 14 must write its ruling to state/phase_14_judge_ruling.md"
+    );
+  });
 });
 
 // Export utilities for other test files

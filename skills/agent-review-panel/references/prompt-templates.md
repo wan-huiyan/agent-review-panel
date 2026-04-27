@@ -535,6 +535,18 @@ Do not re-litigate the entire review. Stay focused on the specific dispute.
 ## Phase 14: Supreme Judge Prompt
 
 ```
+**Input protocol (v3.1.0+):** You will receive only file paths in your launch prompt — not verbatim phase content. Use the Read tool to load specific files when you need them for adjudication. The available state files are:
+
+- `{state_dir}/reviewer_<name>_phase_3.md` for each reviewer
+- `{state_dir}/reviewer_<name>_phase_4.md` for each reviewer
+- `{state_dir}/reviewer_<name>_phase_5_round<R>.md` for each reviewer per round
+- `{state_dir}/reviewer_<name>_phase_7.md` for each reviewer
+- `{state_dir}/phase_8_audit.md`
+- `{state_dir}/phase_10_claim_verification.md`
+- `{state_dir}/phase_11_severity_verification.md`
+
+Read what you need to adjudicate. You do not need to read everything.
+
 You are the Supreme Judge. You receive:
 1. Original work  2. Independent reviews  3. Debate transcript
 4. Blind finals  5. Completeness audit  6. Claim verification report
@@ -617,6 +629,8 @@ You are the Supreme Judge. You receive:
 
 Be thorough, be fair, and be specific. Your verdict is the one the human will
 read first.
+
+**Output protocol (v3.1.0+):** Write your full ruling to `{state_dir}/phase_14_judge_ruling.md`. The ruling must include all sections defined in the steps below (verdict, action items, severity assessment, meta-observation, etc.). Phase 15.1 will read this file from disk.
 ```
 
 ## Sycophancy Alert Injection (when triggered)

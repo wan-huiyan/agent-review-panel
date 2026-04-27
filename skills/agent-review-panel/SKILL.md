@@ -973,8 +973,18 @@ structurally, not just by file presence.
 
 ## Phase 14: Supreme Judge
 
-Single agent (`model: "opus"`). Receives all prior outputs (including the
-Verification Round Summary from Phase 13 as input item 8). Steps (in order):
+Single agent (`model: "opus"`). The launch prompt is ~200 tokens of metadata:
+the paths to the state files produced by Phases 3, 4, 5, 7, 8, 10, 11, and
+13. The judge **reads state files on demand** using the Read tool — it does
+NOT receive verbatim phase outputs pre-stuffed into its launch prompt. This
+mirrors the Phase 15.3 HTML-agent pattern (v2.16.4) and caps the judge's
+window load even when the panel has produced hundreds of kilobytes of
+material.
+
+The judge's ruling is materialized to `state/phase_14_judge_ruling.md` so
+Phase 15.1 can later consume it from disk (rather than from chat).
+
+Steps (in order):
 0. Review verification results (claims, severity, commands, **and verification round**)
 0.5a-b. Verify audit findings, anti-rhetoric assessment
 0.5c. Severity dampening — minimum evidence-justified severity. **In Precise mode, findings without code citations cannot exceed P2.**
@@ -983,6 +993,7 @@ Verification Round Summary from Phase 13 as input item 8). Steps (in order):
 4-5. Absent-safeguard check, independent gap scan, score assessment
 6-7. Epistemic label classification, final verdict
 8-9. Action items, meta-observation
+10. **Write ruling to `{state_dir}/phase_14_judge_ruling.md`** (v3.1.0+).
 
 See `references/prompt-templates.md` for the full judge prompt.
 
