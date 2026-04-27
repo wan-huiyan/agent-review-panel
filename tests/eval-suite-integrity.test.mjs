@@ -8,14 +8,14 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
 
 const evalSuite = JSON.parse(
-  readFileSync(resolve(ROOT, "plugins/agent-review-panel/eval-suite.json"), "utf-8")
+  readFileSync(resolve(ROOT, "skills/agent-review-panel/eval-suite.json"), "utf-8")
 );
 
 function findSkillMd() {
   const candidates = [
+    resolve(ROOT, "skills/agent-review-panel/SKILL.md"),
     resolve(ROOT, "plugins/agent-review-panel/skills/agent-review-panel/SKILL.md"),
     resolve(ROOT, "plugins/agent-review-panel/SKILL.md"),
-    resolve(ROOT, "skills/agent-review-panel/SKILL.md"),
     resolve(ROOT, "SKILL.md"),
   ];
   for (const c of candidates) {

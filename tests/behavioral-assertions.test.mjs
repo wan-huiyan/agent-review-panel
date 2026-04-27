@@ -8,15 +8,15 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
 
 const evalSuite = JSON.parse(
-  readFileSync(resolve(ROOT, "plugins/agent-review-panel/eval-suite.json"), "utf-8")
+  readFileSync(resolve(ROOT, "skills/agent-review-panel/eval-suite.json"), "utf-8")
 );
 
-// Discover SKILL.md in canonical (plugins/<name>/) or legacy layout.
+// Discover SKILL.md in canonical (skills/<name>/) or legacy layouts.
 function findSkillMd() {
   const candidates = [
+    resolve(ROOT, "skills/agent-review-panel/SKILL.md"),
     resolve(ROOT, "plugins/agent-review-panel/skills/agent-review-panel/SKILL.md"),
     resolve(ROOT, "plugins/agent-review-panel/SKILL.md"),
-    resolve(ROOT, "skills/agent-review-panel/SKILL.md"),
     resolve(ROOT, "SKILL.md"),
   ];
   for (const c of candidates) {
