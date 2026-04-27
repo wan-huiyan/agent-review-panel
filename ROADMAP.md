@@ -280,6 +280,8 @@ Techniques evaluated and rejected for our use case.
 | v2.16.2 | 2026-04-08 | **README unification** (PR #25) — unified shell-form and REPL-form install instructions with shell-form as primary. |
 | v2.16.3 | 2026-04-09 | **External domain claim web verification in Phase 11** — P0/P1 findings with external domain claims (product limits, API behavior, regulatory jurisdiction) auto-verified via web search. New labels: `[WEB-VERIFIED]`, `[WEB-CONTRADICTED]`, `[WEB-INCONCLUSIVE]`. |
 | v2.16.4 | 2026-04-15 | **Phase 15.3 reliability fix** (PR #26) — sequential Phase 15 execution (15.1→15.2→15.3), disk-reading data strategy (agent reads files instead of orchestrator injection), mandatory verification gate, manual recovery path. Fixes silent HTML report generation failure. |
+| v2.16.5 | 2026-04-19 | **Plugin skills subdir layout** (PR #30) — restructured to `plugins/<name>/skills/<name>/SKILL.md` for Claude Code ≥2.1.112 auto-discovery; dropped the `skills` field from plugin.json. First external contribution from [@okuuva](https://github.com/okuuva). |
+| v3.0.0 | 2026-04-27 | **Single-plugin layout** (PR #33) — collapsed multi-plugin marketplace to one plugin (`agent-review-panel`) bundling two skills (`agent-review-panel` + `plan-review-integrator`), mirroring [obra/superpowers](https://github.com/obra/superpowers). Reverts the v2.16.2 plugin rename `roundtable` → `agent-review-panel` so plugin/skill/marketplace share one name. Adds `scripts/release-check.sh` pre-release doc-drift detector. **BREAKING:** install handle changes from `roundtable@agent-review-panel` to `agent-review-panel@agent-review-panel`; the second-plugin install command `plan-review-integrator@agent-review-panel` is removed (the skill is now bundled). |
 
 ---
 

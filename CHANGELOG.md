@@ -2,6 +2,62 @@
 
 All notable changes to Agent Review Panel.
 
+## [3.0.0] — 2026-04-27
+
+### Changed — Single-plugin layout (BREAKING) (PR #33)
+
+Collapsed the multi-plugin marketplace into a single plugin that bundles both skills, mirroring the structure used by [obra/superpowers](https://github.com/obra/superpowers). Layout reasoning: when a marketplace ships exactly one plugin and that plugin bundles its skills, the extra `plugins/<name>/` nesting layer is pure ceremony. Removing it makes the install UX one command instead of two and keeps the auto-discovery convention from PR #30 intact (`<plugin-root>/skills/<skill-name>/SKILL.md`).
+
+- `.claude-plugin/plugin.json` now lives at the repo root (was `plugins/agent-review-panel/.claude-plugin/plugin.json`).
+- Skills moved to `skills/agent-review-panel/` and `skills/plan-review-integrator/` at the repo root (were nested under `plugins/<plugin-name>/skills/<skill-name>/`).
+- `marketplace.json` reduced to a single plugin entry with `source: "./"`.
+- `plugins/` directory deleted.
+
+### Changed — Plugin name revert: `roundtable` → `agent-review-panel`
+
+Reverts the v2.16.2 rename. Folded into v3.0 because the single-plugin layout makes the three-layer naming divergence even more obviously redundant: when there's exactly one plugin and one marquee skill, naming them differently buys nothing. Now plugin / skill / marketplace all share `agent-review-panel`. Install handle is the visibly-redundant-but-self-explanatory `agent-review-panel@agent-review-panel`; slash command is `/agent-review-panel:agent-review-panel`.
+
+### Changed — Test discovery rewritten for single-plugin model
+
+- `tests/manifest-consistency.test.mjs` — walks `skills/<name>/` under one root `plugin.json`. Marquee skill (where `name == plugin.name`) tracks `plugin.json` version exactly; other skills version independently.
+- `tests/trigger-classification.test.mjs` — walks `skills/<name>/eval-suite.json`.
+- `tests/eval-suite-integrity.test.mjs` and `tests/behavioral-assertions.test.mjs` — hardcoded paths updated from `plugins/agent-review-panel/...` to `skills/agent-review-panel/...`.
+- 345/345 tests pass.
+
+### Added — `scripts/release-check.sh` (folded in from PR #32)
+
+Pre-release doc-drift detector. Asserts slash-command consistency, marketplace-name consistency, test-count accuracy, canonical-version match across 5 files, ROADMAP row presence, CHANGELOG section presence. Auto-detects plugin name from `plugin.json` so it stays correct across future renames. Run with `bash scripts/release-check.sh`.
+
+### Migration
+
+Pre-v3.0 install commands that **no longer exist**:
+
+```bash
+claude plugin install roundtable@agent-review-panel              # GONE (v2.16.2-v2.16.5)
+claude plugin install plan-review-integrator@agent-review-panel  # GONE (multi-plugin layout)
+```
+
+New install (one command, both skills bundled):
+
+```bash
+claude plugin marketplace add wan-huiyan/agent-review-panel
+claude plugin install agent-review-panel@agent-review-panel
+```
+
+### Bumped
+
+- `package.json`: 2.16.5 → 3.0.0
+- `.claude-plugin/plugin.json` (new at root): 3.0.0
+- `.claude-plugin/marketplace.json` entry: 2.16.5 → 3.0.0
+- `skills/agent-review-panel/eval-suite.json`: 2.16.5 → 3.0.0
+- `skills/agent-review-panel/SKILL.md`: header `v2.16.5` → `v3.0.0`; HTML footer instruction updated to match
+- `skills/plan-review-integrator/SKILL.md`: frontmatter `version: 2.0.0` → `2.0.1` (was drifted from its eval-suite.json which was already at 2.0.1)
+
+### Notes
+
+- This release supersedes the open PR #32 (rename revert + doc sweep + release-check.sh). All three pieces are folded into v3.0.
+- PR #30's auto-discovery convention is preserved: skills still live at `<plugin-root>/skills/<skill-name>/SKILL.md` with no `skills` field declared in `plugin.json`.
+
 ## [2.16.5] — 2026-04-19
 
 ### Fixed — Plugin skills layout for Claude Code ≥2.1.112 manifest validation (PR #30)
