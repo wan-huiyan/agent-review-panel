@@ -37,6 +37,18 @@
 - "Commit:" steps use a per-task message; squash at the end is fine but not required.
 - For surgical edits, the plan shows a `Find:` block (the existing text to locate) and a `Replace with:` block (the new text). Use the Edit tool's exact-match behavior.
 
+### Prompt-template directive placement (Tasks 2-6, 8)
+
+When inserting an `**Output protocol (v3.1.0+):**` directive into a prompt
+template in `references/prompt-templates.md`, place it **INSIDE the prompt's
+code fence**, just before the closing triple-backtick. The orchestrator's
+subagent dispatch typically copies the literal fenced content into the Task()
+prompt, so directives outside the fence may not reach the subagent.
+
+Single-line directive sentences are required (test regexes use `.*` which
+does not span newlines without the `s` flag). If a directive sentence wraps
+naturally, keep the path-bearing sentence on one physical line in the file.
+
 ---
 
 ## Task 1: State directory convention in SKILL.md Implementation Notes

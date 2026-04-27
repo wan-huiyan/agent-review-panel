@@ -367,5 +367,173 @@ describe("SKILL.md behavioral contract validation", () => {
   });
 });
 
+describe("v3.1.0 file-based state convention", () => {
+  it("documents the state/ directory layout in Implementation Notes", () => {
+    assert.match(
+      skillMd,
+      /state\/reviewer_<name>_phase_<N>\.md/,
+      "SKILL.md must document the state file naming convention"
+    );
+    assert.match(
+      skillMd,
+      /Implementation Notes[\s\S]+?state\/.+?phase_14_judge_ruling\.md/,
+      "Implementation Notes must list phase_14_judge_ruling.md as a materialized state file"
+    );
+  });
+
+  it("documents multi-run namespacing under state/", () => {
+    assert.match(
+      skillMd,
+      /state\/run_\d+\/reviewer/,
+      "SKILL.md must document run_<N>/ namespacing for multi-run mode"
+    );
+  });
+
+  it("Phase 3 reviewer prompt writes output to disk", () => {
+    const promptTemplates = readFileSync(
+      resolve(ROOT, "skills/agent-review-panel/references/prompt-templates.md"),
+      "utf-8"
+    );
+    const phase3 = promptTemplates.split(/^## Phase 4/m)[0];
+    assert.match(
+      phase3,
+      /Write your full (output|review) to.*reviewer_.*phase_3\.md/i,
+      "Phase 3 prompt must direct the reviewer to write to state/reviewer_<name>_phase_3.md"
+    );
+    assert.match(
+      phase3,
+      /100[- ]word summary/i,
+      "Phase 3 prompt must request a 100-word summary in the chat return"
+    );
+  });
+
+  it("Phase 4 reflection prompt writes output to disk", () => {
+    const promptTemplates = readFileSync(
+      resolve(ROOT, "skills/agent-review-panel/references/prompt-templates.md"),
+      "utf-8"
+    );
+    const phase4 = promptTemplates
+      .split(/^## Phase 4/m)[1]
+      .split(/^## Phase 5/m)[0];
+    assert.match(
+      phase4,
+      /reviewer_.*phase_4\.md/i,
+      "Phase 4 prompt must direct disk-write to state/reviewer_<name>_phase_4.md"
+    );
+  });
+
+  it("Phase 5 debate prompt writes round outputs to disk", () => {
+    const promptTemplates = readFileSync(
+      resolve(ROOT, "skills/agent-review-panel/references/prompt-templates.md"),
+      "utf-8"
+    );
+    const phase5 = promptTemplates
+      .split(/^## Phase 5/m)[1]
+      .split(/^## Phase 6|^## Phase 7/m)[0];
+    assert.match(
+      phase5,
+      /reviewer_.*phase_5_round\d+\.md/i,
+      "Phase 5 prompt must direct disk-write to state/reviewer_<name>_phase_5_round<R>.md"
+    );
+  });
+
+  it("Phase 7 blind final prompt writes output to disk", () => {
+    const promptTemplates = readFileSync(
+      resolve(ROOT, "skills/agent-review-panel/references/prompt-templates.md"),
+      "utf-8"
+    );
+    const phase7 = promptTemplates
+      .split(/^## Phase 7/m)[1]
+      .split(/^## (Phase 8|Phase 10|Claim Verification)/m)[0];
+    assert.match(
+      phase7,
+      /reviewer_.*phase_7\.md/i,
+      "Phase 7 prompt must direct disk-write to state/reviewer_<name>_phase_7.md"
+    );
+  });
+
+  it("Phases 8, 10, 11 verifier prompts write outputs to disk", () => {
+    const promptTemplates = readFileSync(
+      resolve(ROOT, "skills/agent-review-panel/references/prompt-templates.md"),
+      "utf-8"
+    );
+    assert.match(
+      promptTemplates,
+      /phase_8_audit\.md/,
+      "Phase 8 audit prompt must direct disk-write"
+    );
+    assert.match(
+      promptTemplates,
+      /phase_10_claim_verification\.md/,
+      "Phase 10 verification prompt must direct disk-write"
+    );
+    assert.match(
+      promptTemplates,
+      /phase_11_severity_verification\.md/,
+      "Phase 11 severity verification prompt must direct disk-write"
+    );
+  });
+
+  it("Phase 13.5 pre-judge verification gate is documented", () => {
+    assert.match(
+      skillMd,
+      /## Phase 13\.5: Pre-Judge Verification Gate/,
+      "SKILL.md must contain the Phase 13.5 verification gate section"
+    );
+    assert.match(
+      skillMd,
+      /## Phase 13\.5[\s\S]+?Existence check[\s\S]+?Minimum-bytes[\s\S]+?Required-headers/,
+      "Phase 13.5 must document existence + minimum-bytes + required-headers checks"
+    );
+    assert.match(
+      skillMd,
+      /## Phase 13\.5[\s\S]+?single retry/i,
+      "Phase 13.5 must document the single-retry policy"
+    );
+  });
+
+  it("Phase 14 reads state files on demand", () => {
+    assert.match(
+      skillMd,
+      /## Phase 14: Supreme Judge[\s\S]+?reads? .*state.*on demand/i,
+      "Phase 14 must document reading state files on demand"
+    );
+  });
+
+  it("Phase 14 materializes ruling to phase_14_judge_ruling.md", () => {
+    assert.match(
+      skillMd,
+      /phase_14_judge_ruling\.md/,
+      "Phase 14 must write its ruling to state/phase_14_judge_ruling.md"
+    );
+  });
+
+  it("Phase 15.1 documents COMPRESSED RUN header schema", () => {
+    assert.match(
+      skillMd,
+      /COMPRESSED RUN/,
+      "SKILL.md must mention the COMPRESSED RUN header"
+    );
+    assert.match(
+      skillMd,
+      /## Phase 15\.1[\s\S]+?⚠️[\s\S]+?COMPRESSED RUN[\s\S]+?Phases skipped/,
+      "Phase 15.1 must define the warning header format with phases-skipped list"
+    );
+    assert.match(
+      skillMd,
+      /\[COMPRESSED\]/,
+      "SKILL.md must define the [COMPRESSED] epistemic label suffix for action items in compressed runs"
+    );
+  });
+
+  it("Phase 15.3 documents COMPRESSED RUN HTML banner", () => {
+    assert.match(
+      skillMd,
+      /## Phase 15[\s\S]+?### Phase 15\.3[\s\S]+?COMPRESSED RUN[\s\S]+?banner/i,
+      "Phase 15.3 must document the red HTML banner for compressed runs"
+    );
+  });
+});
+
 // Export utilities for other test files
 export { makeAssertionChecker, runAssertions };

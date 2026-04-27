@@ -2,6 +2,35 @@
 
 All notable changes to Agent Review Panel.
 
+## [3.1.0] — 2026-04-27 — silent-phase-compression fix (#35)
+
+### Fixed — silent compression of mandatory Phases 4 / 5 / 7
+
+Under context-budget pressure, the v3.0.0 orchestrator silently inlined Phases 4 (private reflection), 5 (debate rounds), 6 (round summaries), and 7 (blind final assessments) into the Supreme Judge step, producing deliverables indistinguishable from full runs. Empirical cost measured at 6 net-new findings (including 1 P0 FERPA / Anthropic-DPA gap) missed by a compressed run versus the corrective full-run review on the same input. Fixes [#35](https://github.com/wan-huiyan/agent-review-panel/issues/35).
+
+### Architectural changes
+
+- **File-based subagent state.** All Phase 3 / 4 / 5 / 7 / 8 / 10 / 11 / 14 outputs now write to `state/<file>.md` under the review output directory; subagents return only `{path, 100-word summary}` rather than verbatim review content. Eliminates the orchestrator-context bloat (~75k tokens per phase × 6 phases) that drove silent compression. Multi-run mode namespaces under `state/run_<N>/`.
+- **Phase 13.5 — Pre-Judge Verification Gate (NEW).** Before launching the Supreme Judge, the orchestrator verifies all mandatory phase outputs exist on disk + meet a minimum-bytes threshold (≥500 B) + contain required schema headers. Single retry on failure; persistent miss triggers the COMPRESSED RUN warning rather than a silently incomplete report.
+- **Phase 14 reads state on demand.** Launch prompt is ~200 tokens of paths; the judge uses the Read tool to load specific state files. Mirrors the v2.16.4 Phase 15.3 HTML-agent pattern. The judge's ruling materializes to `state/phase_14_judge_ruling.md` so Phase 15.1 can later consume it from disk.
+- **`⚠️ COMPRESSED RUN` header in Phase 15.1.** When the gate detects unrecoverable phase loss, the markdown report begins with a fail-loud blockquote listing the skipped phases; every action item gains a `[COMPRESSED]` epistemic-label suffix. Phase 15.3 renders the same warning as a red HTML banner above the summary card.
+
+### Tests
+
+- New fixture: `tests/fixtures/sample-report-compressed-run.md` and golden snapshot `tests/golden/sample-report-compressed-run.golden.json`.
+- `tests/report-structure.test.mjs` parser extended to extract `report.compressedRun.{detected, phasesSkipped}`.
+- `tests/behavioral-assertions.test.mjs` gains a `v3.1.0 file-based state convention` describe block validating SKILL.md documents the new architecture.
+- 379 / 379 tests pass.
+
+### Breaking changes
+
+None. The `state/` directory is net-new and may be `.gitignore`d if not desired in commits. Existing report consumers see unchanged report files for full runs and a leading warning blockquote for compressed runs.
+
+### Design references
+
+- Design doc: `docs/plans/2026-04-27-silent-phase-compression-fix-design.md`
+- Implementation plan: `docs/plans/2026-04-27-silent-phase-compression-fix-plan.md`
+
 ## [3.0.0] — 2026-04-27
 
 ### Changed — Single-plugin layout (BREAKING) (PR #33)

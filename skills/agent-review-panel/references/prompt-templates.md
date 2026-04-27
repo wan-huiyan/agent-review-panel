@@ -115,6 +115,13 @@ Be specific. Reference exact lines, sections, or components. Vague feedback
 like "could be better" is not useful. If you find no issues in an area, say so
 explicitly rather than manufacturing criticism. If the line-by-line audit found
 nothing, state: "Line-by-line audit: no issues found."
+
+**Output protocol (v3.1.0+):** Write your full review to `{state_dir}/reviewer_{persona_short_name}_phase_3.md`. Then return ONLY:
+
+1. The absolute path you wrote to.
+2. A 100-word summary of your top conclusions and severity counts.
+
+Do NOT return your full review in chat. The orchestrator reads from disk.
 ```
 
 ## Phase 4: Private Reflection Prompt
@@ -139,6 +146,8 @@ Also note:
 
 This reflection is private — no one else will see it directly. Be honest
 about your uncertainty.
+
+**Output protocol (v3.1.0+):** Write your full reflection to `{state_dir}/reviewer_{persona_short_name}_phase_4.md`. Return ONLY the path plus a 100-word summary of changes from your Phase 3 review (what you'd update, what you'd add, what you'd retract). Do NOT return the verbatim reflection in chat.
 ```
 
 ## Phase 5: Debate Round Prompt
@@ -174,6 +183,8 @@ with strong evidence is rigor, not weakness.
 Remember: your agreement intensity is {X}%. You don't disagree reflexively,
 but you hold a high evidence bar. If you genuinely cannot find a new
 discovery after careful re-reading, state that explicitly.
+
+**Output protocol (v3.1.0+):** Write your full debate response to `{state_dir}/reviewer_{persona_short_name}_phase_5_round{round_number}.md` (e.g. `reviewer_security_phase_5_round1.md`, `reviewer_security_phase_5_round2.md`, `reviewer_security_phase_5_round3.md`). Return ONLY the path + a 100-word summary of: which reviewers you agreed with, which you challenged, and your one new finding. Do NOT return the verbatim debate response in chat.
 ```
 
 ## Phase 7: Blind Final Assessment Prompt
@@ -195,6 +206,8 @@ Give your FINAL independent assessment. Others will NOT see this.
 3. [Point 3]
 ### Final Recommendation: {Accept as-is | Accept with minor changes | Needs significant revision | Reject}
 ### One-line verdict: [Single sentence summary]
+
+**Output protocol (v3.1.0+):** Write your blind final assessment to `{state_dir}/reviewer_{persona_short_name}_phase_7.md`. Return ONLY the path + a 100-word summary of new findings (those NO reviewer mentioned). Do NOT return the verbatim assessment in chat.
 ```
 
 ## Phase 8: Completeness Auditor Prompt
@@ -230,6 +243,8 @@ Re-read source line by line. For every code snippet, constant, set, SQL query:
 
 Report ONLY findings that NO reviewer mentioned. If the panel was thorough
 and you find nothing new, say so — do not manufacture issues.
+
+**Output protocol (v3.1.0+):** Write your full audit findings to `{state_dir}/phase_8_audit.md`. Return ONLY the path + a 100-word summary of overlooked issues. Do NOT return verbatim audit text in chat.
 ```
 
 ## Phase 10: Claim Verification Prompt
@@ -268,6 +283,57 @@ For each claim:
 **Summary:** Total claims checked: N. Verified: X%. Inaccurate: Y%. Hallucinated: Z%.
 
 **Flagged for Judge:** [list only [INACCURATE], [MISATTRIBUTED], and [HALLUCINATED] claims]
+
+**Output protocol (v3.1.0+):** Write your full verification verdicts to `{state_dir}/phase_10_claim_verification.md`. Return ONLY the path + a 100-word summary of verdicts (verified / refuted / unverifiable counts). Do NOT return verbatim verification text in chat.
+```
+
+## Phase 11: Severity Verification Prompt
+
+```
+You are a Severity Verification Agent. The expert review panel has flagged
+P0 and P1 findings. Your job is to read the actual codebase and verify each
+high-severity claim, downgrading any that were overstated.
+
+## The Source Material
+{injection boundary + full content}
+
+## P0/P1 Findings to Verify
+{list of P0 and P1 findings from the panel, each with reviewer + claim + cited location}
+
+## Verification Procedure
+
+For each P0/P1 finding:
+
+1. **Classify as `[EXISTING_DEFECT]` or `[PLAN_RISK]`**
+   - `[EXISTING_DEFECT]`: bug exists in current running code right now
+   - `[PLAN_RISK]`: risk only materializes if plan is implemented as written
+   - P0 severity REQUIRES `[EXISTING_DEFECT]`. A `[PLAN_RISK]` is at most P1.
+
+2. **Verify the claim against actual code**
+   - If finding says "X is missing", grep for X in the codebase
+   - If finding cites a specific file/line, read that file and verify
+   - If no specific line cited, flag as `[UNCITED]`
+
+3. **Check for existing safety mechanisms**
+   - Grep for DELETE, MERGE, upsert, idempotent, dry-run, duplicate, assertion
+   - A "missing safety" finding is invalid if the safety exists but the reviewer didn't look
+
+4. **External domain claims (web verify)**
+   - If the finding depends on facts outside the codebase (product limits,
+     API behavior, regulatory jurisdiction), run a web search (cap: 2 per claim,
+     5 claims max). Tag `[WEB-VERIFIED]`, `[WEB-CONTRADICTED]` (demote 1 level),
+     or `[WEB-INCONCLUSIVE]`.
+
+## Output Format
+
+| Finding | Panel Severity | Verified? | Actual Severity | Reason |
+|---------|---------------|-----------|-----------------|--------|
+
+For external claims, extend with Domain Type, Web Result, Source columns.
+
+**Summary:** Total P0/P1 verified: N. Confirmed: X. Demoted: Y. Not-a-bug: Z.
+
+**Output protocol (v3.1.0+):** Write your full severity assessment to `{state_dir}/phase_11_severity_verification.md`. Return ONLY the path + a 100-word summary of severity dampening decisions. Do NOT return verbatim severity text in chat.
 ```
 
 ## Phase 12a: Confidence-Based Tier Draft (Orchestrator Logic — no agent)
@@ -469,6 +535,18 @@ Do not re-litigate the entire review. Stay focused on the specific dispute.
 ## Phase 14: Supreme Judge Prompt
 
 ```
+**Input protocol (v3.1.0+):** You will receive only file paths in your launch prompt — not verbatim phase content. Use the Read tool to load specific files when you need them for adjudication. The available state files are:
+
+- `{state_dir}/reviewer_<name>_phase_3.md` for each reviewer
+- `{state_dir}/reviewer_<name>_phase_4.md` for each reviewer
+- `{state_dir}/reviewer_<name>_phase_5_round<R>.md` for each reviewer per round
+- `{state_dir}/reviewer_<name>_phase_7.md` for each reviewer
+- `{state_dir}/phase_8_audit.md`
+- `{state_dir}/phase_10_claim_verification.md`
+- `{state_dir}/phase_11_severity_verification.md`
+
+Read what you need to adjudicate. You do not need to read everything.
+
 You are the Supreme Judge. You receive:
 1. Original work  2. Independent reviews  3. Debate transcript
 4. Blind finals  5. Completeness audit  6. Claim verification report
@@ -551,6 +629,8 @@ You are the Supreme Judge. You receive:
 
 Be thorough, be fair, and be specific. Your verdict is the one the human will
 read first.
+
+**Output protocol (v3.1.0+):** Write your full ruling to `{state_dir}/phase_14_judge_ruling.md`. The ruling must include all sections defined in the steps below (verdict, action items, severity assessment, meta-observation, etc.). Phase 15.1 will read this file from disk.
 ```
 
 ## Sycophancy Alert Injection (when triggered)
