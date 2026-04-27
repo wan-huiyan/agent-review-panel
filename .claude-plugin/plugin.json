@@ -1,0 +1,22 @@
+{
+  "name": "roundtable",
+  "version": "3.0.0",
+  "description": "Multi-agent adversarial review panel — 4-6 AI reviewers debate your code/plans, then a judge delivers a structured verdict with epistemic labels. Bundles plan-review-integrator for applying review findings back into implementation plans.",
+  "author": {
+    "name": "wan-huiyan",
+    "url": "https://github.com/wan-huiyan"
+  },
+  "homepage": "https://github.com/wan-huiyan/agent-review-panel",
+  "repository": "https://github.com/wan-huiyan/agent-review-panel",
+  "license": "MIT",
+  "keywords": [
+    "review",
+    "multi-agent",
+    "debate",
+    "code-review",
+    "adversarial",
+    "evaluation",
+    "implementation-planning",
+    "review-integration"
+  ]
+}

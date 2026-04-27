@@ -1,9 +1,9 @@
 /**
- * Trigger Classification Tests — Multi-Plugin Marketplace
+ * Trigger Classification Tests — Single-Plugin Layout
  *
- * Validates eval-suite.json trigger entries for ALL plugins in the marketplace.
- * Iterates over plugins/<name>/eval-suite.json and runs the structural checks
- * against each plugin's own SKILL.md.
+ * Validates eval-suite.json trigger entries for every skill bundled under
+ * "skills/<name>/eval-suite.json" and runs structural checks against each
+ * skill's SKILL.md.
  *
  * Structural checks (NOT a full classifier):
  * - Triggers have required fields (prompt, should_trigger)
@@ -20,70 +20,35 @@ import { fileURLToPath } from "node:url";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
 
-// ---------------------------------------------------------------------------
-// Discover all plugins with eval-suites
-// ---------------------------------------------------------------------------
-
-function discoverPluginEvalSuites() {
-  const pluginsRoot = resolve(ROOT, "plugins");
+function discoverSkillEvalSuites() {
+  const skillsRoot = resolve(ROOT, "skills");
   const found = [];
+  if (!existsSync(skillsRoot)) return found;
 
-  if (existsSync(pluginsRoot)) {
-    for (const entry of readdirSync(pluginsRoot, { withFileTypes: true })) {
-      if (!entry.isDirectory()) continue;
-      const dir = resolve(pluginsRoot, entry.name);
-      const evalSuitePath = resolve(dir, "eval-suite.json");
-      if (!existsSync(evalSuitePath)) continue;
+  for (const entry of readdirSync(skillsRoot, { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue;
+    const dir = resolve(skillsRoot, entry.name);
+    const evalSuitePath = resolve(dir, "eval-suite.json");
+    if (!existsSync(evalSuitePath)) continue;
 
-      const skillMdPath = resolve(dir, "SKILL.md");
-      const nestedSkillsDir = resolve(dir, "skills");
-      let nestedSkillMdPath = null;
-      if (!existsSync(skillMdPath) && existsSync(nestedSkillsDir)) {
-        try {
-          for (const sub of readdirSync(nestedSkillsDir, { withFileTypes: true })) {
-            if (!sub.isDirectory()) continue;
-            const candidate = resolve(nestedSkillsDir, sub.name, "SKILL.md");
-            if (existsSync(candidate)) {
-              nestedSkillMdPath = candidate;
-              break;
-            }
-          }
-        } catch { /* ignore */ }
-      }
-
-      const finalSkillMdPath = existsSync(skillMdPath) ? skillMdPath : nestedSkillMdPath;
-      found.push({
-        dirName: entry.name,
-        evalSuite: JSON.parse(readFileSync(evalSuitePath, "utf-8")),
-        skillMdContent: finalSkillMdPath ? readFileSync(finalSkillMdPath, "utf-8") : "",
-      });
-    }
+    const skillMdPath = resolve(dir, "SKILL.md");
+    found.push({
+      dirName: entry.name,
+      evalSuite: JSON.parse(readFileSync(evalSuitePath, "utf-8")),
+      skillMdContent: existsSync(skillMdPath) ? readFileSync(skillMdPath, "utf-8") : "",
+    });
   }
-
-  // Legacy fallback: root-level eval-suite.json + root SKILL.md
-  if (found.length === 0) {
-    const legacyEval = resolve(ROOT, "eval-suite.json");
-    if (existsSync(legacyEval)) {
-      const legacySkill = resolve(ROOT, "SKILL.md");
-      found.push({
-        dirName: "(legacy-root)",
-        evalSuite: JSON.parse(readFileSync(legacyEval, "utf-8")),
-        skillMdContent: existsSync(legacySkill) ? readFileSync(legacySkill, "utf-8") : "",
-      });
-    }
-  }
-
   return found;
 }
 
-const pluginEvalSuites = discoverPluginEvalSuites();
+const skillEvalSuites = discoverSkillEvalSuites();
 
-if (pluginEvalSuites.length === 0) {
+if (skillEvalSuites.length === 0) {
   describe("Trigger classification", () => {
-    it("no eval-suite.json found in any plugin — skipping", { skip: "no eval-suite" }, () => {});
+    it("no eval-suite.json found in any skill — skipping", { skip: "no eval-suite" }, () => {});
   });
 } else {
-  for (const { dirName, evalSuite, skillMdContent } of pluginEvalSuites) {
+  for (const { dirName, evalSuite, skillMdContent } of skillEvalSuites) {
     if (!evalSuite.triggers || evalSuite.triggers.length === 0) {
       describe(`Trigger classification — ${dirName}`, () => {
         it("eval-suite has no triggers — skipping", { skip: "no triggers array" }, () => {});
