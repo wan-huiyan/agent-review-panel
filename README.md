@@ -337,10 +337,10 @@ Agent Review Panel is grounded in [9 peer-reviewed papers](docs/research-foundat
 
 ## Tests
 
-The project includes a comprehensive test suite (342 tests) using Node.js built-in test runner (zero dependencies):
+The project includes a comprehensive test suite (379 tests) using Node.js built-in test runner (zero dependencies):
 
 ```bash
-npm test                    # run all 342 tests
+npm test                    # run all 379 tests
 npm run test:triggers       # trigger classification (55+ prompts)
 npm run test:manifest       # manifest consistency + phase/opus enforcement
 npm run test:eval-suite     # eval suite integrity + v2.14/v2.15 coverage
@@ -536,7 +536,8 @@ See [CHANGELOG.md](CHANGELOG.md) for detailed version history. See [ROADMAP.md](
 
 | Version | Highlights |
 |---------|------------|
-| **v3.0** | Single-plugin layout (BREAKING) — collapses the multi-plugin marketplace into one plugin (`roundtable`) bundling both skills, mirroring [obra/superpowers](https://github.com/obra/superpowers). Install UX is one command instead of two. `release-check.sh` doc-drift detector folded in (PR #33) |
+| **v3.1** | Silent-phase-compression fix (#35) — file-based subagent state under `state/<phase>.md`, Phase 13.5 Pre-Judge Verification Gate, `⚠️ COMPRESSED RUN` header when phase loss is detected. Eliminates the v3.0 failure mode where context pressure silently inlined Phases 4 / 5 / 7 into the judge step (PR #39) |
+| v3.0 | Single-plugin layout (BREAKING) — collapses the multi-plugin marketplace into one plugin (`roundtable`) bundling both skills, mirroring [obra/superpowers](https://github.com/obra/superpowers). Install UX is one command instead of two. `release-check.sh` doc-drift detector folded in (PR #33) |
 | v2.16.5 | Plugin skills layout fixed for Claude Code ≥ 2.1.112 manifest validation (PR #30 by @okuuva) |
 | v2.16.4 | Phase 15.3 reliability — disk-reading prompt strategy + verification gate; manual HTML report recovery |
 | v2.16.3 | External domain claim web verification in Phase 11 — `[WEB-VERIFIED]` / `[WEB-CONTRADICTED]` / `[WEB-INCONCLUSIVE]` labels |
