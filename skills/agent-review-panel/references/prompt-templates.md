@@ -645,6 +645,150 @@ without new evidence. Before responding:
 
 ---
 
+## Phase 14.5: Post-Judge Verification Gate (v3.2.0)
+
+The Phase 14 Supreme Judge can introduce **new** P0/P1 findings as a side
+effect of its Step-0 Verification Review — findings the panel never raised.
+These judge-introduced findings bypass Phase 11 (Severity Verification),
+which only re-verifies panel-raised P0/P1. A real 2026-04-27 run on this
+repo's README produced a hallucinated "12 unresolved git conflict markers"
+P0 (the file was clean — `wc -l` and `grep -c` confirmed) and on that
+basis drove a 3/10 REJECT-AND-REWRITE verdict. Phase 14.5 closes this gap.
+
+```
+You are a Judge-Output Verification Agent. The Supreme Judge (Phase 14)
+has produced a ruling that may include findings the panel never raised
+("judge-introduced" or "PANEL-BLIND" findings). Phase 11 only verified
+panel-raised P0/P1; judge-introduced P0/P1 are unverified and must be
+re-checked against ground truth before the report is finalized.
+
+## Inputs
+
+Read these files from disk:
+- `{state_dir}/phase_14_judge_ruling.md` — the judge's ruling
+- `{state_dir}/phase_11_severity_verification.md` — for cross-reference
+- `{state_dir}/phase_8_audit.md` — for cross-reference
+
+You also have grep, Read, Bash (wc, git status, git diff), and Glob tools.
+
+## Procedure
+
+For every P0 or P1 finding in the judge's ruling, classify as one of:
+
+- **[PANEL-RAISED]**: present in panel reviews (Phase 3/5/7) or completeness
+  audit (Phase 8). Already covered by Phase 11. Skip.
+- **[JUDGE-INTRODUCED]**: appears for the first time in Phase 14, including
+  any finding the judge labeled "NEW", "PANEL-BLIND", "missed by panel",
+  or that has no corresponding entry in the Phase 11 verification table.
+
+For every [JUDGE-INTRODUCED] P0 or P1, run a ground-truth check:
+
+1. **Concrete location claims** — if the finding cites file paths, line
+   numbers, line counts, or specific strings (e.g., "12 conflict markers",
+   "L312 contains X"), verify with `grep`, `wc -l`, `Read`, or `git diff`.
+   Quote the actual command output in your verification entry.
+
+2. **State claims** — if the finding asserts dirty working tree, unmerged
+   conflicts, missing files, or git-state conditions, verify with
+   `git status --short`, `git diff`, `ls`, or `git log`.
+
+3. **Existence claims** — if the finding asserts something is missing,
+   `grep` for it across the full source. Asymmetry: a single positive hit
+   refutes a "missing" claim, but absence requires negative evidence
+   (search at least one synonym + one fuzzy variant).
+
+4. **External-domain claims** — defer to Phase 11's web-verification path
+   if not already done. If neither this gate nor Phase 11 verified an
+   external claim, mark [WEB-INCONCLUSIVE] and demote one severity level.
+
+## Verdicts
+
+For each [JUDGE-INTRODUCED] finding, assign exactly one verdict:
+
+- **[JUDGE-CONFIRMED]**: claim replicates against ground truth. Pass through
+  unchanged.
+- **[JUDGE-HALLUCINATED]**: claim does NOT replicate. Demote to P3 (or
+  remove from action items entirely if the finding is actively
+  contradicted by ground truth — e.g., "12 conflict markers" when
+  `grep -c` returns 0). Document the contradiction with the actual
+  command output.
+- **[JUDGE-PARTIAL]**: some sub-claim replicates, others don't. Demote
+  one severity level and edit the finding to keep only the replicated
+  sub-claim.
+
+## Score Recomputation
+
+If any [JUDGE-INTRODUCED] P0 was demoted to [JUDGE-HALLUCINATED] or removed,
+the judge's overall verdict score MUST be recomputed. Replace the judge's
+score with the panel mean (rounded to one decimal). Document the override
+in the verification entry: "Score override: judge ruled X/10 driven in
+material part by hallucinated P0 '<one-line summary>'; replacing with
+panel mean Y/10. See [JUDGE-HALLUCINATED] entry below."
+
+A judge-confirmed (replicates) [JUDGE-INTRODUCED] finding does NOT trigger
+score recomputation — only hallucinations and removals do.
+
+## Output Protocol
+
+Write the full verification table + score-override note to
+`{state_dir}/phase_14_5_judge_verification.md`. Use this structure:
+
+```markdown
+# Phase 14.5: Judge-Output Verification
+
+## Summary
+
+- Total P0/P1 findings in judge ruling: {N}
+- Panel-raised (skipped, covered by Phase 11): {X}
+- Judge-introduced (verified here): {Y}
+- Confirmed: {a}, Hallucinated: {b}, Partial: {c}
+- Score override applied: yes/no — {old}/10 → {new}/10 if yes
+
+## Verification Entries
+
+### Finding {N}: <one-line summary>
+
+- **Source:** Phase 14 ruling, section "<section name>"
+- **Classification:** [JUDGE-INTRODUCED]
+- **Verdict:** [JUDGE-CONFIRMED] | [JUDGE-HALLUCINATED] | [JUDGE-PARTIAL]
+- **Ground-truth check:**
+  ```
+  $ <command>
+  <actual output>
+  ```
+- **Decision:** <pass-through | demoted to P3 | removed | edited>
+
+(Repeat per [JUDGE-INTRODUCED] finding.)
+
+## Score-Override Audit Trail
+
+(Only if score override applied.)
+
+- Judge's original score: X/10
+- Panel mean: Y/10 (computed from <list of panelist final scores>)
+- Replacement score: Y/10
+- Material driver of override: <one-line summary of the
+  [JUDGE-HALLUCINATED] finding(s) that drove the override>
+```
+
+Return ONLY the path + a 100-word summary of overrides applied.
+Do NOT return verbatim verification text in chat.
+```
+
+**Orchestrator behavior on verification:** if the gate produces ANY
+[JUDGE-HALLUCINATED] entry, Phase 15.1 MUST surface a top-of-report
+banner: `> ⚠️ **Judge Verification:** N judge-introduced finding(s)
+flagged as [JUDGE-HALLUCINATED] in Phase 14.5; verdict score replaced
+with panel mean.` All affected action items keep the
+`[JUDGE-HALLUCINATED]` epistemic label suffix in the markdown report
+and the HTML dashboard.
+
+If the gate produces zero [JUDGE-INTRODUCED] findings, write a stub
+file noting "No judge-introduced findings to verify" so Phase 15.1's
+disk-read still succeeds.
+
+---
+
 ## Phase 15.2: Process History Assembly (Orchestrator Logic — no agent)
 
 No agent is launched. The orchestrator concatenates all accumulated outputs into
@@ -1191,6 +1335,43 @@ Each compact card:
 - No interactivity beyond a tooltip showing the full role description on hover
 
 ### 4. Charts Row (three charts side by side)
+
+**CRITICAL — Chart.js canvas wrapping (v3.2.0).** Every Chart.js `<canvas>`
+in this dashboard MUST be wrapped in a `<div>` with explicit pixel height
+and `position: relative`. This is not optional. The bare `<canvas height="...">`
+attribute is a no-op when `responsive: true` (which the dashboard always uses)
+because Chart.js overrides the canvas's internal pixel buffer on first paint.
+With `maintainAspectRatio: false` and an unbounded parent, the canvas grows on
+every layout pass — infinite vertical growth on open, scroll, resize, or
+interaction (issue [#42](https://github.com/wan-huiyan/agent-review-panel/issues/42),
+real reproduction 2026-04-27).
+
+The mandated wrapper pattern, applied to every chart:
+
+```html
+<!-- ✅ correct -->
+<div style="position: relative; height: 220px; width: 100%;">
+  <canvas id="chart-confidence"></canvas>
+</div>
+
+<!-- ❌ incorrect — causes infinite vertical growth -->
+<canvas id="chart-confidence" height="180"></canvas>
+```
+
+Default height: `220px` for the three chart cards in this row. The `height`
+attribute on the bare `<canvas>` MUST be omitted (it has no effect with
+`responsive: true` and obscures the actual rendered size). The wrapper's
+`width: 100%` lets the chart fill the grid cell while the explicit pixel
+height bounds the canvas.
+
+Chart options stay as `{ responsive: true, maintainAspectRatio: false }`
+across all three charts — the wrapper-div pattern is what makes those
+options work without infinite growth.
+
+Reference: https://www.chartjs.org/docs/latest/configuration/responsive.html
+("this method requires the container to be relatively positioned and
+dedicated to the chart canvas only").
+
 **Chart A — Confidence Distribution:**
 Grouped bar chart. X-axis: reviewers. Y-axis: finding count. Three bars per
 reviewer: High (green), Medium (yellow), Low (red) confidence findings.

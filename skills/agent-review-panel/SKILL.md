@@ -31,7 +31,7 @@ description: >
   composition/seam bugs.
 ---
 
-# Agent Review Panel v3.1.0
+# Agent Review Panel v3.2.0
 
 A multi-agent adversarial review system based on nine research foundations:
 ChatEval (ICLR 2024), AutoGen, Du et al. (ICML 2024), MachineSoM (ACL 2024),
@@ -114,6 +114,7 @@ Phase 11:   Severity Verification     → Read actual code for every P0/P1, down
 Phase 12:   Verification Tier Assign  → Confidence draft (12a) + judge-advised refinement (12b)
 Phase 13:   Targeted Verification     → Persona-matched agents dispatched per dispute point
 Phase 14:   Supreme Judge             → Opus arbitrates everything including verification round
+Phase 14.5: Post-Judge Verification   → Re-verify judge-introduced P0/P1 against ground truth (v3.2.0)
 Phase 15:   Output Generation         → (parent) Three output files (all sequential: 15.1 → 15.2 → 15.3)
   Phase 15.1: Primary Markdown Report → Structured markdown summary (review_panel_report.md)
   Phase 15.2: Process History         → Full director's-cut log (review_panel_process.md)
@@ -414,6 +415,7 @@ All launches below MUST pass `model: "opus"` explicitly (v2.14).
 | Tier Refinement Advisor (Phase 12b) | Generic, `model: "opus"` | (must be domain-neutral to refine tiers) |
 | Verification Agents (Phase 13) | Persona-matched — see Phase 13 table, `model: "opus"` | Each agent matched to claim type |
 | Supreme Judge (Phase 14) | Generic, `model: "opus"` | (judge must be domain-neutral) |
+| Judge-Output Verifier (Phase 14.5) | Generic, `model: "opus"` | Re-verifies judge-introduced P0/P1 against ground truth via grep/Read/git (v3.2.0) |
 | HTML Report Agent (Phase 15.3) | `voltagent-lang:javascript-pro`, `model: "opus"` | Generate interactive HTML dashboard with expandable issue cards (v2.15). Reads from disk: Phase 15.1 report + Phase 15.2 process history + rendering spec from prompt-templates.md (v2.16.4). Loads Tailwind, Chart.js, and Prism.js via CDN. |
 | Merge Agent (Phase 16) | `voltagent-meta:knowledge-synthesizer`, `model: "opus"` | Deduplicate + score stability in multi-run mode (v2.14) |
 
@@ -999,6 +1001,65 @@ See `references/prompt-templates.md` for the full judge prompt.
 
 ---
 
+## Phase 14.5: Post-Judge Verification Gate (v3.2.0)
+
+The Supreme Judge in Phase 14 can introduce **new** P0/P1 findings as a
+side effect of its Step-0 Verification Review — findings the panel never
+raised. Phase 11 (Severity Verification) only re-verifies panel-raised
+P0/P1, so judge-introduced findings bypass every prior verification phase.
+A 2026-04-27 README review run produced a hallucinated "12 unresolved git
+conflict markers" P0 (the file was clean — `wc -l` and `grep -c` both
+confirmed) and that single fabricated finding drove a 3/10 REJECT-AND-
+REWRITE verdict (issue [#41](https://github.com/wan-huiyan/agent-review-panel/issues/41)).
+
+Phase 14.5 closes this gap by re-verifying every judge-introduced P0/P1
+against ground truth before Phase 15.1 generates the report.
+
+A single Opus agent runs after Phase 14 and before Phase 15.1. Inputs are
+the paths to `{state_dir}/phase_14_judge_ruling.md`,
+`{state_dir}/phase_11_severity_verification.md`, and
+`{state_dir}/phase_8_audit.md`. The agent has grep / Read / Bash tools.
+
+Steps:
+1. Classify each P0/P1 finding in the judge ruling as `[PANEL-RAISED]`
+   (skip — covered by Phase 11) or `[JUDGE-INTRODUCED]` (verify here).
+2. For every `[JUDGE-INTRODUCED]` finding, run a ground-truth check
+   appropriate to the claim type (location, state, existence, external
+   domain) using grep/Read/git/Bash. Quote actual command output.
+3. Issue a verdict per finding: `[JUDGE-CONFIRMED]` (passes through),
+   `[JUDGE-HALLUCINATED]` (demote to P3 or remove if actively
+   contradicted), or `[JUDGE-PARTIAL]` (demote one level, edit to retain
+   only the replicated sub-claim).
+4. If any P0 was demoted/removed, recompute the verdict score against
+   the panel mean and document the override.
+5. Write the full verification table to
+   `{state_dir}/phase_14_5_judge_verification.md`. Phase 15.1 reads it.
+
+**Phase 15.1 banner.** When the gate produces any `[JUDGE-HALLUCINATED]`
+entry, Phase 15.1 MUST emit this block immediately after the
+Executive Summary (and after the Compressed Run banner if present):
+
+```markdown
+> ⚠️ **Judge Verification:** N judge-introduced finding(s) flagged as
+> [JUDGE-HALLUCINATED] in Phase 14.5. Verdict score replaced with panel
+> mean (X/10 → Y/10). Affected action items below carry the
+> [JUDGE-HALLUCINATED] suffix.
+```
+
+Affected action items keep the `[JUDGE-HALLUCINATED]` epistemic-label
+suffix in both the markdown report and the HTML dashboard expandable
+issue card metadata.
+
+**Empty case.** If the gate produces zero `[JUDGE-INTRODUCED]` findings
+(every P0/P1 was already panel-raised), it writes a stub file with the
+single line "No judge-introduced findings to verify" so Phase 15.1's
+disk-read still succeeds.
+
+See `references/prompt-templates.md` for the full Judge-Output
+Verification Agent prompt.
+
+---
+
 ## Phase 15: Output Generation
 
 Three output files are written at the end of every review. They are produced
@@ -1057,7 +1118,7 @@ signal that the panel completed the full protocol.
 ## Scope & Limitations
 {What was reviewed. What CANNOT be evaluated: runtime behavior, production
 data, security via dynamic analysis. Structural limitation: shared base model.}
-Epistemic labels: [VERIFIED] [CONSENSUS] [SINGLE-SOURCE] [UNVERIFIED] [DISPUTED] [WEB-VERIFIED] [WEB-CONTRADICTED] [WEB-INCONCLUSIVE]
+Epistemic labels: [VERIFIED] [CONSENSUS] [SINGLE-SOURCE] [UNVERIFIED] [DISPUTED] [WEB-VERIFIED] [WEB-CONTRADICTED] [WEB-INCONCLUSIVE] [JUDGE-HALLUCINATED]
 Defect type labels: [EXISTING_DEFECT] (bug in current code) [PLAN_RISK] (risk if plan is implemented as written)
 
 ## Score Summary
@@ -1261,6 +1322,18 @@ This keeps the orchestrator's launch prompt under 200 tokens instead of
 - Sort controls: by severity, confidence, tier
 - Inline CSS/JS; Tailwind CSS, Chart.js, and **Prism.js** (v2.15, new) loaded via CDN
 
+**Chart.js wrapper-div mandate (v3.2.0).** Every Chart.js `<canvas>` MUST
+be wrapped in a `<div style="position: relative; height: 220px; width: 100%;">`
+(or equivalent class) with explicit pixel height. The bare `<canvas height>`
+attribute is a no-op when `responsive: true` and the dashboard always uses
+`maintainAspectRatio: false` — without a height-bounded parent, the canvas
+grows on every layout pass, producing infinite vertical growth on open,
+scroll, resize, or interaction. See issue
+[#42](https://github.com/wan-huiyan/agent-review-panel/issues/42) for the
+2026-04-27 reproduction. The Phase 15.3 prompt enforces this; the test
+suite asserts every `<canvas>` has a position-relative height-bounded
+parent.
+
 See `references/prompt-templates.md` for the Phase 15.3 agent prompt with the
 full 10-section schema and rendering spec.
 
@@ -1305,7 +1378,7 @@ Tell user:
 - Counts: consensus points, disagreements, action items, verification verdicts
 - Top P0 action item (if any)
 - Note: HTML report requires internet connection for Tailwind CSS, Chart.js, and Prism.js CDNs
-- HTML footer should read "Agent Review Panel v3.1.0" (MUST match the full semver from `plugin.json` — update this line whenever the version is bumped)
+- HTML footer should read "Agent Review Panel v3.2.0" (MUST match the full semver from `plugin.json` — update this line whenever the version is bumped)
 
 ---
 
@@ -1465,7 +1538,7 @@ Reviewer state files use the naming convention
 `state/reviewer_<name>_phase_<N>.md` (where `<name>` is the persona slug and
 `<N>` is the phase number); orchestrator-level state files include
 `state/phase_8_audit.md`, `state/phase_10_claim_verification.md`,
-`state/phase_11_severity_verification.md`, and `state/phase_14_judge_ruling.md`.
+`state/phase_11_severity_verification.md`, `state/phase_14_judge_ruling.md`, and `state/phase_14_5_judge_verification.md` (v3.2.0).
 
 **Single-run layout:**
 
@@ -1479,7 +1552,8 @@ docs/reviews/<date>-<topic>/
 │   ├── phase_8_audit.md
 │   ├── phase_10_claim_verification.md
 │   ├── phase_11_severity_verification.md
-│   └── phase_14_judge_ruling.md
+│   ├── phase_14_judge_ruling.md
+│   └── phase_14_5_judge_verification.md      # v3.2.0 — post-judge gate
 ├── review_panel_report.md                  # Phase 15.1
 ├── review_panel_process.md                 # Phase 15.2
 └── review_panel_report.html                # Phase 15.3
