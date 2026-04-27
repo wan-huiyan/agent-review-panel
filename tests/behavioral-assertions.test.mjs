@@ -525,6 +525,14 @@ describe("v3.1.0 file-based state convention", () => {
       "SKILL.md must define the [COMPRESSED] epistemic label suffix for action items in compressed runs"
     );
   });
+
+  it("Phase 15.3 documents COMPRESSED RUN HTML banner", () => {
+    assert.match(
+      skillMd,
+      /## Phase 15[\s\S]+?### Phase 15\.3[\s\S]+?COMPRESSED RUN[\s\S]+?banner/i,
+      "Phase 15.3 must document the red HTML banner for compressed runs"
+    );
+  });
 });
 
 // Export utilities for other test files

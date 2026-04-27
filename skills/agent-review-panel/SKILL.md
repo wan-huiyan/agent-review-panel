@@ -1264,6 +1264,20 @@ This keeps the orchestrator's launch prompt under 200 tokens instead of
 See `references/prompt-templates.md` for the Phase 15.3 agent prompt with the
 full 10-section schema and rendering spec.
 
+**Compressed-run banner (v3.1.0+):** If the source Phase 15.1 markdown
+report begins with the `⚠️ COMPRESSED RUN` blockquote, Phase 15.3 MUST render
+a prominent red banner at the top of the HTML body containing the same
+warning text. Suggested CSS:
+
+```html
+<div role="alert" style="background:#FEE2E2; color:#991B1B; padding:1rem 1.25rem; margin:1rem 0; border:2px solid #DC2626; border-radius:6px;">
+  <strong>⚠️ COMPRESSED RUN — Phases skipped: <list></strong>
+  <p>This run did not complete the full panel protocol. ... Re-run the panel for a complete review.</p>
+</div>
+```
+
+The banner appears above the report header summary card.
+
 ---
 
 ### Phase 15 Verification Gate (MANDATORY — v2.16.4)
