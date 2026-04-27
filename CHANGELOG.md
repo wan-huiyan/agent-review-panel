@@ -13,9 +13,9 @@ Collapsed the multi-plugin marketplace into a single plugin that bundles both sk
 - `marketplace.json` reduced to a single plugin entry with `source: "./"`.
 - `plugins/` directory deleted.
 
-### Changed — Plugin name revert: `roundtable` → `agent-review-panel`
+### Considered but rejected — Plugin rename revert (PR #32)
 
-Reverts the v2.16.2 rename. Folded into v3.0 because the single-plugin layout makes the three-layer naming divergence even more obviously redundant: when there's exactly one plugin and one marquee skill, naming them differently buys nothing. Now plugin / skill / marketplace all share `agent-review-panel`. Install handle is the visibly-redundant-but-self-explanatory `agent-review-panel@agent-review-panel`; slash command is `/agent-review-panel:agent-review-panel`.
+PR #32 proposed reverting the v2.16.2 rename `roundtable` → `agent-review-panel` so plugin / skill / marketplace all share one name (slash command would have become `/agent-review-panel:agent-review-panel`). Reasoning made sense under the multi-plugin layout (where `roundtable` was just one of two plugin names and the divergence created friction) but lost force under the single-plugin bundle: when one plugin holds N skills, a distinct bundle name *helps*. `roundtable` works as a collective noun for the bundle, and `/roundtable:agent-review-panel` reads as "the agent-review-panel skill of the roundtable" — meaningful — whereas `/agent-review-panel:agent-review-panel` would read as stutter. Decision: keep `roundtable`. PR #32's `release-check.sh` script is folded in (see below); the rename portion is shelved.
 
 ### Changed — Test discovery rewritten for single-plugin model
 
@@ -30,19 +30,20 @@ Pre-release doc-drift detector. Asserts slash-command consistency, marketplace-n
 
 ### Migration
 
-Pre-v3.0 install commands that **no longer exist**:
+Pre-v3.0 install command that **no longer exists**:
 
 ```bash
-claude plugin install roundtable@agent-review-panel              # GONE (v2.16.2-v2.16.5)
-claude plugin install plan-review-integrator@agent-review-panel  # GONE (multi-plugin layout)
+claude plugin install plan-review-integrator@agent-review-panel  # GONE (skill is now bundled into roundtable)
 ```
 
 New install (one command, both skills bundled):
 
 ```bash
 claude plugin marketplace add wan-huiyan/agent-review-panel
-claude plugin install agent-review-panel@agent-review-panel
+claude plugin install roundtable@agent-review-panel
 ```
+
+The install handle `roundtable@agent-review-panel` is unchanged from v2.16.2–v2.16.5.
 
 ### Bumped
 
@@ -55,7 +56,7 @@ claude plugin install agent-review-panel@agent-review-panel
 
 ### Notes
 
-- This release supersedes the open PR #32 (rename revert + doc sweep + release-check.sh). All three pieces are folded into v3.0.
+- This release supersedes the open PR #32. The `release-check.sh` script is folded in; the rename revert is rejected (see "Considered but rejected" above).
 - PR #30's auto-discovery convention is preserved: skills still live at `<plugin-root>/skills/<skill-name>/SKILL.md` with no `skills` field declared in `plugin.json`.
 
 ## [2.16.5] — 2026-04-19

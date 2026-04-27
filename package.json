@@ -1,5 +1,5 @@
 {
-  "name": "agent-review-panel",
+  "name": "roundtable",
   "version": "3.0.0",
   "private": true,
   "description": "Multi-agent adversarial review panel for Claude Code",
