@@ -115,7 +115,6 @@ Be specific. Reference exact lines, sections, or components. Vague feedback
 like "could be better" is not useful. If you find no issues in an area, say so
 explicitly rather than manufacturing criticism. If the line-by-line audit found
 nothing, state: "Line-by-line audit: no issues found."
-```
 
 **Output protocol (v3.1.0+):** Write your full review to `{state_dir}/reviewer_{persona_short_name}_phase_3.md`. Then return ONLY:
 
@@ -123,6 +122,7 @@ nothing, state: "Line-by-line audit: no issues found."
 2. A 100-word summary of your top conclusions and severity counts.
 
 Do NOT return your full review in chat. The orchestrator reads from disk.
+```
 
 ## Phase 4: Private Reflection Prompt
 
