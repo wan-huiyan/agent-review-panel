@@ -406,6 +406,21 @@ describe("v3.1.0 file-based state convention", () => {
       "Phase 3 prompt must request a 100-word summary in the chat return"
     );
   });
+
+  it("Phase 4 reflection prompt writes output to disk", () => {
+    const promptTemplates = readFileSync(
+      resolve(ROOT, "skills/agent-review-panel/references/prompt-templates.md"),
+      "utf-8"
+    );
+    const phase4 = promptTemplates
+      .split(/^## Phase 4/m)[1]
+      .split(/^## Phase 5/m)[0];
+    assert.match(
+      phase4,
+      /reviewer_.*phase_4\.md/i,
+      "Phase 4 prompt must direct disk-write to state/reviewer_<name>_phase_4.md"
+    );
+  });
 });
 
 // Export utilities for other test files

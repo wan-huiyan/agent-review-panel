@@ -146,6 +146,8 @@ Also note:
 
 This reflection is private — no one else will see it directly. Be honest
 about your uncertainty.
+
+**Output protocol (v3.1.0+):** Write your full reflection to `{state_dir}/reviewer_{persona_short_name}_phase_4.md`. Return ONLY the path plus a 100-word summary of changes from your Phase 3 review (what you'd update, what you'd add, what you'd retract). Do NOT return the verbatim reflection in chat.
 ```
 
 ## Phase 5: Debate Round Prompt

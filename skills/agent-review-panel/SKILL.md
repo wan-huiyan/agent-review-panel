@@ -617,6 +617,10 @@ Launch all reviewers **in parallel**, each receiving ONLY their own review.
 They re-read source, rate confidence per finding (High/Medium/Low), note new
 issues, identify most/least defensible findings. See `references/prompt-templates.md`.
 
+**Output (v3.1.0+):** Each reviewer's reflection is written to
+`state/reviewer_<name>_phase_4.md`. Subagent returns only path + 100-word
+summary.
+
 ---
 
 ## Phase 5: Debate (Rounds 1-3, adaptive)
