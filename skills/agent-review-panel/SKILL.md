@@ -916,6 +916,61 @@ This table is passed to Phase 14 as input item 8.
 
 ---
 
+## Phase 13.5: Pre-Judge Verification Gate (v3.1.0)
+
+Before launching the Supreme Judge (Phase 14), the orchestrator MUST verify
+that all mandatory phase outputs exist on disk. This gate is the load-bearing
+guardrail against silent compression of Phases 4 / 5 / 7.
+
+**Gate logic (orchestrator-executed, no subagent dispatch):**
+
+For each reviewer in the panel, verify these files exist under `state/`
+(or `state/run_<N>/` in multi-run mode):
+
+| Required file | Phase | Mandatory |
+|---|---|---|
+| `reviewer_<name>_phase_3.md` | Independent review | Always |
+| `reviewer_<name>_phase_4.md` | Private reflection | Always |
+| `reviewer_<name>_phase_5_round1.md` | Debate round 1 | Always (rounds 2/3 per existing skip rules) |
+| `reviewer_<name>_phase_7.md` | Blind final | Always |
+
+Plus panel-level files:
+- `phase_8_audit.md`
+- `phase_10_claim_verification.md`
+- `phase_11_severity_verification.md`
+
+**For each required file, run three checks:**
+
+1. **Existence check** — file is present on disk.
+2. **Minimum-bytes check** — file size ≥ 500 bytes. Below this is empirically
+   a stub (subagent crashed mid-write or returned a placeholder).
+3. **Required-headers check** — parse the file and confirm it contains the
+   required schema sections for that phase (e.g., a Phase 3 review must
+   contain a Score, a Findings section, and severity tags). The exact required
+   sections per phase are defined in `references/prompt-templates.md`.
+
+**On gate failure for any file:**
+
+1. Log loudly: `GATE FAIL: <file> missing | stub | malformed`
+2. Re-dispatch the subagent for the missing/malformed phase output.
+3. Re-run the gate after re-dispatch.
+4. **Single retry only.** If the second attempt also fails, do NOT block the
+   run. Mark the phase as unrecoverable, write the COMPRESSED RUN header in
+   Phase 15.1 (see Phase 15.1 spec), and proceed to Phase 14 with the
+   partial input. The deliverable is produced with explicit warning rather
+   than failing entirely — partial review with loud warning beats no review.
+
+**On full gate pass:** proceed to Phase 14. The COMPRESSED RUN header is NOT
+emitted (its absence is the green light).
+
+**Why bytes + headers, not just existence:** A subagent can write a stub and
+crash, leaving an empty/partial file. Existence alone passes the gate on a
+stub. Bytes + required-headers makes the check load-bearing. This mirrors
+how the Phase 15 verification gate (v2.16.4) validates HTML output
+structurally, not just by file presence.
+
+---
+
 ## Phase 14: Supreme Judge
 
 Single agent (`model: "opus"`). Receives all prior outputs (including the

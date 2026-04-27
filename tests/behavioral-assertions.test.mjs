@@ -473,6 +473,24 @@ describe("v3.1.0 file-based state convention", () => {
       "Phase 11 severity verification prompt must direct disk-write"
     );
   });
+
+  it("Phase 13.5 pre-judge verification gate is documented", () => {
+    assert.match(
+      skillMd,
+      /## Phase 13\.5: Pre-Judge Verification Gate/,
+      "SKILL.md must contain the Phase 13.5 verification gate section"
+    );
+    assert.match(
+      skillMd,
+      /## Phase 13\.5[\s\S]+?Existence check[\s\S]+?Minimum-bytes[\s\S]+?Required-headers/,
+      "Phase 13.5 must document existence + minimum-bytes + required-headers checks"
+    );
+    assert.match(
+      skillMd,
+      /## Phase 13\.5[\s\S]+?single retry/i,
+      "Phase 13.5 must document the single-retry policy"
+    );
+  });
 });
 
 // Export utilities for other test files
