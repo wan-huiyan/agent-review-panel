@@ -206,6 +206,8 @@ Give your FINAL independent assessment. Others will NOT see this.
 3. [Point 3]
 ### Final Recommendation: {Accept as-is | Accept with minor changes | Needs significant revision | Reject}
 ### One-line verdict: [Single sentence summary]
+
+**Output protocol (v3.1.0+):** Write your blind final assessment to `{state_dir}/reviewer_{persona_short_name}_phase_7.md`. Return ONLY the path + a 100-word summary of new findings (those NO reviewer mentioned). Do NOT return the verbatim assessment in chat.
 ```
 
 ## Phase 8: Completeness Auditor Prompt

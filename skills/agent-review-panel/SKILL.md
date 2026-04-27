@@ -661,6 +661,10 @@ sycophancy alert into next round prompt for all reviewers.
 Launch all reviewers one final time in parallel. Each gives final score, top 3
 points, recommendation, one-line verdict. Others do NOT see these.
 
+**Output (v3.1.0+):** Each reviewer's blind final is written to
+`state/reviewer_<name>_phase_7.md`. Subagent returns only path + 100-word
+summary of new findings.
+
 ---
 
 ## Phase 8: Completeness Audit

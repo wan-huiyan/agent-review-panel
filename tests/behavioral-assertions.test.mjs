@@ -436,6 +436,21 @@ describe("v3.1.0 file-based state convention", () => {
       "Phase 5 prompt must direct disk-write to state/reviewer_<name>_phase_5_round<R>.md"
     );
   });
+
+  it("Phase 7 blind final prompt writes output to disk", () => {
+    const promptTemplates = readFileSync(
+      resolve(ROOT, "skills/agent-review-panel/references/prompt-templates.md"),
+      "utf-8"
+    );
+    const phase7 = promptTemplates
+      .split(/^## Phase 7/m)[1]
+      .split(/^## (Phase 8|Phase 10|Claim Verification)/m)[0];
+    assert.match(
+      phase7,
+      /reviewer_.*phase_7\.md/i,
+      "Phase 7 prompt must direct disk-write to state/reviewer_<name>_phase_7.md"
+    );
+  });
 });
 
 // Export utilities for other test files
