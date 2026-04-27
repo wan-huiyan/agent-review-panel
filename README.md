@@ -4,7 +4,7 @@
 
 # Agent Review Panel
 
-**Multiple AI reviewers independently evaluate your code, plans, or docs — then debate each other's findings. A judge renders the final verdict. You get a structured report with consensus, disagreements, and prioritized action items.**
+**4–6 AI reviewers independently evaluate your code, plan, or docs, then debate each other's findings. A judge resolves disagreements. You get three artifacts: a Markdown report (`review_panel_report.md`), a verbatim process log (`review_panel_process.md`), and an interactive HTML dashboard (`review_panel_report.html`).**
 
 A [Claude Code](https://claude.ai/code) **plugin** that orchestrates multi-agent adversarial review panels backed by [9 research papers](#research-foundations) on multi-agent debate.
 
@@ -12,13 +12,24 @@ A [Claude Code](https://claude.ai/code) **plugin** that orchestrates multi-agent
 >
 > **Runs only on Claude Code surfaces** — CLI, IDE extension, or the **Code tab inside the Claude Desktop app**. Does not work with claude.ai web chat or the Anthropic API direct ([why](#requires-claude-code)).
 
-[![Agent Review Panel — pipeline architecture](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/hero-flow.svg?v=1)](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/hero-flow.svg?v=1)
+[![Agent Review Panel — pipeline architecture](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/v3.1.0/docs/hero-flow.svg)](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/v3.1.0/docs/hero-flow.svg)
 
-[![Agent Review Panel — terminal demo](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/demo.gif?v=1)](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/demo.gif?v=1)
+[![Agent Review Panel — terminal demo](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/v3.1.0/docs/demo.gif)](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/v3.1.0/docs/demo.gif)
 
-[![Agent Review Panel — interactive HTML dashboard with expandable issue cards](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/html-demo.gif?v=1)](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/html-demo.gif?v=1)
+[![Agent Review Panel — interactive HTML dashboard with expandable issue cards](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/v3.1.0/docs/html-demo.gif)](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/v3.1.0/docs/html-demo.gif)
 
 *The HTML report: expandable 10-section issue cards (narrative, code evidence with Prism.js syntax highlighting, debate transcripts, judge rulings, fix recommendations, cross-references), deep-linkable, keyboard-navigable, print-friendly.*
+
+## Contents
+
+- [Quick Start](#quick-start) — install + first-run verification
+- [Installation](#installation) — supported surfaces, marketplace, manual clone
+- [How It Works](#how-it-works) — the 16-phase pipeline
+- [Features](#features) — review process, verification layer, anti-groupthink, advanced
+- [Usage Examples](#usage-examples) and [Configuration / Modes](#configuration--modes)
+- [Cost & Performance](#cost--performance) and [Known Limitations](#known-limitations)
+- [Migration](#migration-from-previous-marketplaces) and [Troubleshooting](#troubleshooting)
+- [Reading the Report](#reading-the-report) — vocabulary, severity rubric, epistemic labels
 
 <a id="quick-start"></a>
 ## Quick Start
@@ -31,6 +42,8 @@ claude plugin install roundtable@agent-review-panel
 ```
 
 Then restart your Claude Code session — skills load at session start.
+
+**After install — verify it loaded.** In a fresh Claude Code session, type `/roundtable:agent-review-panel` (with no target). The skill should respond by introducing itself and asking what to review. If you get `unknown command` instead, the skills didn't load — see [Troubleshooting → After install, slash command not recognized](#after-install-roundtableagent-review-panel-is-not-recognized).
 
 <details>
 <summary>Already inside a Claude Code session? Use the slash-command form instead</summary>
@@ -134,23 +147,25 @@ claude plugin update roundtable@agent-review-panel
 
 **Verify the update worked:**
 ```bash
-cat ~/.claude/plugins/cache/agent-review-panel/roundtable/*/.claude-plugin/plugin.json | grep version
+ls ~/.claude/plugins/cache/agent-review-panel/roundtable/
 ```
-The version should match the latest entry in the [Version History](#version-history) table below. (The cache layout is `cache/<marketplace-name>/<plugin-name>/<version>/` — note that the `plugins/` intermediate directory from the repo is flattened out during install, and a version segment is added. The `*` glob above matches whatever version is installed so you don't have to look it up first.)
+The directory name is the installed version (e.g. `3.1.0`). It should match the [latest GitHub release](https://github.com/wan-huiyan/agent-review-panel/releases/latest). If you have the [GitHub CLI](https://cli.github.com/), `gh release view --repo wan-huiyan/agent-review-panel` is the most direct check.
 
-**If the update appears to work but you're still getting old behavior** (e.g. missing the v2.12 HTML report, missing the v2.15 expandable cards, or missing the v2.14 data-flow trace phase), check for a **stale local clone** that shadows the marketplace install:
+(Cache layout is `cache/<marketplace-name>/<plugin-name>/<version>/` — the `plugins/` intermediate directory from the repo is flattened out during install, and a version segment is added.)
+
+**If the update appears to work but you're still getting old behavior** (e.g. missing the HTML report, missing expandable cards, or missing the data-flow trace phase), check for a **stale local clone** that shadows the marketplace install:
 
 ```bash
 ls ~/.claude/skills/agent-review-panel 2>/dev/null
 ```
 
-If that directory exists, it's loaded *before* the marketplace cache and will pin you to whatever version was cloned. Remove it:
+If that directory exists, it's loaded *before* the marketplace cache and pins you to whatever version was cloned. Back it up first (irreversible if you delete it outright with local edits inside), then remove the original:
 
 ```bash
-rm -rf ~/.claude/skills/agent-review-panel
+mv "$HOME/.claude/skills/agent-review-panel" "$HOME/.claude/skills/agent-review-panel.bak.$(date +%s)"
 ```
 
-Then restart Claude Code. The marketplace install in `~/.claude/plugins/cache/agent-review-panel/` will take over.
+Then restart Claude Code. The marketplace install in `~/.claude/plugins/cache/agent-review-panel/` will take over. Delete the `.bak.*` directory once the marketplace version is confirmed working.
 
 **Fallback — clean reinstall:** If the update commands misbehave, uninstall and reinstall from scratch. From your terminal:
 
@@ -173,6 +188,7 @@ claude plugin install roundtable@agent-review-panel
 
 </details>
 
+<a id="manual-clone-development--custom-setup"></a>
 ### Manual clone (development / custom setup)
 
 For local development, forking, or air-gapped environments. **Do NOT clone into `~/.claude/skills/`** — that path shadows marketplace installs and is the destructive-cleanup target in [Updating](#updating-to-the-latest-version) above. Use a separate workspace path instead:
@@ -189,12 +205,14 @@ claude --plugin-dir ~/projects/agent-review-panel-dev
 
 ### Claude Code version requirement
 
-**Claude Code v1.0+** (the skill uses the Agent tool for parallel subagent spawning and `model: "opus"` overrides — v2.14+ forces opus on all launches including VoltAgent specialist agents).
+**Claude Code v1.0+** — the plugin uses the `Agent` tool for parallel subagent spawning. Reviewer model selection is documented under [How It Works](#how-it-works).
 
 ### Cursor (experimental)
 
 <details>
 <summary>Cursor installation options</summary>
+
+> **Confidence: untested by maintainers.** Community PRs welcome — see [Contributing](#contributing). The recipes below are starting points, not verified flows.
 
 This skill was built for Claude Code's Agent tool (parallel subagent spawning, model selection). Cursor has its own mechanisms that may require adaptation.
 
@@ -261,13 +279,13 @@ A single reviewer gives you a list. The panel gives you a deliberation — with 
 
 **Verification layer:**
 - Claim verification checks all reviewer citations against actual source code
-- Severity verification reads the codebase to confirm P0/P1 findings before the judge sees them (v2.6 benchmark: 2/3 P0 findings were overstated). **External domain claims** (product limits, regulatory jurisdiction, API behavior) are automatically web-searched and tagged `[WEB-VERIFIED]`, `[WEB-CONTRADICTED]`, or `[WEB-INCONCLUSIVE]` *(v2.16.3)*
+- Severity verification reads the codebase to confirm P0/P1 findings before the judge sees them. **External domain claims** (product limits, regulatory jurisdiction, API behavior) are automatically web-searched and tagged `[WEB-VERIFIED]`, `[WEB-CONTRADICTED]`, or `[WEB-INCONCLUSIVE]`
 - Verification commands: runs read-only grep/cat commands from reviewers to confirm or contradict claims
 - Defect classification: findings labeled [EXISTING_DEFECT] or [PLAN_RISK] — P0 requires existing defect evidence
 - Completeness audit: post-debate agent re-reads source line-by-line for what everyone missed
-- **Targeted verification round (v2.11):** each unresolved dispute gets a tiered (Light ~2k / Standard ~8k / Deep ~32k tokens) verification agent matched to the claim type (statistician for stats claims, security auditor for security claims, etc.) — verdicts feed directly into the judge's rulings
-- **Data Flow Trace (v2.14):** a dedicated agent traces data through critical paths before reviewers begin, flagging composition/seam bugs (two individually-correct functions producing incorrect results together). Three tiers: Standard (default, single path), Thorough (top 3 paths + transform-completeness checks), Exhaustive (all paths, no token limit — aims to catch all bugs). Uses Meta's semi-formal certificate prompting (2026, 78%→93% accuracy). Skipped for pure docs/plans or code with no data transforms.
-- **Force opus on all launches (v2.14):** every `subagent_type` launch — including VoltAgent specialist agents — must pass `model: "opus"`. Fixes an invisible source of cross-run variance where VoltAgent agents silently fell through to their frontmatter-declared default model (potentially sonnet or haiku), producing different reasoning depths across otherwise identical runs.
+- **Targeted verification round:** each unresolved dispute gets a tiered (Light ~2k / Standard ~8k / Deep ~32k tokens) verification agent matched to the claim type (statistician for stats claims, security auditor for security claims, etc.) — verdicts feed directly into the judge's rulings
+- **Data Flow Trace:** a dedicated agent traces data through critical paths before reviewers begin, flagging composition/seam bugs (two individually-correct functions producing incorrect results together). Three tiers: Standard (default, single path), Thorough (top 3 paths + transform-completeness checks), Exhaustive (all paths, no token limit). Uses Meta's semi-formal certificate prompting. Skipped for pure docs/plans or code with no data transforms.
+- **Force opus on all launches:** every `subagent_type` launch — including VoltAgent specialist agents — passes `model: "opus"` explicitly. Fixes an invisible source of cross-run variance where VoltAgent agents silently fell through to their frontmatter-declared default model (potentially sonnet or haiku), producing different reasoning depths across otherwise identical runs.
 
 **Anti-groupthink safeguards:**
 - Blind final scoring, private reflection, calibrated skepticism levels (20-60%)
@@ -279,12 +297,24 @@ A single reviewer gives you a list. The panel gives you a deliberation — with 
 **Output (three files per review):**
 - **Primary report** (`review_panel_report.md`): executive summary, consensus, disagreements (with judge rulings), prioritized action items with epistemic labels ([VERIFIED], [CONSENSUS], [SINGLE-SOURCE], [UNVERIFIED], [DISPUTED], [WEB-VERIFIED], [WEB-CONTRADICTED], [WEB-INCONCLUSIVE])
 - **Process history** (`review_panel_process.md`): verbatim "director's cut" of every agent's output with persona profiles at each entry point — full transparency into the panel's reasoning
-- **Interactive HTML dashboard** (`review_panel_report.html`) with **expandable 10-section issue cards (v2.15)**: each card expands to reveal a nested accordion with 📖 Narrative (full reviewer reasoning), 📄 Code Evidence (Prism.js-highlighted snippets with file:line headers), 👥 Raised by (per-reviewer rating + reasoning), 🔍 Verification Trail (full VR agent output), 💬 Debate (round-by-round transcript), ⚖️ Judge Ruling, 🛠️ Fix Recommendation (proposed change + before/after code + regression test + blast radius + effort), 🔗 Cross-references, 🏷️ Epistemic Tags (with hover tooltips), and 📊 Prior Runs. Plus: deep-link support (`report.html#issue-A1`), keyboard navigation, expand all/collapse all controls, print-friendly `@media print` CSS. Dashboard also includes a filterable/sortable issue list, Panel Gallery with avatar cards for every agent, and confidence/tier/verdict charts (Tailwind CSS + Chart.js + Prism.js via CDN).
+- **Interactive HTML dashboard** (`review_panel_report.html`) with expandable 10-section issue cards. Each card opens a nested accordion:
+  - 📖 **Narrative** — full reviewer reasoning
+  - 📄 **Code Evidence** — Prism.js-highlighted snippets with `file:line` headers
+  - 👥 **Raised by** — per-reviewer rating and reasoning
+  - 🔍 **Verification Trail** — full output of the verification-round agent
+  - 💬 **Debate** — round-by-round transcript
+  - ⚖️ **Judge Ruling**
+  - 🛠️ **Fix Recommendation** — proposed change, before/after code, regression test, blast radius, effort
+  - 🔗 **Cross-references**
+  - 🏷️ **Epistemic Tags** — with hover tooltips
+  - 📊 **Prior Runs**
+
+  Plus deep-link support (`report.html#issue-A1`), keyboard navigation, expand-all / collapse-all controls, and print-friendly `@media print` CSS. Dashboard also includes a filterable/sortable issue list, Panel Gallery with avatar cards for every agent, and confidence/tier/verdict charts (Tailwind CSS + Chart.js + Prism.js via CDN).
 - Scope & limitations disclosure — every report states what the panel cannot evaluate
 
 **Advanced:**
-- VoltAgent integration — maps personas to 127+ specialist agents for deeper domain-specific reviews when installed (all launches forced to opus in v2.14)
-- **Multi-Run Union Protocol (v2.14)** — invoke `--runs N` or "run 3 times and merge" to execute the panel N times with rotated persona compositions (Run 1: standard base; Run 2: complementary set; Run 3: adversarial-heavy 3 DAs + Correctness Hawk). Phase 16 merges findings by location + bug class, scores stability as `[K/N RUNS]`, uses highest severity when runs disagree, resolves judge divergence. Eliminates the ~30% single-run blind spot documented in the v2.10→v2.14 consistency analysis.
+- VoltAgent integration — maps personas to 127+ specialist agents for deeper domain-specific reviews when installed
+- **Multi-Run Union Protocol** — invoke `--runs N` or "run 3 times and merge" to execute the panel N times with rotated persona compositions (Run 1: standard base; Run 2: complementary set; Run 3: adversarial-heavy 3 DAs + Correctness Hawk). Phase 16 merges findings by location + bug class, scores stability as `[K/N RUNS]`, uses highest severity when runs disagree, resolves judge divergence. Designed to mitigate the ~30% single-run blind spot observed in early consistency analyses.
 - Codebase state check — detects worktree/branch divergence to prevent false "missing code" findings
 - Tiered knowledge mining (L0/L1/L2) — scans index lines first, then summaries, then full content only for relevant items
 - Deep research mode — opt-in web research for domain best practices
@@ -307,16 +337,43 @@ A single reviewer gives you a list. The panel gives you a deliberation — with 
 > Do a deep review of this ML pipeline          # also triggers deep research mode
 ```
 
-The skill auto-detects content type and selects appropriate personas and review mode. You can also specify custom reviewers.
+After a panel review of a plan document, integrate the findings back into the plan with traceability:
 
+```
+> /roundtable:plan-review-integrator review_panel_report.md docs/my_plan.md
+```
+
+The integrator classifies each panel finding (apply / defer / reject), edits the plan in place, and produces a per-finding traceability summary so a later reviewer can see what landed and why.
+
+The panel skill auto-detects content type and selects appropriate personas and review mode. You can also specify custom reviewers.
+
+<a id="configuration--modes"></a>
+## Configuration / Modes
+
+All modes are LLM-interpreted phrases — the skill's description matches them at invocation. There are no shell flags; whichever phrasing you use, the same configuration knobs are read.
+
+| Mode | Invoke with | Effect |
+|---|---|---|
+| **Default panel** | `/roundtable:agent-review-panel` (or any "review panel" phrasing) | 4-reviewer panel; auto-personas; auto Precise/Exhaustive |
+| **Deep research** | `/roundtable:agent-review-panel deep` or "do a deep review of …" | Adds opt-in web research for domain best practices |
+| **Multi-run union** | `--runs 3` or "run 3 times and merge" | Runs the panel N times with rotated persona compositions; Phase 16 deduplicates findings, scores stability `[K/N RUNS]` |
+| **Trace tier** | "use Thorough trace" / "use Exhaustive trace" | Phase 2 Data Flow Trace tier (Standard ~default / Thorough top-3 paths / Exhaustive all paths) |
+| **Custom personas** | "include a Security Auditor and a Cost Modeler" | Overrides auto-persona detection with the named reviewers; panel size still 4–6 |
+
+<a id="cost--performance"></a>
 ## Cost & Performance
 
-| Metric | Value |
-|---|---|
-| Duration | ~6-10 minutes (4-reviewer panel); ~10-12 minutes (6-reviewer with auto-persona) |
-| Token usage | Varies by content length and panel size. Typical range: 150k-350k total tokens across all subagent calls (input + output). Higher than single-agent review due to parallel reviewers + debate rounds. |
-| Best for | High-stakes reviews where you need structured disagreement tracking |
-| Not for | Quick code reviews, style checks, or single-opinion feedback |
+A single panel run is in the 150k–350k total-token range across all subagents (input + output). Concrete budget by content type:
+
+| Content type | Duration | Tokens | Approx $ at current Opus pricing |
+|---|---|---|---|
+| Docs / README review | ~6 min | ~150k | ~$3 |
+| Plan document (small) | ~6–8 min | ~180k | ~$5 |
+| Code (4-reviewer, auto Precise) | ~8–10 min | ~250k | ~$10 |
+| Code + Exhaustive Data Flow Trace | ~12–15 min | ~350k | ~$20 |
+| `--runs 3` multi-run union | 3× base | 3× base | 3× base |
+
+Numbers are rough — Opus pricing varies and reviewer count auto-scales 4–6 by signal density. **Best for** high-stakes reviews where structured disagreement tracking matters. **Not for** quick code reviews, style checks, or single-opinion feedback.
 
 ## Known Limitations
 
@@ -324,6 +381,8 @@ The skill auto-detects content type and selects appropriate personas and review 
 - **No runtime analysis:** The panel reviews static code and documents. It cannot evaluate runtime behavior, production data patterns, or performance under load.
 - **Token cost:** Multi-agent review costs more than single-agent. Use for high-stakes reviews, not routine checks.
 - **Temporal reasoning:** Despite explicit checks, temporal scope verification (e.g., "excludes Christmas" with multi-year data) remains the hardest class of bug for panels to catch reliably.
+- **Privacy & network:** Reviewers run via Claude Code, so reviewed content is subject to Claude Code's standard data-handling policy. The deep-research mode and Phase 11 web-verification step make outbound HTTPS requests to verify external claims; both can be skipped if you stay in default mode and review proprietary code.
+- **Output location:** All three files (`review_panel_report.md`, `review_panel_process.md`, `review_panel_report.html`) are written to your Claude Code session's current working directory and overwrite any prior `review_panel_*` files there. Run one panel at a time per directory.
 
 ## Research Foundations
 
@@ -366,9 +425,16 @@ The `roundtable` plugin ships **two skills** in one install. Both load together;
 
 Both are activated by their natural-language descriptions or via slash commands `/roundtable:agent-review-panel` and `/roundtable:plan-review-integrator`.
 
-> **v3.0 layout change:** Pre-v3.0 the marketplace shipped two independently-installable plugins (`roundtable` + `plan-review-integrator`). v3.0 collapses them into one plugin (`roundtable`) bundling both skills, mirroring the single-plugin pattern used by [obra/superpowers](https://github.com/obra/superpowers). The plugin name `roundtable` is kept — it works as a collective noun for the bundle ("the roundtable holds these skills"), and `/roundtable:agent-review-panel` reads more meaningfully than the alternative doubled-name form. If you previously ran `claude plugin install plan-review-integrator@agent-review-panel`, that command is gone — install just `roundtable@agent-review-panel` and you'll get both skills. See [Migration](#migration-from-previous-marketplaces).
+> **v3.0 layout change:** Pre-v3.0 the marketplace shipped two independently-installable plugins (`roundtable` + `plan-review-integrator`). v3.0 collapses them into one plugin (`roundtable`) bundling both skills, mirroring the single-plugin pattern used by [obra/superpowers](https://github.com/obra/superpowers). If you previously ran `claude plugin install plan-review-integrator@agent-review-panel`, install just `roundtable@agent-review-panel` and you'll get both skills. See [Migration](#migration-from-previous-marketplaces).
+
+<details>
+<summary>Why is the plugin named <code>roundtable</code> and not <code>agent-review-panel</code>?</summary>
+
+`roundtable` is a collective noun for the bundle — "the roundtable holds these skills." It also reads more naturally in slash-command form: `/roundtable:agent-review-panel` over the alternative doubled-name form.
 
 `plan-review-integrator` was previously published as a standalone repo at `wan-huiyan/plan-review-integrator`. That repo is **archived** in favor of the bundled distribution here.
+
+</details>
 
 ## Migration from previous marketplaces
 
@@ -437,6 +503,7 @@ Restart your Claude Code session after install.
 
 ## Troubleshooting
 
+<a id="after-install-roundtableagent-review-panel-is-not-recognized"></a>
 ### After install, `/roundtable:agent-review-panel` is not recognized
 
 Restart your Claude Code session — skills load at session start, not on install completion. If the slash command still doesn't appear after restart, see "Old version keeps loading" below.
@@ -479,6 +546,17 @@ If you installed before v2.16.1 or v3.0 and `claude plugin update` misbehaves, t
 ## Reading the Report
 
 The panel produces three files per run; here's how to read them.
+
+**Vocabulary.** This README uses these words consistently:
+
+| Term | Means |
+|---|---|
+| **plugin** | The marketplace package you install (`roundtable`) — one bundle that ships skills, manifests, and assets |
+| **skill** | A shipped behavior loaded by Claude Code; this plugin bundles two skills (`agent-review-panel`, `plan-review-integrator`) |
+| **reviewer** | One persona in the panel (e.g. Clarity Editor, Devil's Advocate). 4–6 reviewers participate per run |
+| **agent / subagent** | The Claude Code launch mechanism the skill uses to spawn each reviewer in parallel — not a synonym for "reviewer" or "skill" |
+| **panel** | The full set of reviewers participating in a single run |
+| **judge** | The Phase 14 arbiter that ingests all reviewer + verification output and renders the final verdict |
 
 **Severity rubric.** Every finding is tagged with one severity:
 
