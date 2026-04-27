@@ -628,6 +628,11 @@ summary.
 Launch all reviewers **in parallel** each round. Each receives their own review
 + reflection, all others' feedback, and unresolved points from previous round.
 
+**Output (v3.1.0+):** Each reviewer's per-round debate response is written
+to `state/reviewer_<name>_phase_5_round<R>.md` (R = 1, 2, or 3). Round 1 is
+mandatory; rounds 2 and 3 follow the existing convergence-based skip rules.
+Subagent returns only path + 100-word summary.
+
 ### Phase 6: Round Summarization
 
 After each round, summarize (no agent needed):

@@ -421,6 +421,21 @@ describe("v3.1.0 file-based state convention", () => {
       "Phase 4 prompt must direct disk-write to state/reviewer_<name>_phase_4.md"
     );
   });
+
+  it("Phase 5 debate prompt writes round outputs to disk", () => {
+    const promptTemplates = readFileSync(
+      resolve(ROOT, "skills/agent-review-panel/references/prompt-templates.md"),
+      "utf-8"
+    );
+    const phase5 = promptTemplates
+      .split(/^## Phase 5/m)[1]
+      .split(/^## Phase 6|^## Phase 7/m)[0];
+    assert.match(
+      phase5,
+      /reviewer_.*phase_5_round\d+\.md/i,
+      "Phase 5 prompt must direct disk-write to state/reviewer_<name>_phase_5_round<R>.md"
+    );
+  });
 });
 
 // Export utilities for other test files

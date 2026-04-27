@@ -183,6 +183,8 @@ with strong evidence is rigor, not weakness.
 Remember: your agreement intensity is {X}%. You don't disagree reflexively,
 but you hold a high evidence bar. If you genuinely cannot find a new
 discovery after careful re-reading, state that explicitly.
+
+**Output protocol (v3.1.0+):** Write your full debate response to `{state_dir}/reviewer_{persona_short_name}_phase_5_round{round_number}.md` (e.g. `reviewer_security_phase_5_round1.md`, `reviewer_security_phase_5_round2.md`, `reviewer_security_phase_5_round3.md`). Return ONLY the path + a 100-word summary of: which reviewers you agreed with, which you challenged, and your one new finding. Do NOT return the verbatim debate response in chat.
 ```
 
 ## Phase 7: Blind Final Assessment Prompt
