@@ -2,6 +2,40 @@
 
 All notable changes to Agent Review Panel.
 
+## [3.3.0] — 2026-05-14 — Live-State Claim Discipline (#40)
+
+### Added — Live-State Claim Discipline
+
+Resolves [#40](https://github.com/wan-huiyan/agent-review-panel/issues/40). In a 2026-04-27 run, the panel (Security Auditor + Architecture + Devil's Advocate, all cross-citing each other) raised a P0 "IAM/IAP divergence" finding that was factually false. The agents read `echo "gcloud ... --role=..."` lines in two Cloud Run deploy scripts — operator-facing instructions *printed to the terminal* at deploy-completion time — as if they were the live IAM/IAP configuration of the deployed service. The false finding survived Phase 4 (private reflection), was *promoted* during Phase 5 debate, survived Phase 7 (blind final), and shaped the Supreme Judge's verdict. Five agents plus the judge missed it; a single `gcloud run services describe` would have falsified it in 30 seconds.
+
+The new discipline is a cross-cutting rule set (not a new phase) injected into Phase 3 reviewer prompts, the Phase 5 debate prompt, Phase 11 severity verification, and the Phase 14 judge prompt. It applies to any finding asserting a fact about *live infrastructure or runtime state* — deployed IAM/IAP/auth config, a running cron schedule, a production env var, a BigQuery partition key, a load balancer's routing — and is **not** security-specific.
+
+Four rules:
+
+1. **Declarative vs. imperative vs. documentation** — reviewers must distinguish declarative config (`gcloud run deploy --flag`, Terraform, YAML — what the deploy WILL create) from imperative documentation (`echo "..."`, `print(...)`, comments, heredocs printed to a terminal, "usage"/"next steps" blurbs — what a human is TOLD to run later) from live state (`describe`-class command output — what production IS now). Lines inside `echo`/comments/usage blocks are documentation, never evidence for a live-state claim.
+2. **Live-state claims need live evidence** — every live-state finding is tagged `[LIVE-VERIFIED]` (backed by `gcloud describe`/`get-iam-policy`, `bq show`, `aws describe-*`, `kubectl get`, `crontab -l` output) or `[STATIC-INFERENCE]` (inferred from source/config only). A `[STATIC-INFERENCE]` live-state claim is **capped at P1** regardless of reviewer count; P0 requires `[LIVE-VERIFIED]`.
+3. **Consensus does not compound on a shared artifact** — 2+ reviewers agreeing off the *same* source lines (or cross-citing each other) is consensus on an *interpretation*, not independent verification of a *fact*. Phase 6 Sycophancy Detection flags it; the judge tags it `[STATIC-INFERENCE-CONSENSUS]` and counts it as one source, not three.
+4. **Pre-promotion falsification check** — before any finding is promoted to P0 (in debate or by the judge), reviewers state the single observation that would prove it wrong and whether it is cheap to obtain. A P0 falsifiable by one read-only command that no agent ran is capped at P1 until verified.
+
+Three new epistemic labels — `[LIVE-VERIFIED]`, `[STATIC-INFERENCE]`, `[STATIC-INFERENCE-CONSENSUS]` — are added to the Phase 15.1 epistemic-labels list and the Phase 14 judge classification step.
+
+### Tests
+
+- New `v3.3.0 Live-State Claim Discipline (#40)` describe block in `tests/behavioral-assertions.test.mjs` — asserts SKILL.md declares the discipline section with all four rules, lists the three new epistemic labels, and wires the rules into Phase 3/5/6/11/14; asserts `prompt-templates.md` carries the discipline in the Phase 3, 5, 11, and 14 prompts.
+- New eval-suite test case `tc-v33-1` exercising the deploy-script-echo false-positive scenario.
+
+### Files Changed
+
+- `skills/agent-review-panel/SKILL.md` — new `## Live-State Claim Discipline (v3.3.0)` section; wiring into Phases 3, 5, 6, 11, 14; three new epistemic labels in the Phase 15.1 list
+- `skills/agent-review-panel/references/prompt-templates.md` — Live-State Claim Discipline block in the Phase 3 prompt; falsification-check task in the Phase 5 prompt; live-state classification step in the Phase 11 prompt; severity-dampening and epistemic-label additions in the Phase 14 judge prompt
+- `skills/agent-review-panel/references/signals-and-checklists.md` — new Live-State Claims checklist; live-state items added to the Auth/Security and Infrastructure checklists
+- `skills/agent-review-panel/eval-suite.json` — `tc-v33-1` test case, version + `updated` bump
+- Version bumps across `package.json`, `.claude-plugin/plugin.json`, `.claude-plugin/marketplace.json`, `skills/agent-review-panel/eval-suite.json`, SKILL.md H1 header, and HTML footer instruction (3.2.0 → 3.3.0)
+
+### Breaking changes
+
+None. The discipline is additive — it adds tagging requirements and severity caps to existing phases but introduces no new phase, agent, or state file. Reports for work with no live-infrastructure claims render identically.
+
 ## [3.2.0] — 2026-04-27 — post-judge verification gate + Chart.js wrapper-div mandate (#41, #42)
 
 ### Added — Phase 14.5: Post-Judge Verification Gate

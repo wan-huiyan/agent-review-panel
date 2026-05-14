@@ -1,8 +1,8 @@
 {
   "skill_name": "agent-review-panel",
-  "version": "3.2.0",
+  "version": "3.3.0",
   "created_by": "manual",
-  "updated": "2026-04-07",
+  "updated": "2026-05-14",
   "triggers": [
     {
       "id": "pos-1",
@@ -639,6 +639,33 @@
           "type": "pattern",
           "value": "(?i)(voltagent-infra|devops)",
           "description": "v2.9: Maps DevOps to voltagent-infra:devops-engineer"
+        }
+      ]
+    },
+    {
+      "id": "tc-v33-1",
+      "prompt": "Review panel on these two Cloud Run deploy scripts — your-project deploy.sh and deploy_emea.sh. They print different gcloud commands for granting users access; is the access model divergent?",
+      "input_files": [],
+      "assertions": [
+        {
+          "type": "pattern",
+          "value": "(?i)(live.?verified|static.?inference|live.?state)",
+          "description": "v3.3.0: Tags live-infrastructure claims [LIVE-VERIFIED] or [STATIC-INFERENCE]"
+        },
+        {
+          "type": "pattern",
+          "value": "(?i)(echo|comment|usage|next.?steps|print).{0,100}(documentation|not (config|evidence|live)|isn.?t (config|evidence)|aren.?t (config|evidence))",
+          "description": "v3.3.0: Treats echo/comment/usage lines as documentation, not configuration"
+        },
+        {
+          "type": "pattern",
+          "value": "(?i)(describe|get-iam-policy|gcloud|live evidence).{0,80}(verif|confirm|falsif|check)",
+          "description": "v3.3.0: Notes that a live describe-class command would verify/falsify the claim"
+        },
+        {
+          "type": "pattern",
+          "value": "(?i)(capped at p1|at most p1|not p0|cannot.{0,20}p0|p1 until verified)",
+          "description": "v3.3.0: Caps static-inference live-state claims at P1 absent live verification"
         }
       ]
     }
