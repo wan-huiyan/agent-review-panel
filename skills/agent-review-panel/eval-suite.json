@@ -654,7 +654,7 @@
         },
         {
           "type": "pattern",
-          "value": "(?i)(echo|comment|documentation|usage|next.?steps).{0,60}(not|isn|aren).{0,40}(config|configuration|evidence|live)",
+          "value": "(?i)(echo|comment|usage|next.?steps|print).{0,100}(documentation|not (config|evidence|live)|isn.?t (config|evidence)|aren.?t (config|evidence))",
           "description": "v3.3.0: Treats echo/comment/usage lines as documentation, not configuration"
         },
         {
