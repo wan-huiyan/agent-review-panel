@@ -37,6 +37,9 @@ Each auto-added persona receives a built-in domain checklist injected into their
 - Least-privilege IAM
 - Audit logging
 - Credential exposure in env vars/logs
+- Live IAM/IAP/auth state vs deploy-script inference — a claim about how a
+  deployed service is actually gated needs live `describe` / `get-iam-policy`
+  output, not `echo`/comment lines in a deploy script (see Live-State Claims)
 
 ### Infrastructure
 - Resource limits vs observed usage
@@ -45,6 +48,9 @@ Each auto-added persona receives a built-in domain checklist injected into their
 - Monitoring/alerting coverage
 - Timeout margins (2-3x observed)
 - Secret exposure in Dockerfiles
+- Live deployment state (running config, env vars, cron schedules, routing) vs
+  what the deploy script/manifest WOULD create — distinguish declarative config
+  from imperative documentation (see Live-State Claims)
 
 ### ML/Statistics
 - Train/serve skew (features computed identically?)
@@ -126,3 +132,28 @@ Each auto-added persona receives a built-in domain checklist injected into their
 - Schema propagation — column names consistent across the pipeline? Renamed columns break downstream consumers silently
 - Aggregation granularity — `groupby` changes the grain; is downstream code aware that rows now represent groups, not individuals?
 - Type coercion at boundaries — implicit int-to-float loses precision, str-to-datetime may silently accept wrong format
+
+### Live-State Claims (v3.3.0, Live-State Claim Discipline)
+
+Applies to any finding asserting a fact about *live infrastructure or runtime
+state* — deployed IAM/IAP/auth config, a running cron schedule, a production
+env var, a BigQuery table's partition key, a load balancer's routing. Not
+security-specific.
+
+- Declarative vs. imperative vs. documentation — `gcloud run deploy --flag` /
+  Terraform / YAML is declarative (what the deploy WILL create); `echo "..."`,
+  `print(...)`, comments, heredocs printed to a terminal, and "usage" / "next
+  steps" blurbs are documentation (what a human is TOLD to run later); only
+  `describe`-class command output is live state (what production IS now)
+- Lines inside `echo "..."` / comments / usage blocks are NEVER evidence for a
+  live-state claim — they are documentation, not configuration
+- Live-state claims must be tagged `[LIVE-VERIFIED]` (backed by `gcloud describe`
+  / `get-iam-policy`, `bq show`, `aws describe-*`, `kubectl get`, `crontab -l`
+  output) or `[STATIC-INFERENCE]` (inferred from source only)
+- A `[STATIC-INFERENCE]` live-state claim is capped at P1 regardless of reviewer
+  count; P0 requires `[LIVE-VERIFIED]`
+- Consensus does not compound on a shared artifact — 2+ reviewers reading the
+  SAME source lines (or cross-citing each other) is one source, tagged
+  `[STATIC-INFERENCE-CONSENSUS]`, not independent verification
+- Falsification test before P0 — if one cheap read-only command would prove the
+  finding wrong and no agent ran it, the finding is at most P1 until verified

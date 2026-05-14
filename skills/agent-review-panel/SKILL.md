@@ -31,7 +31,7 @@ description: >
   composition/seam bugs.
 ---
 
-# Agent Review Panel v3.2.0
+# Agent Review Panel v3.3.0
 
 A multi-agent adversarial review system based on nine research foundations:
 ChatEval (ICLR 2024), AutoGen, Du et al. (ICML 2024), MachineSoM (ACL 2024),
@@ -464,6 +464,83 @@ strategy, evaluation criteria) that the VoltAgent agent doesn't have natively.
 
 ---
 
+## Live-State Claim Discipline (v3.3.0)
+
+Resolves [#40](https://github.com/wan-huiyan/agent-review-panel/issues/40). A
+panel reading source code can verify what a script or manifest WILL do if
+executed — it cannot verify what production infrastructure IS doing right now.
+Conflating the two produced a false-positive P0 "IAM/IAP divergence" finding
+that survived all 5 reviewers, 3 debate rounds, and the Supreme Judge: the
+agents read `echo "gcloud ... --role=..."` lines in two deploy scripts
+(operator-facing documentation printed to the terminal at deploy-completion
+time) as if they were the live IAM bindings of the deployed service. A single
+`gcloud run services describe` would have falsified it in 30 seconds.
+
+This discipline applies to any finding that asserts a fact about **live
+state** — deployed IAM/IAP/auth config, a running cron schedule, a BigQuery
+table's partition key, a production env var, a load balancer's routing. It is
+NOT limited to security. It is injected into Phase 3 reviewer prompts, the
+Phase 5 debate prompt, Phase 11 severity verification, and the Phase 14 judge
+prompt.
+
+### Rule 1 — Declarative vs. imperative vs. documentation
+
+Reviewers must distinguish three things a source file can contain:
+
+| Category | Example | What it proves |
+|---|---|---|
+| **Declarative config** | `gcloud run deploy ... --no-allow-unauthenticated`, a Terraform resource, a YAML manifest | The deploy WILL create this config if run — still not proof it WAS run |
+| **Imperative documentation** | `echo "  gcloud beta run services add-iam-policy-binding ..."`, a comment, a README snippet, a printed "next steps" blurb | A human is being TOLD to run this later. The script itself does not. |
+| **Live state** | output of `gcloud ... describe` / `... get-iam-policy`, `bq show`, `aws ... describe-*`, `kubectl get`, `crontab -l` | What production actually is right now |
+
+Lines inside `echo "..."`, `print(...)`, comments, heredocs echoed to a
+terminal, or string literals in "usage" / "next steps" blocks are
+**documentation, not configuration**. They are never evidence for a live-state
+claim. Configuration claims must come from declarative deploy flags / manifests;
+live-state claims must come from live `describe`-class output.
+
+### Rule 2 — Live-state claims need live evidence
+
+Every finding that asserts a live-infrastructure or runtime-state fact carries
+one of two epistemic tags:
+
+- **`[LIVE-VERIFIED]`** — backed by output from a live-state command
+  (`gcloud ... describe` / `... get-iam-policy`, `bq show`, `aws ... describe-*`,
+  `kubectl get`, `crontab -l`, etc.) that the panel actually ran or that the
+  user supplied.
+- **`[STATIC-INFERENCE]`** — inferred from source code, config files, or deploy
+  scripts only. The panel did not (or could not) observe live state.
+
+A `[STATIC-INFERENCE]` live-state claim is capped at **P1**, no matter how many
+reviewers cite it. P0 ("block the demo") requires `[LIVE-VERIFIED]` — or the
+finding must be reworded as "the deploy script would configure X" (a
+`[PLAN_RISK]`, not an `[EXISTING_DEFECT]`). When the panel lacks the tools to
+obtain live evidence, the finding must say so explicitly rather than inferring.
+
+### Rule 3 — Consensus does not compound on a shared artifact
+
+When 2+ reviewers reach the same conclusion by reading the **same** source
+lines, that is consensus on an *interpretation*, not independent verification
+of a *fact*. It must not be promoted to `[VERIFIED]` or used to justify P0.
+Phase 6 (Sycophancy Detection) flags this pattern; the judge tags it
+`[STATIC-INFERENCE-CONSENSUS]` and requires independent live verification
+before any P0 promotion. Cross-citation chains (Security F3 → Architecture F4
+→ DA CF2) over the same artifact lines are a single source, not three.
+
+### Rule 4 — Pre-promotion falsification check
+
+Before any finding is promoted to P0 — in debate (Phase 5) or by the judge
+(Phase 14) — answer two questions:
+
+1. **What single observation would prove this finding wrong?**
+2. **Is that observation cheap to obtain?**
+
+If a P0 can be falsified by one read-only command (a `describe`, a `show`, a
+`grep`) and no agent ran it, the finding is at most P1 until verified. Record
+the falsification test alongside the finding.
+
+---
+
 ## Phase 2: Data Flow Trace (v2.14)
 
 A dedicated agent traces data through the critical path(s) of the work
@@ -603,7 +680,10 @@ Launch ALL reviewer agents **in parallel** using Agent tool with `model: "opus"`
 When VoltAgent integration is active, use `subagent_type` from the mapping table.
 Each gets the structured prompt from `references/prompt-templates.md` (Phase 3
 template) with their persona, agreement intensity, reasoning strategy, context
-brief, and the full work content inside injection boundaries.
+brief, and the full work content inside injection boundaries. The prompt also
+carries the Live-State Claim Discipline (Rules 1–2): reviewers must tag every
+live-infrastructure/runtime-state claim `[LIVE-VERIFIED]` or `[STATIC-INFERENCE]`
+and must not treat `echo`/comment/usage-blurb lines as configuration.
 
 Collect all N independent reviews.
 
@@ -635,6 +715,12 @@ to `state/reviewer_<name>_phase_5_round<R>.md` (R = 1, 2, or 3). Round 1 is
 mandatory; rounds 2 and 3 follow the existing convergence-based skip rules.
 Subagent returns only path + 100-word summary.
 
+**Pre-promotion falsification check (v3.3.0).** Before any finding is promoted
+to — or kept at — P0 in any debate round, the reviewer must state the single
+observation that would falsify it and whether that observation is cheap to
+obtain (see Live-State Claim Discipline Rule 4). A P0 that one read-only command
+could falsify, with no agent having run it, is capped at P1 until verified.
+
 ### Phase 6: Round Summarization
 
 After each round, summarize (no agent needed):
@@ -648,6 +734,14 @@ After each round, summarize (no agent needed):
 
 Count position changes toward majority. If >50% lack new evidence → inject
 sycophancy alert into next round prompt for all reviewers.
+
+**Shared-artifact consensus (v3.3.0).** Also flag when 2+ reviewers agree on a
+claim by reading the **same** source lines without independent verification —
+including cross-citation chains where each reviewer cites the previous one's
+finding rather than the source. This is consensus on an *interpretation*, not
+on a *fact*: it does not compound to `[VERIFIED]` and must not justify P0. Tag
+such points `[STATIC-INFERENCE-CONSENSUS]` (Live-State Claim Discipline Rule 3)
+and route them to verification before any P0 promotion.
 
 ### Convergence Check
 
@@ -721,6 +815,18 @@ benchmark: 2/3 P0 findings were overstated after code investigation).
    - `[EXISTING_DEFECT]`: The bug exists in the current running code right now
    - `[PLAN_RISK]`: The risk would only materialise if the plan is implemented as written
    - P0 severity requires `[EXISTING_DEFECT]`. A `[PLAN_RISK]` is at most P1.
+
+1b. **Live-state claim classification (v3.3.0)** — If the finding asserts a fact
+   about live infrastructure or runtime state (deployed IAM/IAP/auth config, a
+   running cron schedule, a production env var, a BigQuery partition key, a load
+   balancer's routing), apply the Live-State Claim Discipline:
+   - Tag `[LIVE-VERIFIED]` only if backed by live `describe`-class command
+     output the panel ran or the user supplied; otherwise tag `[STATIC-INFERENCE]`.
+   - A `[STATIC-INFERENCE]` live-state claim is capped at **P1** regardless of
+     reviewer count. Do NOT let it stay P0 on consensus alone.
+   - Reject `echo`/comment/usage-blurb lines as evidence — those are
+     documentation, not configuration. A claim resting only on such lines is
+     `[STATIC-INFERENCE]` at best and is frequently `[INACCURATE]`.
 
 2. **Verify the claim against actual code**
    - If the finding says "X is missing", grep for X in the actual codebase
@@ -989,11 +1095,11 @@ Phase 15.1 can later consume it from disk (rather than from chat).
 Steps (in order):
 0. Review verification results (claims, severity, commands, **and verification round**)
 0.5a-b. Verify audit findings, anti-rhetoric assessment
-0.5c. Severity dampening — minimum evidence-justified severity. **In Precise mode, findings without code citations cannot exceed P2.**
+0.5c. Severity dampening — minimum evidence-justified severity. **In Precise mode, findings without code citations cannot exceed P2.** **Live-State Claim Discipline (v3.3.0): a live-infrastructure/runtime-state claim tagged `[STATIC-INFERENCE]` cannot exceed P1, and a P0 that one cheap read-only command could falsify (with no agent having run it) is capped at P1 until verified.**
 0.5d. Coverage check — flag unexamined risk categories, scan source for gaps
-1-3. Debate quality, disagreement rulings, consensus correctness
+1-3. Debate quality, disagreement rulings, consensus correctness. **A `[STATIC-INFERENCE-CONSENSUS]` point — multiple reviewers agreeing off the same artifact lines — counts as one source, not independent verification.**
 4-5. Absent-safeguard check, independent gap scan, score assessment
-6-7. Epistemic label classification, final verdict
+6-7. Epistemic label classification (including `[LIVE-VERIFIED]` / `[STATIC-INFERENCE]` / `[STATIC-INFERENCE-CONSENSUS]` for live-state claims), final verdict
 8-9. Action items, meta-observation
 10. **Write ruling to `{state_dir}/phase_14_judge_ruling.md`** (v3.1.0+).
 
@@ -1118,7 +1224,7 @@ signal that the panel completed the full protocol.
 ## Scope & Limitations
 {What was reviewed. What CANNOT be evaluated: runtime behavior, production
 data, security via dynamic analysis. Structural limitation: shared base model.}
-Epistemic labels: [VERIFIED] [CONSENSUS] [SINGLE-SOURCE] [UNVERIFIED] [DISPUTED] [WEB-VERIFIED] [WEB-CONTRADICTED] [WEB-INCONCLUSIVE] [JUDGE-HALLUCINATED]
+Epistemic labels: [VERIFIED] [CONSENSUS] [SINGLE-SOURCE] [UNVERIFIED] [DISPUTED] [WEB-VERIFIED] [WEB-CONTRADICTED] [WEB-INCONCLUSIVE] [JUDGE-HALLUCINATED] [LIVE-VERIFIED] [STATIC-INFERENCE] [STATIC-INFERENCE-CONSENSUS]
 Defect type labels: [EXISTING_DEFECT] (bug in current code) [PLAN_RISK] (risk if plan is implemented as written)
 
 ## Score Summary
@@ -1378,7 +1484,7 @@ Tell user:
 - Counts: consensus points, disagreements, action items, verification verdicts
 - Top P0 action item (if any)
 - Note: HTML report requires internet connection for Tailwind CSS, Chart.js, and Prism.js CDNs
-- HTML footer should read "Agent Review Panel v3.2.0" (MUST match the full semver from `plugin.json` — update this line whenever the version is bumped)
+- HTML footer should read "Agent Review Panel v3.3.0" (MUST match the full semver from `plugin.json` — update this line whenever the version is bumped)
 
 ---
 

@@ -647,5 +647,156 @@ describe("v3.2.0 Chart.js wrapper-div mandate (Phase 15.3)", () => {
   });
 });
 
+describe("v3.3.0 Live-State Claim Discipline (#40)", () => {
+  const promptTemplates = readFileSync(
+    resolve(ROOT, "skills/agent-review-panel/references/prompt-templates.md"),
+    "utf-8"
+  );
+  const signals = readFileSync(
+    resolve(ROOT, "skills/agent-review-panel/references/signals-and-checklists.md"),
+    "utf-8"
+  );
+
+  it("SKILL.md declares the Live-State Claim Discipline section", () => {
+    assert.match(
+      skillMd,
+      /## Live-State Claim Discipline \(v3\.3\.0\)/,
+      "SKILL.md must declare a Live-State Claim Discipline section"
+    );
+  });
+
+  it("SKILL.md documents all four discipline rules", () => {
+    const section = skillMd
+      .split(/## Live-State Claim Discipline/)[1]
+      .split(/\n## Phase 2/)[0];
+    assert.match(section, /Rule 1 — Declarative vs\. imperative vs\. documentation/);
+    assert.match(section, /Rule 2 — Live-state claims need live evidence/);
+    assert.match(section, /Rule 3 — Consensus does not compound on a shared artifact/);
+    assert.match(section, /Rule 4 — Pre-promotion falsification check/);
+  });
+
+  it("SKILL.md adds the three new epistemic labels to the Phase 15.1 list", () => {
+    assert.match(
+      skillMd,
+      /Epistemic labels:[\s\S]*?\[LIVE-VERIFIED\][\s\S]*?\[STATIC-INFERENCE\][\s\S]*?\[STATIC-INFERENCE-CONSENSUS\]/,
+      "Phase 15.1 epistemic-labels list must include the three v3.3.0 labels"
+    );
+  });
+
+  it("SKILL.md wires the discipline into Phases 3, 5, 6, 11, and 14", () => {
+    const sectionAfter = (heading) =>
+      skillMd.split(new RegExp(`^${heading}`, "m"))[1]?.split(/^#{2,3} /m)[0] ?? "";
+
+    // Phase 3 reviewer launch references the discipline
+    assert.match(
+      sectionAfter("## Phase 3: Independent Review"),
+      /Live-State Claim Discipline/,
+      "Phase 3 section must reference the Live-State Claim Discipline"
+    );
+    // Phase 5 carries the pre-promotion falsification check
+    assert.match(
+      sectionAfter("## Phase 5: Debate"),
+      /[Pp]re-promotion falsification check/,
+      "Phase 5 section must carry the pre-promotion falsification check"
+    );
+    // Phase 6 Sycophancy Detection flags shared-artifact consensus
+    assert.match(
+      sectionAfter("### Sycophancy Detection"),
+      /STATIC-INFERENCE-CONSENSUS/,
+      "Phase 6 Sycophancy Detection must flag shared-artifact consensus"
+    );
+    // Phase 11 caps static-inference live-state claims at P1
+    assert.match(
+      sectionAfter("## Phase 11: Severity Verification"),
+      /Live-state claim classification[\s\S]*?capped at \*\*P1\*\*/,
+      "Phase 11 section must classify live-state claims and cap them at P1"
+    );
+    // Phase 14 judge severity dampening references the discipline
+    assert.match(
+      sectionAfter("## Phase 14: Supreme Judge"),
+      /Live-State Claim Discipline[\s\S]*?STATIC-INFERENCE/,
+      "Phase 14 judge section must reference the discipline and [STATIC-INFERENCE]"
+    );
+  });
+
+  it("prompt-templates.md carries the discipline in the Phase 3 reviewer prompt", () => {
+    assert.match(
+      promptTemplates,
+      /## Live-State Claim Discipline \(v3\.3\.0\)/,
+      "Phase 3 prompt must include a Live-State Claim Discipline block"
+    );
+    assert.match(
+      promptTemplates,
+      /\[LIVE-VERIFIED\][\s\S]{0,400}?\[STATIC-INFERENCE\]/,
+      "Phase 3 prompt must define [LIVE-VERIFIED] and [STATIC-INFERENCE] tags"
+    );
+  });
+
+  it("prompt-templates.md adds the falsification check to the Phase 5 debate prompt", () => {
+    const phase5 = promptTemplates
+      .split(/^## Phase 5: Debate Round Prompt/m)[1]
+      .split(/^## Phase 7/m)[0];
+    assert.match(
+      phase5,
+      /[Ff]alsification check/,
+      "Phase 5 prompt must add a falsification check task"
+    );
+    assert.match(
+      phase5,
+      /STATIC-INFERENCE-CONSENSUS/,
+      "Phase 5 prompt must flag shared-artifact consensus"
+    );
+  });
+
+  it("prompt-templates.md adds live-state classification to the Phase 11 prompt", () => {
+    const phase11 = promptTemplates
+      .split(/^## Phase 11: Severity Verification Prompt/m)[1]
+      .split(/^## Phase 12a/m)[0];
+    assert.match(
+      phase11,
+      /Live-state claim classification/,
+      "Phase 11 prompt must classify live-state claims"
+    );
+    assert.match(
+      phase11,
+      /capped at \*\*P1\*\*|capped at P1/,
+      "Phase 11 prompt must cap [STATIC-INFERENCE] live-state claims at P1"
+    );
+  });
+
+  it("prompt-templates.md wires the discipline into the Phase 14 judge prompt", () => {
+    const phase14 = promptTemplates
+      .split(/^## Phase 14: Supreme Judge Prompt/m)[1]
+      .split(/^## Sycophancy Alert Injection/m)[0];
+    assert.match(
+      phase14,
+      /Live-State Claim Discipline/,
+      "Phase 14 judge severity dampening must reference the discipline"
+    );
+    assert.match(
+      phase14,
+      /\[LIVE-VERIFIED\][\s\S]*?\[STATIC-INFERENCE\][\s\S]*?\[STATIC-INFERENCE-CONSENSUS\]/,
+      "Phase 14 judge classification step must list the three new labels"
+    );
+  });
+
+  it("signals-and-checklists.md documents a Live-State Claims checklist", () => {
+    assert.match(
+      signals,
+      /### Live-State Claims \(v3\.3\.0/,
+      "signals-and-checklists.md must include a Live-State Claims checklist"
+    );
+  });
+
+  it("eval-suite includes the v3.3.0 deploy-script-echo test case", () => {
+    const tc = evalSuite.test_cases.find((t) => t.id === "tc-v33-1");
+    assert.ok(tc, "eval-suite must include test case tc-v33-1");
+    assert.ok(
+      tc.assertions.length >= 3,
+      "tc-v33-1 must have at least 3 assertions"
+    );
+  });
+});
+
 // Export utilities for other test files
 export { makeAssertionChecker, runAssertions };
