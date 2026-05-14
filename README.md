@@ -282,6 +282,7 @@ A single reviewer gives you a list. The panel gives you a deliberation — with 
 - Severity verification reads the codebase to confirm P0/P1 findings before the judge sees them. **External domain claims** (product limits, regulatory jurisdiction, API behavior) are automatically web-searched and tagged `[WEB-VERIFIED]`, `[WEB-CONTRADICTED]`, or `[WEB-INCONCLUSIVE]`
 - Verification commands: runs read-only grep/cat commands from reviewers to confirm or contradict claims
 - Defect classification: findings labeled [EXISTING_DEFECT] or [PLAN_RISK] — P0 requires existing defect evidence
+- **Live-State Claim Discipline:** findings asserting facts about *live infrastructure or runtime state* (deployed IAM/IAP/auth, running crons, production env vars) must distinguish declarative config from imperative documentation (`echo`/comment/usage lines are never evidence) from live `describe`-class output. Such claims are tagged `[LIVE-VERIFIED]` or `[STATIC-INFERENCE]` — the latter capped at P1, since a static read of a deploy script can't prove what production is doing right now
 - Completeness audit: post-debate agent re-reads source line-by-line for what everyone missed
 - **Targeted verification round:** each unresolved dispute gets a tiered (Light ~2k / Standard ~8k / Deep ~32k tokens) verification agent matched to the claim type (statistician for stats claims, security auditor for security claims, etc.) — verdicts feed directly into the judge's rulings
 - **Data Flow Trace:** a dedicated agent traces data through critical paths before reviewers begin, flagging composition/seam bugs (two individually-correct functions producing incorrect results together). Three tiers: Standard (default, single path), Thorough (top 3 paths + transform-completeness checks), Exhaustive (all paths, no token limit). Uses Meta's semi-formal certificate prompting. Skipped for pure docs/plans or code with no data transforms.
@@ -295,7 +296,7 @@ A single reviewer gives you a list. The panel gives you a deliberation — with 
 - Correlated-bias warning when all reviewers converge (unanimous agreement is the most dangerous failure mode)
 
 **Output (three files per review):**
-- **Primary report** (`review_panel_report.md`): executive summary, consensus, disagreements (with judge rulings), prioritized action items with epistemic labels ([VERIFIED], [CONSENSUS], [SINGLE-SOURCE], [UNVERIFIED], [DISPUTED], [WEB-VERIFIED], [WEB-CONTRADICTED], [WEB-INCONCLUSIVE])
+- **Primary report** (`review_panel_report.md`): executive summary, consensus, disagreements (with judge rulings), prioritized action items with epistemic labels ([VERIFIED], [CONSENSUS], [SINGLE-SOURCE], [UNVERIFIED], [DISPUTED], [WEB-VERIFIED], [WEB-CONTRADICTED], [WEB-INCONCLUSIVE], [LIVE-VERIFIED], [STATIC-INFERENCE], [STATIC-INFERENCE-CONSENSUS])
 - **Process history** (`review_panel_process.md`): verbatim "director's cut" of every agent's output with persona profiles at each entry point — full transparency into the panel's reasoning
 - **Interactive HTML dashboard** (`review_panel_report.html`) with expandable 10-section issue cards. Each card opens a nested accordion:
   - 📖 **Narrative** — full reviewer reasoning
@@ -403,10 +404,10 @@ Additionally inspired by [MiroFish](https://github.com/666ghj/MiroFish) (multi-a
 
 ## Tests
 
-The project includes a comprehensive test suite (386 tests) using Node.js built-in test runner (zero dependencies):
+The project includes a comprehensive test suite (401 tests) using Node.js built-in test runner (zero dependencies):
 
 ```bash
-npm test                    # run all 386 tests
+npm test                    # run all 401 tests
 npm run test:triggers       # trigger classification (55+ prompts)
 npm run test:manifest       # manifest consistency + phase/opus enforcement
 npm run test:eval-suite     # eval suite integrity + v2.14/v2.15 coverage
@@ -585,6 +586,9 @@ The panel produces three files per run; here's how to read them.
 | `[WEB-CONTRADICTED]` | External fact contradicted by an authoritative web source — severity demoted |
 | `[WEB-INCONCLUSIVE]` | External fact could not be confirmed via web search — flagged for human judgement |
 | `[CMD_CONFIRMED]` / `[CMD_CONTRADICTED]` | Reviewer's `verification_command` (read-only grep/cat/head) was run and the result confirmed/contradicted the claim |
+| `[LIVE-VERIFIED]` | Live-infrastructure/runtime-state claim backed by `describe`-class command output (`gcloud describe`, `bq show`, `kubectl get`, etc.) |
+| `[STATIC-INFERENCE]` | Live-state claim inferred from source/config/deploy scripts only — no live evidence; capped at P1 |
+| `[STATIC-INFERENCE-CONSENSUS]` | Multiple reviewers agreed off the *same* artifact lines (or cross-cited each other) — counts as one source, not independent verification; does not justify P0 |
 
 **Defect type.** Code/plan reviews additionally label findings as `[EXISTING_DEFECT]` (bug exists right now) or `[PLAN_RISK]` (risk only materializes if the plan is implemented as written). P0 severity requires `[EXISTING_DEFECT]` evidence.
 
@@ -621,6 +625,8 @@ See [CHANGELOG.md](CHANGELOG.md) for detailed version history. See [ROADMAP.md](
 
 | Version | Highlights |
 |---------|------------|
+| **v3.3** | Live-State Claim Discipline (#40) — cross-cutting rule set for findings asserting facts about *live infrastructure or runtime state*. Reviewers distinguish declarative config from imperative documentation (`echo`/comment/usage lines are never evidence) from live `describe`-class output; live-state claims tagged `[LIVE-VERIFIED]` or `[STATIC-INFERENCE]` (the latter capped at P1); consensus does not compound on a shared artifact (`[STATIC-INFERENCE-CONSENSUS]`); a pre-promotion falsification check gates every P0. Wired into Phases 3 / 5 / 6 / 11 / 14 |
+| **v3.2** | Post-judge verification gate + Chart.js wrapper-div mandate (#41, #42) — Phase 14.5 re-verifies judge-introduced P0/P1 against ground truth, non-replicating findings tagged `[JUDGE-HALLUCINATED]` and the verdict score recomputed against the panel mean; Phase 15.3 spec mandates a height-bounded wrapper div around every Chart.js `<canvas>` (PR #47) |
 | **v3.1** | Silent-phase-compression fix (#35) — file-based subagent state under `state/<phase>.md`, Phase 13.5 Pre-Judge Verification Gate, `⚠️ COMPRESSED RUN` header when phase loss is detected. Eliminates the v3.0 failure mode where context pressure silently inlined Phases 4 / 5 / 7 into the judge step (PR #39) |
 | v3.0 | Single-plugin layout (BREAKING) — collapses the multi-plugin marketplace into one plugin (`roundtable`) bundling both skills, mirroring [obra/superpowers](https://github.com/obra/superpowers). Install UX is one command instead of two. `release-check.sh` doc-drift detector folded in (PR #33) |
 | v2.16.5 | Plugin skills layout fixed for Claude Code ≥ 2.1.112 manifest validation (PR #30 by @okuuva) |

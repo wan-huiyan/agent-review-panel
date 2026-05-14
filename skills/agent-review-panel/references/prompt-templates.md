@@ -45,6 +45,32 @@ available, always cite it. Label each finding [CODE_GROUNDED] or [RISK_IDENTIFIE
 MIXED mode. For code sections, apply Precise rules (require line citations).
 For design/prose, apply Exhaustive rules. Label each finding [PRECISE] or [EXHAUSTIVE].
 
+## Live-State Claim Discipline (v3.3.0)
+
+Source code proves what a script or manifest WILL do if executed — it does NOT
+prove what production infrastructure IS doing right now. Keep these separate:
+
+- **Declarative config** (`gcloud run deploy --no-allow-unauthenticated`, a
+  Terraform resource, a YAML manifest) — asserts config the deploy will create.
+- **Imperative documentation** — lines inside `echo "..."`, `print(...)`,
+  comments, heredocs printed to a terminal, or "usage" / "next steps" blurbs.
+  These TELL A HUMAN what to run later. They are documentation, NOT
+  configuration, and are never evidence for a live-state claim.
+- **Live state** — only `gcloud ... describe` / `... get-iam-policy`,
+  `bq show`, `aws ... describe-*`, `kubectl get`, `crontab -l`-class output
+  proves what production currently is.
+
+For any finding that asserts a fact about live infrastructure or runtime state
+(deployed IAM/IAP/auth config, a running cron, a production env var, a
+BigQuery partition key, a load balancer's routing), tag it:
+
+- **`[LIVE-VERIFIED]`** — backed by live `describe`-class output you ran or the
+  user supplied.
+- **`[STATIC-INFERENCE]`** — inferred from source/config/deploy scripts only.
+
+A `[STATIC-INFERENCE]` live-state claim cannot be rated P0 — at most P1. If you
+cannot obtain live evidence, say so in the finding rather than inferring it.
+
 ## Your Task
 
 Review the following work carefully through your specific lens.
@@ -175,6 +201,15 @@ Your agreement intensity is {X}%.
 3. **Updated Assessment**: Has your view changed? Why or why not?
 4. **New Discovery**: ONE new finding no reviewer has mentioned yet.
 5. **Updated Score: X/10**
+6. **Falsification check (P0 candidates only, v3.3.0)**: For every finding you
+   are promoting to — or keeping at — P0 this round, state (a) the single
+   observation that would prove it wrong, and (b) whether that observation is
+   cheap to obtain. If a P0 could be falsified by one read-only command (a
+   `describe`, a `show`, a `grep`) and no agent has run it, cap it at P1 until
+   verified. Note also: if 2+ reviewers reached the same conclusion by reading
+   the SAME source lines (or by citing each other rather than the source), that
+   is consensus on an interpretation — not independent verification. It does
+   not compound to P0. Tag it `[STATIC-INFERENCE-CONSENSUS]`.
 
 Do NOT simply restate your original position. Engage with at least 2
 specific points from other reviewers. Changing your mind when presented
@@ -308,6 +343,21 @@ For each P0/P1 finding:
    - `[EXISTING_DEFECT]`: bug exists in current running code right now
    - `[PLAN_RISK]`: risk only materializes if plan is implemented as written
    - P0 severity REQUIRES `[EXISTING_DEFECT]`. A `[PLAN_RISK]` is at most P1.
+
+1b. **Live-state claim classification (v3.3.0)** — If the finding asserts a fact
+   about live infrastructure or runtime state (deployed IAM/IAP/auth config, a
+   running cron schedule, a production env var, a BigQuery partition key, a load
+   balancer's routing):
+   - Tag `[LIVE-VERIFIED]` only if backed by live `describe`-class command
+     output (`gcloud ... describe` / `... get-iam-policy`, `bq show`,
+     `aws ... describe-*`, `kubectl get`, `crontab -l`) the panel ran or the
+     user supplied. Otherwise tag `[STATIC-INFERENCE]`.
+   - A `[STATIC-INFERENCE]` live-state claim is capped at **P1** regardless of
+     how many reviewers cite it.
+   - Lines inside `echo "..."`, `print(...)`, comments, or "usage" / "next
+     steps" blurbs are documentation, NOT configuration — reject them as
+     evidence for a live-state claim. A claim resting only on such lines is
+     `[STATIC-INFERENCE]` at best and is frequently `[INACCURATE]`.
 
 2. **Verify the claim against actual code**
    - If finding says "X is missing", grep for X in the codebase
@@ -583,6 +633,19 @@ You are the Supreme Judge. You receive:
    justified by concrete, verified evidence?" Findings without specific code
    location or reproducible scenario cannot exceed P2. **In Precise mode,
    findings lacking line citations cannot exceed P2.**
+   **Live-State Claim Discipline (v3.3.0):** For any finding asserting a fact
+   about live infrastructure or runtime state (deployed IAM/IAP/auth config, a
+   running cron, a production env var, a BigQuery partition key, a load
+   balancer's routing):
+   - If it is not backed by live `describe`-class command output (i.e. it is
+     `[STATIC-INFERENCE]`, inferred from source/config/deploy scripts), it
+     cannot exceed **P1** — no matter how many reviewers cite it.
+   - Lines inside `echo "..."`, comments, or "usage" / "next steps" blurbs are
+     documentation, not configuration. A finding resting on them is not a
+     live-state fact.
+   - **Falsification test:** if a P0 could be proven wrong by one cheap
+     read-only command (a `describe`, a `show`, a `grep`) and no agent ran it,
+     cap it at P1 until verified.
 
 0.5d. **Coverage Check** — "Are there unexamined risk categories (security, error
    handling, race conditions, API contracts, data integrity) given these
@@ -618,6 +681,9 @@ You are the Supreme Judge. You receive:
    - **[SINGLE-SOURCE]**: Only one reviewer raised it, unverified
    - **[UNVERIFIED]**: Cited but not confirmed against source
    - **[DISPUTED]**: Reviewers explicitly disagreed, unresolved
+   - **[LIVE-VERIFIED]**: Live-state claim backed by `describe`-class command output (v3.3.0)
+   - **[STATIC-INFERENCE]**: Live-state claim inferred from source/config only — capped at P1 (v3.3.0)
+   - **[STATIC-INFERENCE-CONSENSUS]**: Multiple reviewers agreed off the SAME artifact lines (or cross-cited each other) — counts as one source, not independent verification; does not justify P0 (v3.3.0)
 
 8. **Final Verdict** — Recommendation, strengths, critical issues, action items.
    **Verdict Confidence:** High = clear evidence, panel mostly agrees. Medium =
