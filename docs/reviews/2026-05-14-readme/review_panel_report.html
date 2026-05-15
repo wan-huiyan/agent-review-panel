@@ -1,0 +1,1772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Review Panel Report — README.md — 2026-05-14</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css">
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+<style>
+/* v2.15 — expandable card styles */
+.section-accordion { margin-top: 1rem; }
+.section-accordion > details {
+  background: rgba(15, 23, 42, 0.5);
+  border: 1px solid rgba(51, 65, 85, 0.5);
+  border-radius: 0.5rem;
+  margin-bottom: 0.5rem;
+  padding: 0.75rem 1rem;
+}
+.section-accordion > details > summary {
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  list-style: none;
+}
+.section-accordion > details > summary::-webkit-details-marker { display: none; }
+.section-accordion > details[open] > summary {
+  margin-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(100, 116, 139, 0.3);
+  padding-bottom: 0.5rem;
+}
+.section-accordion > details > summary::after {
+  content: "\25BE";
+  margin-left: auto;
+  color: #64748b;
+  transition: transform 0.15s;
+}
+.section-accordion > details[open] > summary::after {
+  transform: rotate(180deg);
+}
+
+/* Highlight pulse for deep-link navigation and cross-reference clicks */
+.issue-highlight {
+  animation: highlight-pulse 2s ease-out;
+}
+@keyframes highlight-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(250, 204, 21, 0.7); }
+  100% { box-shadow: 0 0 0 12px rgba(250, 204, 21, 0); }
+}
+
+/* Code evidence styling */
+.code-evidence-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin-bottom: 0.25rem;
+}
+.code-evidence-header .file-path {
+  font-family: ui-monospace, monospace;
+  color: #cbd5e1;
+}
+.code-evidence-header .line-range {
+  background: rgba(51, 65, 85, 0.5);
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  font-family: ui-monospace, monospace;
+}
+.code-evidence-header .caption {
+  font-style: italic;
+  color: #94a3b8;
+}
+
+/* Chat-bubble styling for debate transcript */
+.debate-bubble {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+.debate-bubble .avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 9999px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: white;
+}
+.debate-bubble .content-box {
+  flex: 1;
+  background: rgba(30, 41, 59, 0.5);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+}
+
+/* Cross-reference link chips */
+.xref-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  text-decoration: none;
+  transition: transform 0.1s;
+}
+.xref-link:hover { transform: translateY(-1px); }
+.xref-root-cause    { background: rgba(127, 29, 29, 0.5); color: #fca5a5; }
+.xref-same-class    { background: rgba(30, 58, 138, 0.5); color: #93c5fd; }
+.xref-depends-on    { background: rgba(120, 53, 15, 0.5); color: #fcd34d; }
+.xref-blocks        { background: rgba(88, 28, 135, 0.5); color: #d8b4fe; }
+
+/* chips */
+.chip { display:inline-flex; align-items:center; gap:.25rem; padding:.125rem .5rem; border-radius:9999px; font-size:.7rem; font-weight:600; }
+.chip-low   { background: rgba(6,78,59,.6);  color:#6ee7b7; }
+.chip-med   { background: rgba(120,53,15,.6); color:#fcd34d; }
+.chip-high  { background: rgba(127,29,29,.6); color:#fca5a5; }
+.chip-blue  { background: rgba(30,58,138,.6); color:#93c5fd; }
+
+/* Print styles — v2.15 print-friendly expanded view */
+@media print {
+  body { background: white !important; color: black !important; }
+  details { display: block !important; }
+  details > *:not(summary) { display: block !important; }
+  summary { list-style: none; }
+  canvas, #panel-gallery, .filter-bar, .tab-btn, #expand-all, #collapse-all { display: none !important; }
+  .issue-card {
+    page-break-inside: avoid;
+    break-inside: avoid;
+    margin-bottom: 1rem;
+    border: 1px solid #ccc !important;
+    background: white !important;
+    color: black !important;
+  }
+  .card { background: white !important; border: 1px solid #ccc !important; }
+  pre, code { background: #f5f5f5 !important; color: #000 !important; }
+  @page { margin: 1in; }
+}
+
+.issue-card > summary { list-style: none; cursor: pointer; }
+.issue-card > summary::-webkit-details-marker { display: none; }
+.issue-card { scroll-margin-top: 1rem; }
+.tooltip-pop { display:none; }
+</style>
+</head>
+<body class="bg-slate-950 text-slate-200 font-sans">
+
+<!-- ====================== 1. HEADER BAR ====================== -->
+<header class="bg-slate-900 border-b border-slate-800 px-6 py-4">
+  <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <h1 class="text-xl font-bold text-white">Review Panel Report — <code class="text-indigo-300">README.md</code></h1>
+      <p class="text-sm text-slate-400">671 lines &middot; 2026-05-14 &middot; 4 reviewers + Completeness Audit + Supreme Judge</p>
+    </div>
+    <div class="flex flex-wrap items-center gap-2">
+      <span class="px-3 py-1 rounded-full text-sm font-bold bg-orange-600 text-white">REVISE — substantial edit needed</span>
+      <span class="px-3 py-1 rounded-full text-xs font-semibold bg-slate-700 text-slate-200">Confidence: Medium-High</span>
+      <span class="px-3 py-1 rounded-full text-xs font-semibold bg-slate-700 text-slate-200">Mode: Exhaustive</span>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-7xl mx-auto px-6 py-6 space-y-6">
+
+  <!-- ====================== 2. STATS DASHBOARD ROW ====================== -->
+  <section id="stats-section">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="text-lg font-semibold text-white">Overview</h2>
+      <button class="toggle-btn text-xs text-slate-400 hover:text-white" data-target="stats-body">Toggle</button>
+    </div>
+    <div id="stats-body" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 transition-all duration-200">
+      <div class="card bg-slate-900 border border-slate-800 rounded-lg p-4">
+        <div class="text-xs text-slate-400 uppercase tracking-wide">Total Action Items</div>
+        <div class="text-4xl font-bold text-white mt-1">13</div>
+      </div>
+      <div class="card bg-slate-900 border border-slate-800 rounded-lg p-4">
+        <div class="text-xs text-slate-400 uppercase tracking-wide mb-2">By Severity</div>
+        <div class="flex flex-wrap gap-2 text-sm font-semibold">
+          <span class="px-2 py-0.5 rounded bg-red-900/60 text-red-300">P0&nbsp;0</span>
+          <span class="px-2 py-0.5 rounded bg-orange-900/60 text-orange-300">P1&nbsp;4</span>
+          <span class="px-2 py-0.5 rounded bg-yellow-900/60 text-yellow-300">P2&nbsp;8</span>
+          <span class="px-2 py-0.5 rounded bg-slate-700 text-slate-300">P3&nbsp;1</span>
+        </div>
+      </div>
+      <div class="card bg-slate-900 border border-slate-800 rounded-lg p-4">
+        <div class="text-xs text-slate-400 uppercase tracking-wide mb-2">By Tier</div>
+        <div class="flex flex-wrap gap-2 text-sm font-semibold">
+          <span class="px-2 py-0.5 rounded bg-sky-900/60 text-sky-300">Light&nbsp;0</span>
+          <span class="px-2 py-0.5 rounded bg-blue-900/60 text-blue-300">Standard&nbsp;0</span>
+          <span class="px-2 py-0.5 rounded bg-indigo-900/60 text-indigo-300">Deep&nbsp;0</span>
+        </div>
+        <div class="text-xs text-slate-500 mt-2">Phase 13 not dispatched (pure-docs run)</div>
+      </div>
+      <div class="card bg-slate-900 border border-slate-800 rounded-lg p-4">
+        <div class="text-xs text-slate-400 uppercase tracking-wide mb-2">By Verdict</div>
+        <div class="flex flex-wrap gap-1.5 text-xs font-semibold">
+          <span class="px-2 py-0.5 rounded bg-green-900/60 text-green-300">Confirmed&nbsp;0</span>
+          <span class="px-2 py-0.5 rounded bg-red-900/60 text-red-300">Refuted&nbsp;0</span>
+          <span class="px-2 py-0.5 rounded bg-amber-900/60 text-amber-300">Partial&nbsp;0</span>
+          <span class="px-2 py-0.5 rounded bg-slate-700 text-slate-300">Inconclusive&nbsp;0</span>
+          <span class="px-2 py-0.5 rounded bg-purple-900/60 text-purple-300">New&nbsp;0</span>
+        </div>
+        <div class="text-xs text-slate-500 mt-2">Claims verified by orchestrator (Phases 8&ndash;11)</div>
+      </div>
+      <div class="card bg-slate-900 border border-slate-800 rounded-lg p-4 flex items-center gap-4">
+        <div>
+          <div class="text-xs text-slate-400 uppercase tracking-wide">Panel Score</div>
+          <div class="text-xs text-slate-500 mt-1">Supreme Judge</div>
+        </div>
+        <div style="position: relative; height: 90px; width: 90px;">
+          <canvas id="chart-score"></canvas>
+          <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <span class="text-2xl font-bold text-white">5<span class="text-sm text-slate-400">/10</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================== 3. PANEL GALLERY ====================== -->
+  <section id="panel-gallery-section">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="text-lg font-semibold text-white">Review Panel <span class="text-slate-500 text-sm">(6 agents)</span></h2>
+      <button id="gallery-toggle" class="text-xs px-3 py-1 rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Expand</button>
+    </div>
+    <div id="panel-gallery" class="hidden transition-all duration-200"></div>
+  </section>
+
+  <!-- ====================== 4. CHARTS ROW ====================== -->
+  <section id="charts-section">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="text-lg font-semibold text-white">Charts</h2>
+      <button class="toggle-btn text-xs text-slate-400 hover:text-white" data-target="charts-body">Toggle</button>
+    </div>
+    <div id="charts-body" class="grid grid-cols-1 lg:grid-cols-3 gap-4 transition-all duration-200">
+      <div class="card bg-slate-900 border border-slate-800 rounded-lg p-4">
+        <h3 class="text-sm font-semibold text-white mb-2">Confidence Distribution</h3>
+        <div style="position: relative; height: 220px; width: 100%;">
+          <canvas id="chart-confidence"></canvas>
+        </div>
+      </div>
+      <div class="card bg-slate-900 border border-slate-800 rounded-lg p-4">
+        <h3 class="text-sm font-semibold text-white mb-2">Severity Breakdown</h3>
+        <div style="position: relative; height: 220px; width: 100%;">
+          <canvas id="chart-severity"></canvas>
+        </div>
+        <p class="text-xs text-slate-500 mt-2">Tier Breakdown donut omitted &mdash; Phase 13 verification did not run for this pure-documentation review.</p>
+      </div>
+      <div class="card bg-slate-900 border border-slate-800 rounded-lg p-4">
+        <h3 class="text-sm font-semibold text-white mb-2">Epistemic Label Breakdown</h3>
+        <div style="position: relative; height: 220px; width: 100%;">
+          <canvas id="chart-epistemic"></canvas>
+        </div>
+        <p class="text-xs text-slate-500 mt-2">Verification Verdict chart omitted &mdash; Phase 13 verification did not run.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================== 5. REVIEWER SCORE TABLE ====================== -->
+  <section id="score-section">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="text-lg font-semibold text-white">Reviewer Score Table</h2>
+      <button id="score-toggle" class="text-xs px-3 py-1 rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Expand</button>
+    </div>
+    <div id="score-body" class="hidden transition-all duration-200">
+      <div class="card bg-slate-900 border border-slate-800 rounded-lg overflow-hidden">
+        <table class="w-full text-sm">
+          <thead class="bg-slate-800 text-slate-300">
+            <tr>
+              <th class="text-left px-4 py-2">Reviewer</th>
+              <th class="text-left px-4 py-2">Persona</th>
+              <th class="text-center px-4 py-2">Initial</th>
+              <th class="text-center px-4 py-2">Final</th>
+              <th class="text-center px-4 py-2">&Delta;</th>
+              <th class="text-left px-4 py-2">Recommendation</th>
+            </tr>
+          </thead>
+          <tbody id="score-table-body" class="divide-y divide-slate-800"></tbody>
+        </table>
+      </div>
+      <p class="text-xs text-slate-500 mt-2">Reviewer scores 5.5 / 4 / 6 / 4.5 &rarr; mean 5.0; spread 2.0 (moderate convergence, anchored by the unanimous version/release finding). All four reviewers run on the same base model &mdash; treat the convergence with mild caution.</p>
+    </div>
+  </section>
+
+  <!-- ====================== 6. ACTION ITEMS SECTION ====================== -->
+  <section id="action-items-section">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="text-lg font-semibold text-white">Action Items</h2>
+      <button class="toggle-btn text-xs text-slate-400 hover:text-white" data-target="action-items-body">Toggle</button>
+    </div>
+    <div id="action-items-body" class="transition-all duration-200">
+      <!-- Filter Bar -->
+      <div class="filter-bar card bg-slate-900 border border-slate-800 rounded-lg p-4 mb-4 flex flex-wrap items-end gap-3">
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Search</label>
+          <input id="search-box" type="text" placeholder="Search findings  ( / )" class="bg-slate-800 border border-slate-700 rounded px-2 py-1 text-sm text-slate-200 w-48">
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Severity</label>
+          <select id="filter-severity" class="bg-slate-800 border border-slate-700 rounded px-2 py-1 text-sm text-slate-200">
+            <option value="all">All</option><option value="P0">P0</option><option value="P1">P1</option><option value="P2">P2</option><option value="P3">P3</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Tier</label>
+          <select id="filter-tier" class="bg-slate-800 border border-slate-700 rounded px-2 py-1 text-sm text-slate-200">
+            <option value="all">All</option><option value="Light">Light</option><option value="Standard">Standard</option><option value="Deep">Deep</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Verdict</label>
+          <select id="filter-verdict" class="bg-slate-800 border border-slate-700 rounded px-2 py-1 text-sm text-slate-200">
+            <option value="all">All</option><option value="VR_CONFIRMED">Confirmed</option><option value="VR_REFUTED">Refuted</option><option value="VR_PARTIAL">Partial</option><option value="VR_INCONCLUSIVE">Inconclusive</option><option value="VR_NEW_FINDING">New</option><option value="none">Not Verified</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Epistemic</label>
+          <select id="filter-epistemic" class="bg-slate-800 border border-slate-700 rounded px-2 py-1 text-sm text-slate-200">
+            <option value="all">All</option><option value="[VERIFIED]">Verified</option><option value="[CONSENSUS]">Consensus</option><option value="[SINGLE-SOURCE]">Single-Source</option><option value="[UNVERIFIED]">Unverified</option><option value="[DISPUTED]">Disputed</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Sort</label>
+          <select id="sort-by" class="bg-slate-800 border border-slate-700 rounded px-2 py-1 text-sm text-slate-200">
+            <option value="severity">By Severity</option><option value="confidence">By Confidence</option><option value="tier">By Tier</option>
+          </select>
+        </div>
+        <div class="flex gap-2 ml-auto">
+          <button id="expand-all" class="text-xs px-3 py-1.5 rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Expand all</button>
+          <button id="collapse-all" class="text-xs px-3 py-1.5 rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Collapse all</button>
+        </div>
+        <div class="w-full text-xs text-slate-400" id="live-count">Showing 13 of 13 items</div>
+      </div>
+
+      <!-- Reviewer filter banner -->
+      <div id="reviewer-filter-banner" class="hidden mb-3 px-4 py-2 rounded bg-indigo-900/40 border border-indigo-700 text-sm text-indigo-200 flex items-center justify-between">
+        <span id="reviewer-filter-text"></span>
+        <button id="clear-reviewer-filter" class="text-indigo-300 hover:text-white font-bold">clear &#10005;</button>
+      </div>
+
+      <!-- Issue cards -->
+      <div id="issues-container" class="space-y-3"></div>
+    </div>
+  </section>
+
+  <!-- ====================== 7. CONSENSUS & DISAGREEMENTS ====================== -->
+  <section id="consensus-section">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="text-lg font-semibold text-white">Consensus &amp; Disagreements</h2>
+      <button id="consensus-toggle" class="text-xs px-3 py-1 rounded bg-slate-800 text-slate-300 hover:bg-slate-700">Expand</button>
+    </div>
+    <div id="consensus-body" class="hidden space-y-6 transition-all duration-200">
+      <div class="card bg-slate-900 border border-slate-800 rounded-lg p-5">
+        <h3 class="text-sm font-semibold text-white mb-3">Consensus Points <span class="text-slate-500">(judge-confirmed)</span></h3>
+        <ul class="space-y-3 text-sm text-slate-300 list-disc pl-5">
+          <li><strong class="text-white">Version/release story is broken</strong> &mdash; all four reviewers, independently. <code class="bg-slate-800 px-1 rounded">package.json</code> and both manifests declare <code class="bg-slate-800 px-1 rounded">3.3.0</code>; the only git tags that exist are <code class="bg-slate-800 px-1 rounded">v2.10.0, v2.16.5, v3.0.0, v3.1.0</code>. The "Updating" section tells users to verify their install against "the latest GitHub release" &mdash; which resolves to <code class="bg-slate-800 px-1 rounded">v3.1.0</code>, so every correctly-installed v3.3.0 user concludes their install is wrong. The release badge renders <code class="bg-slate-800 px-1 rounded">v3.1.0</code> while the prose says v3.3; hero images are pinned to the <code class="bg-slate-800 px-1 rounded">v3.1.0</code> tag. <span class="chip chip-blue">[VERIFIED]</span> <span class="chip chip-blue">[CONSENSUS]</span></li>
+          <li><strong class="text-white">Too long, wrong audience</strong> &mdash; the README mixes user docs, contributor docs, and design-history/author-archaeology in 671 lines; inline <code class="bg-slate-800 px-1 rounded">(v2.16.3)</code>-style version attributions read as changelog bookkeeping, not user documentation. <span class="chip chip-blue">[CONSENSUS]</span></li>
+          <li><strong class="text-white">Migration / stale-state cleanup is bloated and duplicated</strong> &mdash; the same "remove old marketplace name, delete orphan dirs, remove loose clones, reinstall" procedure appears in 4&ndash;5 non-identical places (~30% of the file is migration/troubleshooting). <span class="chip chip-blue">[CONSENSUS]</span></li>
+        </ul>
+      </div>
+      <div class="card bg-slate-900 border border-slate-800 rounded-lg p-5">
+        <h3 class="text-sm font-semibold text-white mb-3">Disagreement Points <span class="text-slate-500">(with judge rulings)</span></h3>
+        <div class="space-y-4">
+          <div class="border border-slate-800 rounded-lg overflow-hidden">
+            <div class="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-slate-800">
+              <div class="p-3"><div class="text-xs font-semibold text-orange-300 mb-1">Side A &mdash; Devil's Advocate</div><p class="text-sm text-slate-300">Rated the version/release issue <strong>P0</strong> &mdash; the README documents two releases that do not exist; a self-refuting failure for a tool whose pitch is epistemic verification.</p></div>
+              <div class="p-3"><div class="text-xs font-semibold text-blue-300 mb-1">Side B &mdash; Judge</div><p class="text-sm text-slate-300">Dampened to <strong>P1</strong>. The README can be made fully correct without a release-process change (re-point the verify step, fix the badge, re-pin images). The untagged-release gap itself is a repo-process issue outside README scope.</p></div>
+            </div>
+            <div class="bg-yellow-950/20 border-t border-yellow-700/40 px-3 py-2 text-sm text-yellow-200"><strong>Judge ruling:</strong> P1, still ranked #1 action item.</div>
+          </div>
+          <div class="border border-slate-800 rounded-lg overflow-hidden">
+            <div class="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-slate-800">
+              <div class="p-3"><div class="text-xs font-semibold text-orange-300 mb-1">Side A &mdash; Devil's Advocate</div><p class="text-sm text-slate-300">"Credibility theater" / "vanity metrics" / "one model talking to itself" &mdash; the doc manufactures authority and hides that all reviewers share a base model.</p></div>
+              <div class="p-3"><div class="text-xs font-semibold text-blue-300 mb-1">Side B &mdash; Judge</div><p class="text-sm text-slate-300">Partially upheld. The README <em>does</em> disclose the shared-base-model limitation, so it is not dishonest &mdash; but the disclosure is buried at line 381 while the top sells "independent reviewers." The only hard factual defect is the "peer-reviewed" qualifier (AutoGen has no venue); the 9-paper count is accurate.</p></div>
+            </div>
+            <div class="bg-yellow-950/20 border-t border-yellow-700/40 px-3 py-2 text-sm text-yellow-200"><strong>Judge ruling:</strong> P2 &mdash; move the limitation up, soften "independent."</div>
+          </div>
+          <div class="border border-slate-800 rounded-lg overflow-hidden">
+            <div class="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-slate-800">
+              <div class="p-3"><div class="text-xs font-semibold text-orange-300 mb-1">Side A &mdash; Reviewers (self-critique)</div><p class="text-sm text-slate-300">DA F10 (grandiose naming) and Clarity F15 (output files explained 3&times;) &mdash; both reviewers flagged these as their own least-defensible findings.</p></div>
+              <div class="p-3"><div class="text-xs font-semibold text-blue-300 mb-1">Side B &mdash; Judge</div><p class="text-sm text-slate-300">DA F10 downgraded to P3. Clarity F15 merged into the duplication finding, not carried as a separate item.</p></div>
+            </div>
+            <div class="bg-yellow-950/20 border-t border-yellow-700/40 px-3 py-2 text-sm text-yellow-200"><strong>Judge ruling:</strong> F10 &rarr; P3 bundle; F15 &rarr; merged.</div>
+          </div>
+        </div>
+      </div>
+      <div class="card bg-slate-900 border border-slate-800 rounded-lg p-5">
+        <h3 class="text-sm font-semibold text-white mb-3">Completeness Audit Findings</h3>
+        <ul class="space-y-2 text-sm text-slate-300 list-disc pl-5">
+          <li><code class="bg-slate-800 px-1 rounded">docs/archive/review_panel_report.md</code> is a real, full sample report (6,920 bytes) that exists in-repo and is <strong>never linked</strong> &mdash; the README shows output only as GIFs. <span class="chip chip-blue">[VERIFIED]</span></li>
+          <li>The "How It Works" table is two releases stale: SKILL.md defines <strong>Phase 13.5</strong> (Pre-Judge Verification Gate, v3.1.0) and <strong>Phase 14.5</strong> (Post-Judge Verification Gate, v3.2.0); neither appears in the README's headline table. <span class="chip chip-blue">[VERIFIED]</span></li>
+          <li>The epistemic-labels glossary omits <code class="bg-slate-800 px-1 rounded">[JUDGE-HALLUCINATED]</code> and <code class="bg-slate-800 px-1 rounded">[COMPRESSED]</code>, both real shipped labels. <span class="chip chip-blue">[VERIFIED]</span></li>
+          <li>A prior README restructure attempt is archived at <code class="bg-slate-800 px-1 rounded">docs/archive/2026-04-27-readme-restructure-rejected/</code> &mdash; read why it was rejected before attempting another.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================== 8. FOOTER ====================== -->
+  <footer class="border-t border-slate-800 pt-6 pb-4 text-center text-sm text-slate-500">
+    <p>Generated by Agent Review Panel v3.3.0 &middot; 2026-05-14 &middot; 4 reviewers &middot; README.md</p>
+    <p class="text-xs mt-1">Charts, styling, and code highlighting require internet connection.</p>
+  </footer>
+
+</main>
+
+<script>
+/* ============================ REVIEW DATA ============================ */
+const reviewData = {
+  meta: {
+    work: "README.md (671 lines)",
+    date: "2026-05-14",
+    verdict: "REVISE — substantial edit needed",
+    score: 5,
+    confidence: "Medium-High",
+    mode: "Exhaustive"
+  },
+
+  personas: [
+    {
+      id: "p-1", name: "Clarity Editor", role: "Communicates clearly to its audience?",
+      agreement_intensity: 60, reasoning_strategy: "first-principles",
+      reasoning_injection: "Question every assumption — would a first-time reader actually understand this?",
+      domain_focus: "Whether the document communicates clearly to its intended audience.",
+      agent_type: "generic", voltagent_upgrade: false, phases_active: [3],
+      items_raised: ["AI-3","AI-5","AI-6","AI-13"], avatar_color: "indigo"
+    },
+    {
+      id: "p-2", name: "Technical Accuracy Reviewer", role: "Every claim correct vs. the repo?",
+      agreement_intensity: 30, reasoning_strategy: "checklist verification",
+      reasoning_injection: "Verify every factual, technical, and procedural claim against the actual repo.",
+      domain_focus: "Claim-by-claim correctness of the README against repository source files.",
+      agent_type: "generic", voltagent_upgrade: false, phases_active: [3],
+      items_raised: ["AI-1","AI-2","AI-4","AI-8","AI-9"], avatar_color: "blue"
+    },
+    {
+      id: "p-3", name: "Completeness Checker", role: "What's missing the reader needs?",
+      agreement_intensity: 40, reasoning_strategy: "checklist verification",
+      reasoning_injection: "Find what is missing that a reader needs.",
+      domain_focus: "Gaps between what the README provides and what a first-time evaluator needs.",
+      agent_type: "generic", voltagent_upgrade: false, phases_active: [3],
+      items_raised: ["AI-1","AI-4","AI-7","AI-10","AI-12","AI-13"], avatar_color: "cyan"
+    },
+    {
+      id: "p-4", name: "Devil's Advocate", role: "Does it persuade or mislead?",
+      agreement_intensity: 20, reasoning_strategy: "analogical",
+      reasoning_injection: "Challenge framing, credibility claims, and whether the doc persuades or misleads.",
+      domain_focus: "Framing, credibility, vanity metrics, and over-marketing.",
+      agent_type: "generic", voltagent_upgrade: false, phases_active: [3],
+      items_raised: ["AI-1","AI-3","AI-5","AI-7","AI-8","AI-11","AI-13"], avatar_color: "teal"
+    }
+  ],
+
+  verificationAgents: [],
+
+  supportAgents: [
+    { id: "completeness-auditor", name: "Completeness Auditor", role: "Phases 8–11 — audits for missing content the reader needs; flagged the unlinked sample report, the stale phase table, and the incomplete label glossary.", phase: "Phase 8" },
+    { id: "claim-verifier", name: "Claim Verifier", role: "Phases 8–11 — verified README claims against git tags, package.json, SKILL.md, research-foundations.md, and a live npm test run.", phase: "Phase 11" },
+    { id: "severity-verifier", name: "Severity Verifier", role: "Phase 12 — checked proposed severities; folded into the judge's dampening analysis (P0→P1 on the version finding).", phase: "Phase 12" },
+    { id: "tier-advisor", name: "Tier Refinement Advisor", role: "Reviews confidence-based tier draft, corrects misleading assignments. Inactive — Phase 13 verification did not run for this pure-docs review.", phase: "Phase 4.8b" },
+    { id: "judge", name: "Supreme Judge", role: "Final arbiter — overrides severity, dismisses hallucinations, identifies coverage gaps. Produced REVISE / 5--10, zero [JUDGE-HALLUCINATED] findings.", phase: "Phase 14" }
+  ],
+
+  scoreTable: [
+    { reviewerId: "p-1", reviewer: "Clarity Editor", persona: "Communicates clearly to its audience?", intensity: 60, initial: 5.5, final: 5.5, recommendation: "Cut ~⅓; split reader vs. maintainer content" },
+    { reviewerId: "p-2", reviewer: "Technical Accuracy Reviewer", persona: "Every claim correct vs. the repo?", intensity: 30, initial: 4, final: 4, recommendation: "Fix phase table, release story, label glossary" },
+    { reviewerId: "p-3", reviewer: "Completeness Checker", persona: "What's missing the reader needs?", intensity: 40, initial: 6, final: 6, recommendation: "Operationally exhaustive but evaluator-hostile" },
+    { reviewerId: "p-4", reviewer: "Devil's Advocate", persona: "Does it persuade or mislead?", intensity: 20, initial: 4.5, final: 4.5, recommendation: "Documents unreleased versions; vanity metrics" }
+  ],
+
+  actionItems: [
+    {
+      id: "AI-1",
+      summary: "Fix the version/release story: re-point the \"Updating\" verify step at package.json/CHANGELOG, bump the example version, and re-pin the three hero-image URLs to a current tag or main.",
+      severity: "P1",
+      epistemicLabel: "[VERIFIED]",
+      defectType: "[EXISTING_DEFECT]",
+      sourceReviewers: ["Clarity Editor", "Technical Accuracy Reviewer", "Completeness Checker", "Devil's Advocate"],
+      verificationTier: null,
+      verificationVerdict: null,
+      verificationConfidence: null,
+      evidenceSummary: "git ls-remote --tags origin returns only v2.10.0, v2.16.5, v3.0.0, v3.1.0. package.json and both .claude-plugin manifests declare 3.3.0. The README's \"Updating\" verify step points users at the latest GitHub release (v3.1.0).",
+      fullEvidence: "Orchestrator verification (Phases 8–11):\n- `git ls-remote --tags origin` → tags: v2.10.0, v2.16.5, v3.0.0, v3.1.0. No v3.2.0 or v3.3.0 tag exists. [VERIFIED]\n- `package.json`, `.claude-plugin/plugin.json`, `.claude-plugin/marketplace.json` all declare version 3.3.0. [VERIFIED]\n- README lines 15/17/19 pin hero/demo images to raw.githubusercontent.com/.../v3.1.0/docs/... [VERIFIED]\n- README lines 148–152 instruct users to compare their install against \"the latest GitHub release\" via `gh release view` — guaranteed false-negative for every v3.3.0 user. [VERIFIED]\n- Defect type: [EXISTING_DEFECT] — current instructions misfire for every v3.3.0 user.",
+      narrative: "All four reviewers independently anchored on this finding; it is the single point of unanimous consensus and the reason the score spread was only 2.0.\n\nTechnical Accuracy (P1-2): \"The version story is incoherent because no v3.2.0/v3.3.0 release tag exists yet the README tells users their cache version 'should match the latest GitHub release.' `package.json`, `.claude-plugin/plugin.json`, `.claude-plugin/marketplace.json` all declare `3.3.0`. So a correctly-installed v3.3.0 user runs `ls ~/.claude/plugins/cache/.../`, sees `3.3.0`, compares to 'latest GitHub release' (v3.1.0), and concludes their install is ahead/broken. The single most actionable instruction in the Updating section produces a false negative for every current user. The badge will also render `v3.1.0` while the repo is `v3.3.0`.\"\n\nClarity Editor (F6): \"From a clarity lens this is an audience-trust problem: a reader who clicks the release badge and sees v3.1.0 will distrust the rest of the doc. The hero images are the first visual a newcomer sees; pinning them to a stale tag means onboarding screenshots can silently lag the product.\"\n\nCompleteness Checker (P1-2): \"A user following the documented verification flow will conclude their install is broken when it is not. This is an actively misleading instruction.\"\n\nDevil's Advocate (F1, originally P0): \"This is the analogical twin of the classic 'changelog written ahead of the release' failure — except here it has escaped into the marketing surface. The whole product is about verification and epistemic honesty; shipping a README whose central version claim fails its own falsification check is self-refuting.\"",
+      codeEvidence: [],
+      reviewerRatings: [
+        { reviewerId: "p-2", reviewerName: "Technical Accuracy Reviewer", rating: "P1", reasoning: "The update-verification instruction produces a guaranteed false negative for every current v3.3.0 user; the release badge renders a version older than the stated one." },
+        { reviewerId: "p-3", reviewerName: "Completeness Checker", rating: "P1", reasoning: "The documented verification flow points at GitHub releases that do not exist — a user will conclude a correct install is broken." },
+        { reviewerId: "p-1", reviewerName: "Clarity Editor", rating: "P1", reasoning: "A reader who clicks the release badge and sees v3.1.0 distrusts the rest of the doc; the hero images are the first visual and they are stale." },
+        { reviewerId: "p-4", reviewerName: "Devil's Advocate", rating: "P0", reasoning: "The README documents two releases that were never tagged — a self-refuting failure for a tool whose entire pitch is epistemic verification." }
+      ],
+      debateTranscript: [],
+      judgeRuling: {
+        disputed: true,
+        reasoning: "All four reviewers raised this independently — strong consensus, [VERIFIED] against `git ls-remote`, package.json, and the manifests. The Devil's Advocate rated it P0; I dampen to P1. The README itself can be made fully correct without a release-process change: re-point the verify step at `package.json`/`CHANGELOG.md` (not GitHub releases) and note that releases may lag `main`, fix the badge, and re-pin the hero images. The underlying untagged-release gap is a repo-process issue outside README scope. It remains the #1 priority action item.",
+        finalSeverity: "P1",
+        severityChangeReason: "Downgraded from P0 to P1 because the README can be made fully correct without a release-process change — the untagged-release gap is a repo-process issue outside README scope. Still ranked the #1 action item."
+      },
+      fixRecommendation: {
+        summary: "Re-point the \"Updating\" verify step at package.json/CHANGELOG.md, bump the (e.g. 3.1.0) example to 3.3.0, and re-pin the three hero-image URLs to a current tag or main.",
+        proposedChange: "Either tag v3.2.0 and v3.3.0 so reality matches the README, OR change the \"Updating to the latest version\" verify step to compare the installed cache-dir version against the version in package.json / .claude-plugin/plugin.json (or the top CHANGELOG.md entry) instead of \"the latest GitHub release\", and add a note that GitHub releases may lag main. Bump the line-154 example version (e.g. 3.1.0) to 3.3.0. Re-pin the three raw.githubusercontent.com hero/demo image URLs (README lines 15, 17, 19) from the v3.1.0 tag to a current tag or to main.",
+        beforeCode: "",
+        afterCode: "",
+        regressionTest: "Add a release-check assertion: scripts/release-check.sh should grep the README for the verify-step target and assert it does NOT reference \"latest GitHub release\" while package.json declares a version with no matching tag.",
+        blastRadius: "Low — text and URL edits in the README only; no code or API surface change.",
+        estimatedEffort: "1 hr"
+      },
+      crossRefs: [
+        { targetId: "AI-2", relationship: "same-class", note: "AI-2 is the other half of the same staleness problem — the README lagging the actual v3.3.0 repo state." }
+      ],
+      priorRuns: []
+    },
+    {
+      id: "AI-2",
+      summary: "Add Phase 13.5 and Phase 14.5 rows to the \"How It Works\" table; reconcile the \"sequential integers 1–16\" prose.",
+      severity: "P1",
+      epistemicLabel: "[VERIFIED]",
+      defectType: null,
+      sourceReviewers: ["Technical Accuracy Reviewer"],
+      verificationTier: null,
+      verificationVerdict: null,
+      verificationConfidence: null,
+      evidenceSummary: "SKILL.md lines 1027 and 1110 define Phase 13.5 (Pre-Judge Verification Gate, v3.1.0) and Phase 14.5 (Post-Judge Verification Gate, v3.2.0). CHANGELOG [3.1.0] and [3.2.0] confirm both shipped. The README's \"How It Works\" table lists only integer phases 1–16.",
+      fullEvidence: "Orchestrator verification (Phases 8–11):\n- `skills/agent-review-panel/SKILL.md:1027` defines Phase 13.5 — Pre-Judge Verification Gate (v3.1.0). [VERIFIED]\n- `skills/agent-review-panel/SKILL.md:1110` defines Phase 14.5 — Post-Judge Verification (\"Re-verify judge-introduced P0/P1 against ground truth\", v3.2.0). [VERIFIED]\n- CHANGELOG [3.2.0] \"Added — Phase 14.5\" and [3.1.0] \"Phase 13.5 — Pre-Judge Verification Gate (NEW)\" confirm both are real, shipped phases. [VERIFIED]\n- README \"How It Works\" table (lines 249–270) reflects neither; line 251 prose claims \"sequential integers (Phase 1 through Phase 16)\".",
+      narrative: "Raised by the Technical Accuracy Reviewer (P1-1), unrefuted by the other reviewers and confirmed by the Completeness Audit.\n\n\"The 'How It Works' phase table is stale: missing Phase 13.5 AND Phase 14.5. The table lists phases 1–16 with no 13.5 or 14.5. SKILL.md Process Overview defines Phase 14.5: Post-Judge Verification ('Re-verify judge-introduced P0/P1 against ground truth') and SKILL.md line 1027 defines Phase 13.5: Pre-Judge Verification Gate. CHANGELOG [3.2.0] and [3.1.0] both confirm these are real, shipped phases. The README table reflects neither.\n\nA user reading 'How It Works' gets a process model that is two releases out of date and silently omits two verification gates that are core selling points of v3.1/v3.2. The README even cross-links this table from the Tests section as authoritative.\"\n\nThis was the reviewer's most-defensible finding: \"Directly contradicted by SKILL.md lines 1027 & 1110 and CHANGELOG [3.1.0]/[3.2.0]. Two whole phases missing from the headline 'How It Works' table. Unambiguous.\"",
+      codeEvidence: [],
+      reviewerRatings: [
+        { reviewerId: "p-2", reviewerName: "Technical Accuracy Reviewer", rating: "P1", reasoning: "Two whole verification phases — core v3.1/v3.2 selling points — are missing from the headline process table, which the README itself cites as authoritative." }
+      ],
+      debateTranscript: [],
+      judgeRuling: {
+        disputed: false,
+        reasoning: "Single-source but [VERIFIED] against SKILL.md and CHANGELOG, and unrefuted by the other three reviewers. The Completeness Audit independently surfaced the same gap. No dispute required resolution — the finding stands as raised at P1.",
+        finalSeverity: "P1",
+        severityChangeReason: ""
+      },
+      fixRecommendation: {
+        summary: "Add two rows to the \"How It Works\" table — Phase 13.5 under Verify, Phase 14.5 under Adjudicate — and update the \"sequential integers 1–16\" prose.",
+        proposedChange: "Add Phase 13.5 (Pre-Judge Verification Gate, v3.1.0) under the Verify grouping and Phase 14.5 (Post-Judge Verification Gate, v3.2.0) under the Adjudicate grouping of the \"How It Works\" table. Update the line-251 prose so it acknowledges the 13.5/14.5 decimals the same way it already acknowledges the 15.x sub-steps, rather than claiming \"sequential integers (Phase 1 through Phase 16).\"",
+        beforeCode: "",
+        afterCode: "",
+        regressionTest: "Extend the existing test that asserts \"All 16 top-level phases present in SKILL.md\" to also assert Phase 13.5 and Phase 14.5 appear in the README's How It Works table whenever they appear in SKILL.md.",
+        blastRadius: "Low — two table rows and one sentence of prose.",
+        estimatedEffort: "30 min"
+      },
+      crossRefs: [
+        { targetId: "AI-1", relationship: "same-class", note: "Both AI-1 and AI-2 are instances of the README lagging the actual v3.3.0 repository state." }
+      ],
+      priorRuns: []
+    },
+    {
+      id: "AI-3",
+      summary: "Cut ~⅓ of the length and split audiences — move migration/troubleshooting to MIGRATION.md + TROUBLESHOOTING.md, design-history to HOW_WE_BUILT_THIS.md. Target ~250–350 lines.",
+      severity: "P1",
+      epistemicLabel: "[CONSENSUS]",
+      defectType: null,
+      sourceReviewers: ["Clarity Editor", "Devil's Advocate"],
+      verificationTier: null,
+      verificationVerdict: null,
+      verificationConfidence: null,
+      evidenceSummary: "The README mixes user docs, contributor docs, and design-history in 671 lines. Roughly 30% of the file is migration/stale-state/troubleshooting; the same cleanup recipe appears in 4–5 non-identical places.",
+      fullEvidence: "",
+      narrative: "Strong consensus: Clarity Editor's whole review, Devil's Advocate F6/F7/F9, and the Completeness Checker's \"lopsided\" framing all converge here.\n\nClarity Editor: \"A meticulously thorough README that documents everything at least once and the hard parts four or five times — it needs roughly a third cut, a slimmed opening, and a hard separation of reader content from maintainer/changelog content.\" F5 (the most defensible finding): \"The same cleanup procedure — remove old marketplace name, delete orphan dirs, remove loose `~/.claude/skills/` clones, reinstall — appears as a paste-to-Claude prompt, a manual bash recipe, a partial recipe, and a pointer-back. Five touchpoints for one procedure. A reader who hits the problem finds four overlapping-but-not-identical recipes and cannot tell which is authoritative.\"\n\nDevil's Advocate (F6): \"~200 lines of migration + troubleshooting + stale-state cleanup is a product smell, not just a doc problem. Roughly a third of the README... A README's migration burden is a mirror of the product's release discipline.\" (F9): \"A document for everyone is a document for no one. The README oscillates between three readers — users, contributors, and the author documenting their own cleverness.\"\n\nThe judge merged Clarity's self-identified weakest finding (F15, output files explained 3×) into this duplication item rather than carrying it separately.",
+      codeEvidence: [],
+      reviewerRatings: [
+        { reviewerId: "p-1", reviewerName: "Clarity Editor", rating: "P1", reasoning: "The README over-serves the maintainer at the newcomer's expense — far too long, with core content repeated three to five times each." },
+        { reviewerId: "p-4", reviewerName: "Devil's Advocate", rating: "P1", reasoning: "At 671 lines the README tries to be the user guide, the contributor guide, and the design memoir simultaneously — a document for everyone is a document for no one." }
+      ],
+      debateTranscript: [],
+      judgeRuling: {
+        disputed: false,
+        reasoning: "Strong consensus across reviewers, all independently. Not disputed — the disagreement was only about emphasis, not direction. I merged Clarity's self-identified least-defensible finding (F15 — output files explained three times) into this duplication item rather than carrying it as a separate action. The fix is subtraction and audience discipline, not more writing. Whoever revises should first read why the prior restructure attempt at docs/archive/2026-04-27-readme-restructure-rejected/ was rejected.",
+        finalSeverity: "P1",
+        severityChangeReason: ""
+      },
+      fixRecommendation: {
+        summary: "Cut ~⅓ of the length; move migration/stale-state/deep troubleshooting to MIGRATION.md + TROUBLESHOOTING.md and design-history to HOW_WE_BUILT_THIS.md. Target ~250–350 lines.",
+        proposedChange: "Reduce the README from 671 lines to roughly 250–350. Move migration, stale-state cleanup, and deep troubleshooting content into MIGRATION.md and TROUBLESHOOTING.md (or collapse to one canonical recipe in the README with cross-links from the other 3–4 locations). Move design-history and author-archaeology (the Phase 4.55 renumbering note, the \"why roundtable\" debate, version-history minutiae) into HOW_WE_BUILT_THIS.md. Decide the README is for users evaluating and running the tool. Consult docs/archive/2026-04-27-readme-restructure-rejected/ before starting.",
+        beforeCode: "",
+        afterCode: "",
+        regressionTest: "Add a soft line-count assertion to scripts/release-check.sh that warns if README.md exceeds ~400 lines.",
+        blastRadius: "Medium — large restructure touching most of the README and creating/expanding three sibling docs; a prior attempt was rejected.",
+        estimatedEffort: "1 day"
+      },
+      crossRefs: [
+        { targetId: "AI-5", relationship: "same-class", note: "AI-5 (strip inline version attributions) is one specific slice of the broader length/audience problem." },
+        { targetId: "AI-6", relationship: "same-class", note: "AI-6 (slim the opening) is the opening-block instance of the same over-length problem." }
+      ],
+      priorRuns: []
+    },
+    {
+      id: "AI-4",
+      summary: "Add a text sample of a real report (Action Items table + one judged disagreement) in a <details> block; link docs/archive/review_panel_report.md.",
+      severity: "P1",
+      epistemicLabel: "[VERIFIED]",
+      defectType: null,
+      sourceReviewers: ["Completeness Checker"],
+      verificationTier: null,
+      verificationVerdict: null,
+      verificationConfidence: null,
+      evidenceSummary: "docs/archive/review_panel_report.md is a real, full sample report (6,920 bytes) that exists in-repo and is never linked. The README shows output only as animated GIFs — not copy-pasteable, not accessible, not indexed by search.",
+      fullEvidence: "Orchestrator verification (Phases 8–11):\n- `ls docs/archive/` confirms `review_panel_report.md` exists, 6,920 bytes — a real, full sample report. [VERIFIED]\n- `grep` of README.md finds no link to that file. [VERIFIED]\n- README illustrates output only via three animated GIFs (lines 15–19).",
+      narrative: "Raised by the Completeness Checker (P1-1) as one of its three most-defensible findings, and independently confirmed by the Completeness Audit.\n\n\"The README describes the three output files extensively and links to demo GIFs, but never shows a single finding, action-item row, or `review_panel_report.md` snippet as text. A reader cannot tell what they will actually receive. The GIFs are images (not copy-pasteable, not accessible, not indexed by search), and `docs/archive/review_panel_report.md` is a real sample that exists in-repo but is never linked.\n\nThis is the single biggest 'should I run this?' question. Worked output is the most persuasive content a tool README can have, and one already exists unlinked in the repo.\"\n\nThe Completeness Checker's P3-12 (accessibility of GIFs) folds into this fix: a text report sample doubles as the accessible alternative for screen-reader users and users on metered connections.",
+      codeEvidence: [],
+      reviewerRatings: [
+        { reviewerId: "p-3", reviewerName: "Completeness Checker", rating: "P1", reasoning: "The README never shows what a report actually looks like as text — and a real 6,920-byte sample sits unlinked in docs/archive/." }
+      ],
+      debateTranscript: [],
+      judgeRuling: {
+        disputed: false,
+        reasoning: "Single-source but [VERIFIED] — the sample file exists and is unlinked, confirmed by the Completeness Audit. Unrefuted. Not arbitrated as a dispute; stands at P1 as raised. Worked output is the most persuasive content a tool README can have and the README currently shows none in text form.",
+        finalSeverity: "P1",
+        severityChangeReason: ""
+      },
+      fixRecommendation: {
+        summary: "Add a <details> block with ~15 lines of a real Action Items table + one judged disagreement lifted from docs/archive/review_panel_report.md, and link that file.",
+        proposedChange: "Add a collapsible <details> block — under Quick Start's \"What you get\" or as a \"Sample Output\" subsection before \"How It Works\" — containing ~15 lines of a real Action Items table plus one disagreement-with-judge-ruling excerpt, lifted from docs/archive/review_panel_report.md. Link that file explicitly: \"See a full real report: docs/archive/review_panel_report.md.\" Ensure GIF alt text is descriptive so the text sample also serves as the accessible alternative.",
+        beforeCode: "",
+        afterCode: "",
+        regressionTest: "Add a test asserting README.md contains a link to docs/archive/review_panel_report.md (or whichever sample path is canonical).",
+        blastRadius: "Low — additive content block plus one link; no removals.",
+        estimatedEffort: "1 hr"
+      },
+      crossRefs: [],
+      priorRuns: []
+    },
+    {
+      id: "AI-5",
+      summary: "Strip inline (vX.Y) attributions from reader-facing prose; describe features in present tense.",
+      severity: "P2",
+      epistemicLabel: "[CONSENSUS]",
+      defectType: null,
+      sourceReviewers: ["Clarity Editor", "Devil's Advocate"],
+      verificationTier: null,
+      verificationVerdict: null,
+      verificationConfidence: null,
+      evidenceSummary: "grep of the README confirms 10+ inline (vX.Y)-style version attributions in reader-facing prose — How It Works, Features, Quick Start, Bundled skills. These read as changelog bookkeeping, not user documentation.",
+      fullEvidence: "Orchestrator verification (Phases 8–11):\n- `grep` on README confirms 10+ instances of inline `(vX.Y)` version attributions in reader-facing prose. [VERIFIED]\n- Examples: line 93 `(new in v2.15)`, line 251 `(v2.16.4 disk-reading architecture)`, lines 256–270 table `*(v2.14, code only)*` / `*(v2.16.3)*`, line 282 `(v2.16.3)`, line 431 `(v3.0.0)`.",
+      narrative: "Consensus between the Clarity Editor (F3) and the Devil's Advocate (F7).\n\nClarity Editor (F3, a most-defensible finding): \"Version-attribution tags litter reader-facing prose. A new user reading 'How It Works' or 'Features' does not care which release introduced a phase — that is changelog/maintainer information. The `(v2.16.3)` style annotations interrupt the reading flow and assume the reader has a mental model of the version timeline they do not have. It also dates the prose — a reader cannot tell if `(v2.15)` means 'recent' or 'ancient.'\"\n\nDevil's Advocate (F7): \"The body text is littered with version-attribution parentheticals. These attributions serve the author's memory of the build history, not the reader's understanding. They also rot: every one is a maintenance liability and a chance for drift — and given F1, the drift has already happened. There is already a 46KB CHANGELOG.md — the history has a home.\"",
+      codeEvidence: [],
+      reviewerRatings: [
+        { reviewerId: "p-1", reviewerName: "Clarity Editor", rating: "P2", reasoning: "Maintainer bookkeeping presented as user documentation — it interrupts reading flow and dates the prose." },
+        { reviewerId: "p-4", reviewerName: "Devil's Advocate", rating: "P2", reasoning: "The README reads like release notes; the reader has to mentally strip version noise to find the actual feature description." }
+      ],
+      debateTranscript: [],
+      judgeRuling: {
+        disputed: false,
+        reasoning: "Consensus between two reviewers, [VERIFIED] by grep. Not disputed. Stands at P2 — strip the inline (vX.Y) attributions from How It Works / Features / Quick Start / Bundled skills, describe features in present tense, and leave history to the Version History table and CHANGELOG.",
+        finalSeverity: "P2",
+        severityChangeReason: ""
+      },
+      fixRecommendation: {
+        summary: "Strip all (vX.Y) parentheticals from How It Works, Features, Quick Start, and Bundled skills; describe features in present tense.",
+        proposedChange: "Remove every inline (vX.Y) version-attribution parenthetical from the reader-facing sections (How It Works, Features, Quick Start, Bundled skills). Describe what the tool does now, in present tense. The Version History table and CHANGELOG.md already carry the introduction-version history for anyone who wants it.",
+        beforeCode: "",
+        afterCode: "",
+        regressionTest: "Add a lint check that warns if reader-facing README sections contain `(v\\d+\\.\\d+` patterns outside the Version History table.",
+        blastRadius: "Low — inline text deletions across several sections.",
+        estimatedEffort: "1 hr"
+      },
+      crossRefs: [
+        { targetId: "AI-3", relationship: "root-cause", note: "AI-3's broader length/audience-discipline problem is the root cause; stripping version noise is one slice of that cleanup." }
+      ],
+      priorRuns: []
+    },
+    {
+      id: "AI-6",
+      summary: "Slim the opening: H1, one-sentence tagline, one hero image, one \"Claude Code only\" note, then Quick Start.",
+      severity: "P2",
+      epistemicLabel: "[SINGLE-SOURCE]",
+      defectType: null,
+      sourceReviewers: ["Clarity Editor"],
+      verificationTier: null,
+      verificationVerdict: null,
+      verificationConfidence: null,
+      evidenceSummary: "A first-time reader hits 3 badge lines, an H1, a 5-line bold tagline, a one-line description, a 4-line blockquote, three stacked hero images, an italic caption, and a 10-line Contents list — ~33 lines of preamble — before reaching a single actionable instruction.",
+      fullEvidence: "",
+      narrative: "Raised by the Clarity Editor (F1) as one of its three most-defensible findings; unrefuted.\n\n\"Before a newcomer reaches a single actionable instruction (Quick Start at line 35), they must wade through: 3 badge lines, an H1, a 5-line bold tagline, a one-line plugin description, a 4-line blockquote about bundled skills + supported surfaces, three stacked hero images/GIFs, an italic caption, and a 10-line Contents list. That is roughly 33 lines of preamble. First-principles test: a reader who has 'never heard of this' needs what it is and how to start — they get what it is four times over and how to start nowhere on screen one.\n\nThe opening must earn attention efficiently. The current opening buries the value proposition under its own thoroughness and delays the payoff.\"\n\nThe judge also pulled the related Devil's Advocate / Completeness recommendation into this item: add a one-line cost-and-fit statement under the hero (see AI-7).",
+      codeEvidence: [],
+      reviewerRatings: [
+        { reviewerId: "p-1", reviewerName: "Clarity Editor", rating: "P2", reasoning: "~33 lines of preamble before the first actionable instruction — the value proposition is buried under its own thoroughness." }
+      ],
+      debateTranscript: [],
+      judgeRuling: {
+        disputed: false,
+        reasoning: "Single-source, not independently verified as a count but directly checkable by reading lines 1–34; unrefuted. Advisory P2. Slim the opening to H1, one-sentence tagline, one hero image, one \"Claude Code only\" note, then Quick Start; move the bundled-skills blockquote and surfaces detail into their existing dedicated sections.",
+        finalSeverity: "P2",
+        severityChangeReason: ""
+      },
+      fixRecommendation: {
+        summary: "Cut the opening to H1, one-sentence tagline, one hero image, one \"Claude Code only\" note, then Quick Start.",
+        proposedChange: "Trim the ~33-line preamble to: H1, a single-sentence tagline, one hero image, a one-line \"Runs only on Claude Code surfaces\" note, then Quick Start. Move the bundled-skills blockquote and the surfaces detail into their existing dedicated sections (they already exist). Demote two of the three GIFs to the HTML/How-It-Works sections where they are contextually relevant. Keep the Contents list terse or move it below Quick Start.",
+        beforeCode: "",
+        afterCode: "",
+        regressionTest: "",
+        blastRadius: "Low — reordering and trimming the README header region.",
+        estimatedEffort: "1 hr"
+      },
+      crossRefs: [
+        { targetId: "AI-3", relationship: "root-cause", note: "The opening bloat is one instance of AI-3's overall length/audience problem." },
+        { targetId: "AI-7", relationship: "depends-on", note: "The slimmed opening should include the one-line cost-and-fit statement from AI-7." }
+      ],
+      priorRuns: []
+    },
+    {
+      id: "AI-7",
+      summary: "Surface \"When to use / When NOT to use\" near the top (from SKILL.md); add a one-line cost-and-fit statement under the hero.",
+      severity: "P2",
+      epistemicLabel: "[SINGLE-SOURCE]",
+      defectType: null,
+      sourceReviewers: ["Completeness Checker", "Devil's Advocate"],
+      verificationTier: null,
+      verificationVerdict: null,
+      verificationConfidence: null,
+      evidenceSummary: "SKILL.md has a strong, specific \"When NOT to Use This Skill\" section; the README only has scattered fragments and never links it. The first dollar figure appears on line 369 of 671 — cost is below the fold for a paid-per-run tool.",
+      fullEvidence: "",
+      narrative: "Raised by the Completeness Checker (P1-3) and the Devil's Advocate (F2); both were flagged as most-defensible findings by their respective reviewers.\n\nCompleteness Checker (P1-3): \"`skills/agent-review-panel/SKILL.md` has a strong, specific 'When NOT to Use This Skill' section (single code review, quick sanity checks, bug fixes, 'what do you think?', etc.). The README only has scattered fragments. There is no consolidated decision section near the top, and SKILL.md's list is never linked. Cost is $3-$20 per run. Telling someone clearly not to run it for a quick review saves them money and a bad first impression.\"\n\nDevil's Advocate (F2): \"This tool costs $3–$20 per single run and 3× base for multi-run. The README's hero section, Quick Start, Installation, Why-Use-a-Panel, How It Works, and Features — roughly 360 lines — sell the machinery enthusiastically without once saying 'this is expensive.' The cost table is honest when you reach it, but placement is a soft form of dishonesty: the reader is fully sold before they learn the price.\"",
+      codeEvidence: [],
+      reviewerRatings: [
+        { reviewerId: "p-3", reviewerName: "Completeness Checker", rating: "P1", reasoning: "\"When NOT to use\" content exists in SKILL.md but is never surfaced or linked; for a $3–$20/run tool that omission costs users money." },
+        { reviewerId: "p-4", reviewerName: "Devil's Advocate", rating: "P1", reasoning: "Cost is buried 360+ lines deep — pricing-below-the-fold is a soft dark pattern for a paid-per-run tool." }
+      ],
+      debateTranscript: [],
+      judgeRuling: {
+        disputed: false,
+        reasoning: "Two reviewers raised closely related aspects; I bundle them into one action item. Single-source per-aspect but mutually reinforcing and unrefuted; the SKILL.md \"When NOT to Use\" content is verifiable. Advisory P2 (not P1: the README does contain the cost table and scattered fragments — the defect is placement and surfacing, not absence). Surface a \"When to use / When NOT to use\" block near the top sourced from SKILL.md, and add a one-line cost-and-fit statement under the hero (\"~$3–$20 per run, 6–15 min; for high-stakes reviews, not routine checks\").",
+        finalSeverity: "P2",
+        severityChangeReason: ""
+      },
+      fixRecommendation: {
+        summary: "Add a two-column \"Use it for / Don't use it for\" block up high (sourced from SKILL.md) and a one-line cost-and-fit statement under the hero.",
+        proposedChange: "Add a short \"When to use / When NOT to use\" block right after the hero/intro (or folded into \"Why Use a Panel\"), sourced verbatim from SKILL.md's \"When NOT to Use This Skill\" list. Add a one-line cost-and-fit statement in or immediately under the hero block: e.g. \"Each run costs roughly $3–$20 in Opus tokens and takes 6–15 min; built for high-stakes reviews, not routine checks.\" Keep the detailed cost table where it is.",
+        beforeCode: "",
+        afterCode: "",
+        regressionTest: "",
+        blastRadius: "Low — additive content near the top of the README.",
+        estimatedEffort: "1 hr"
+      },
+      crossRefs: [
+        { targetId: "AI-6", relationship: "blocks", note: "This cost-and-fit line should land in the slimmed opening defined by AI-6." }
+      ],
+      priorRuns: []
+    },
+    {
+      id: "AI-8",
+      summary: "Change \"9 peer-reviewed papers\" → \"9 research papers/projects\"; separate architecture-mapped papers from inspirational ones.",
+      severity: "P2",
+      epistemicLabel: "[VERIFIED]",
+      defectType: null,
+      sourceReviewers: ["Technical Accuracy Reviewer", "Devil's Advocate"],
+      verificationTier: null,
+      verificationVerdict: null,
+      verificationConfidence: null,
+      evidenceSummary: "docs/research-foundations.md has exactly 9 paper rows — the count is correct — but lists AutoGen with venue \"—\" (no venue). AutoGen is a GitHub project / tech report, not peer-reviewed, so the \"peer-reviewed\" qualifier is inaccurate.",
+      fullEvidence: "Orchestrator verification (Phases 8–11):\n- `docs/research-foundations.md` has exactly 9 data rows → \"9 papers\" count is [VERIFIED] accurate.\n- The AutoGen row lists venue `—` (no venue). AutoGen is not peer-reviewed → \"9 peer-reviewed papers\" qualifier is [VERIFIED] inaccurate.\n- ROADMAP.md line 212 says \"Academic Papers (17+)\" — a different scope, not a contradiction.",
+      narrative: "Raised by the Technical Accuracy Reviewer (P2-4) and, more sharply, by the Devil's Advocate (F3).\n\nTechnical Accuracy (P2-4): \"`docs/research-foundations.md` table does list exactly 9 rows — count is correct. BUT the README says '9 peer-reviewed papers' while research-foundations.md lists AutoGen with venue '—' (no venue) — AutoGen is a GitHub project / tech report, not peer-reviewed. Core count (9) is accurate; the 'peer-reviewed' qualifier is the inaccuracy.\"\n\nDevil's Advocate (F3): \"'Grounded in 9 research papers' is credibility theater, not load-bearing methodology. The README maps 4 of 9 papers to phases and explicitly calls these 'load-bearing.' The other 5 get no architecture mapping. So the honest count of papers that actually shaped a mechanism is ~4, not 9. Citing ICLR/ACL papers does not make a tool's output better.\"\n\nThe judge ruled the research-grounding legitimate to cite — only the \"peer-reviewed\" qualifier is a hard defect; the framing critique is advisory.",
+      codeEvidence: [],
+      reviewerRatings: [
+        { reviewerId: "p-2", reviewerName: "Technical Accuracy Reviewer", rating: "P2", reasoning: "The count of 9 is correct, but \"peer-reviewed\" is verifiably inaccurate — AutoGen has no venue in research-foundations.md." },
+        { reviewerId: "p-4", reviewerName: "Devil's Advocate", rating: "P1", reasoning: "Borrowed academic authority for a domain transfer the papers don't support — only ~4 of 9 are actually mapped to architecture." }
+      ],
+      debateTranscript: [],
+      judgeRuling: {
+        disputed: true,
+        reasoning: "The Devil's Advocate framed this as P1 \"credibility theater.\" I partially uphold it. The research-grounding is legitimate to cite — multi-agent debate research genuinely informed the architecture. The only hard, verified factual defect is the \"peer-reviewed\" qualifier: research-foundations.md lists AutoGen with no venue. The 9-paper count itself is accurate. The broader \"vanity metrics / credibility theater\" framing is advisory [SINGLE-SOURCE], not a factual defect. Net: P2 — fix the qualifier and separate \"mechanisms mapped to architecture\" from \"papers that informed thinking.\"",
+        finalSeverity: "P2",
+        severityChangeReason: "Devil's Advocate rated the credibility-theater framing P1; dampened to P2 because only the \"peer-reviewed\" qualifier is a verified factual defect — the research-grounding itself is legitimate and the framing critique is advisory."
+      },
+      fixRecommendation: {
+        summary: "Change \"9 peer-reviewed papers\" → \"9 research papers/projects\"; in Research Foundations, separate architecture-mapped papers from inspirational ones.",
+        proposedChange: "Change \"9 peer-reviewed papers\" to \"9 research papers/projects\" (or footnote AutoGen as a non-peer-reviewed reference). In the Research Foundations section, clearly separate the ~4 papers whose mechanisms are mapped to architecture (ChatEval→Phase 7, MachineSoM→Phase 4, Trust-or-Escalate→judge confidence, DMAD→reasoning strategies) from the papers that informed thinking. Optionally add one honest sentence noting these papers validate multi-agent debate on reasoning benchmarks, not review quality specifically.",
+        beforeCode: "",
+        afterCode: "",
+        regressionTest: "Add a test asserting the README does not use the phrase \"peer-reviewed\" alongside the paper count unless every research-foundations.md row has a non-empty venue.",
+        blastRadius: "Low — wording change plus a sub-section reorganization in Research Foundations.",
+        estimatedEffort: "1 hr"
+      },
+      crossRefs: [
+        { targetId: "AI-11", relationship: "same-class", note: "Both AI-8 and AI-11 are about over-claiming in the framing — research authority and reviewer independence respectively." }
+      ],
+      priorRuns: []
+    },
+    {
+      id: "AI-9",
+      summary: "Add [JUDGE-HALLUCINATED] and [COMPRESSED] to the epistemic-labels glossary; sync the Quick Start mini-list with the full table.",
+      severity: "P2",
+      epistemicLabel: "[VERIFIED]",
+      defectType: null,
+      sourceReviewers: ["Technical Accuracy Reviewer"],
+      verificationTier: null,
+      verificationVerdict: null,
+      verificationConfidence: null,
+      evidenceSummary: "SKILL.md line 1227 is the canonical Phase 15.1 label list. The README's \"Reading the Report\" epistemic-labels table omits [JUDGE-HALLUCINATED] (a real v3.2.0 label) and [COMPRESSED] (a real v3.1.0 suffix). The Quick Start mini-list is also out of sync with the full table.",
+      fullEvidence: "Orchestrator verification (Phases 8–11):\n- `skills/agent-review-panel/SKILL.md:1227` — canonical label list — includes [JUDGE-HALLUCINATED] and [COMPRESSED]. [VERIFIED]\n- README \"Epistemic labels\" table (lines 578–591) omits both. [VERIFIED]\n- README line 299 (Quick Start mini-list) and the lines 578–591 table also differ in membership from each other.",
+      narrative: "Raised by the Technical Accuracy Reviewer (P2-11, a most-defensible finding) and independently confirmed by the Completeness Audit.\n\n\"`SKILL.md` line 1227 — the canonical Phase 15.1 label list — includes `[JUDGE-HALLUCINATED]` and `[COMPRESSED]`. The README table includes VERIFIED, CONSENSUS, SINGLE-SOURCE, DISPUTED, UNVERIFIED, WEB-*, CMD_CONFIRMED/CONTRADICTED, LIVE-VERIFIED, STATIC-INFERENCE, STATIC-INFERENCE-CONSENSUS — but omits `[JUDGE-HALLUCINATED]` (a real v3.2.0 label) and `[COMPRESSED]` (a real v3.1.0 suffix).\n\nA user who sees `[JUDGE-HALLUCINATED]` on an action item — the headline feature of v3.2.0 — finds no entry for it in the README's label glossary.\"\n\nThe reviewer also flagged P2-12: the Quick Start label mini-list (line 299) and the lines 578–591 table differ in membership from each other — two label enumerations in the same document with different contents.",
+      codeEvidence: [],
+      reviewerRatings: [
+        { reviewerId: "p-2", reviewerName: "Technical Accuracy Reviewer", rating: "P2", reasoning: "SKILL.md line 1227 is canonical; the README table provably omits two real shipped labels, and the Quick Start mini-list is internally inconsistent with the table." }
+      ],
+      debateTranscript: [],
+      judgeRuling: {
+        disputed: false,
+        reasoning: "Single-source but [VERIFIED] against SKILL.md, confirmed by the Completeness Audit, unrefuted. Not arbitrated as a dispute. Stands at P2 — add [JUDGE-HALLUCINATED] and [COMPRESSED] to the epistemic-labels glossary and sync the Quick Start mini-list with the full table.",
+        finalSeverity: "P2",
+        severityChangeReason: ""
+      },
+      fixRecommendation: {
+        summary: "Add [JUDGE-HALLUCINATED] and [COMPRESSED] rows to the epistemic-labels table; make the Quick Start mini-list and the full table list the same set.",
+        proposedChange: "Add [JUDGE-HALLUCINATED] and [COMPRESSED] rows to the \"Epistemic labels\" table (README lines 578–591), and add [JUDGE-HALLUCINATED] to the Quick Start label mini-list (line 299). Make line 299 and the lines 578–591 table enumerate the same set, both synced to SKILL.md line 1227.",
+        beforeCode: "",
+        afterCode: "",
+        regressionTest: "Add a test that diffs the README's epistemic-labels table against SKILL.md's canonical label list and fails on any missing label.",
+        blastRadius: "Low — two table rows plus a mini-list sync.",
+        estimatedEffort: "30 min"
+      },
+      crossRefs: [
+        { targetId: "AI-2", relationship: "same-class", note: "Both AI-2 and AI-9 are README sections that have fallen out of sync with SKILL.md's canonical definitions." }
+      ],
+      priorRuns: []
+    },
+    {
+      id: "AI-10",
+      summary: "Add a \"Support\" section; expand \"Contributing\" with a real dev on-ramp.",
+      severity: "P2",
+      epistemicLabel: "[SINGLE-SOURCE]",
+      defectType: null,
+      sourceReviewers: ["Completeness Checker"],
+      verificationTier: null,
+      verificationVerdict: null,
+      verificationConfidence: null,
+      evidenceSummary: "Nowhere does the README say where to report a bug or get help — no Support section, no Issues link beyond two passing mentions. The Contributing section lists what help is wanted but nothing about how to start: no dev setup, no npm test pointer, no PR process.",
+      fullEvidence: "",
+      narrative: "Raised by the Completeness Checker (P1-4 and P1-5), unrefuted.\n\nP1-4: \"Nowhere does the README say where to report a bug, ask a question, or get help. 'Contributing' says 'open an issue to discuss before submitting large PRs' and Troubleshooting says 'file an issue' once, in passing — but there is no Support/Help section, no link to GitHub Issues, no Discussions, no issue-template pointer. When a review hangs or produces a wrong finding, the user needs an obvious, findable path to report it.\"\n\nP1-5: \"'Contributing' lists what help is wanted but nothing about how: no dev setup, no 'clone and run `npm test`' pointer, no Node version requirement restated here, no PR process, no pointer to where `SKILL.md` lives. A would-be contributor — the README explicitly solicits Cursor adaptation and new signal groups — has no on-ramp.\"",
+      codeEvidence: [],
+      reviewerRatings: [
+        { reviewerId: "p-3", reviewerName: "Completeness Checker", rating: "P1", reasoning: "No findable path to report a bug, and the Contributing section gives a would-be contributor no on-ramp despite explicitly soliciting contributions." }
+      ],
+      debateTranscript: [],
+      judgeRuling: {
+        disputed: false,
+        reasoning: "Single-source, unrefuted. Advisory P2 (not P1: the content gap is real but lower-stakes than the version/release and length problems). Add a \"Support\" section with a GitHub Issues link and \"include content type & size\" guidance; expand \"Contributing\" with a dev on-ramp — clone location, npm test + Node ≥18, where SKILL.md lives, scripts/release-check.sh.",
+        finalSeverity: "P2",
+        severityChangeReason: ""
+      },
+      fixRecommendation: {
+        summary: "Add a \"Support\" section (GitHub Issues link + guidance); expand \"Contributing\" with a concrete dev on-ramp.",
+        proposedChange: "Add a dedicated \"Support\" section near the end: link to GitHub Issues with a one-line \"include content type + size\" guidance, and Discussions if enabled. Expand \"Contributing\" with a real on-ramp: \"Dev setup: clone (not into ~/.claude/skills/), npm test (requires Node ≥18), edit skills/agent-review-panel/SKILL.md, run scripts/release-check.sh before release. PRs: open an issue first for large changes.\" Link the Tests section and HOW_WE_BUILT_THIS.md.",
+        beforeCode: "",
+        afterCode: "",
+        regressionTest: "",
+        blastRadius: "Low — additive sections near the end of the README.",
+        estimatedEffort: "1 hr"
+      },
+      crossRefs: [
+        { targetId: "AI-12", relationship: "same-class", note: "Both AI-10 and AI-12 are about consolidating scattered onboarding info (dev setup / prerequisites) into one findable place." }
+      ],
+      priorRuns: []
+    },
+    {
+      id: "AI-11",
+      summary: "Move the \"same base model\" limitation up into \"Why Use a Panel\"; reframe \"independent reviewers\" as \"structured multi-stance self-critique.\"",
+      severity: "P2",
+      epistemicLabel: "[SINGLE-SOURCE]",
+      defectType: null,
+      sourceReviewers: ["Devil's Advocate"],
+      verificationTier: null,
+      verificationVerdict: null,
+      verificationConfidence: null,
+      evidenceSummary: "The README discloses the shared-base-model limitation honestly — but at line 381, while the top of the doc is built on \"independent reviewers,\" \"adversarial,\" \"they debate each other.\" The disclosure is buried under the framing it contradicts.",
+      fullEvidence: "",
+      narrative: "Raised by the Devil's Advocate (F4) as one of its three most-defensible findings; partially upheld by the judge.\n\n\"Line 381 honestly says: 'All reviewers are Claude instances. Unanimous agreement may reflect shared model biases.' Good. But the entire top of the README is built on the opposite impression — '4–6 AI reviewers independently evaluate,' 'they debate each other,' 'genuinely engage,' 'independent reviewers.' A reader reaches the dialogue and is invited to believe two minds are arguing. They are not: it's one model role-playing a disagreement with itself.\n\nThis is the central honesty question for the whole product and the README resolves it in marketing's favor everywhere except one bullet on line 381. The fix: move the 'same base model' limitation up. Reframe the value proposition honestly: this isn't 'independent reviewers,' it's 'structured self-critique that forces one model to take multiple passes from assigned stances.' That's still a legitimately useful thing — sell that, not a fiction of independence.\"\n\nThe report itself echoes this caution: \"all four reviewers run on the same base model, so treat the convergence with mild caution.\"",
+      codeEvidence: [],
+      reviewerRatings: [
+        { reviewerId: "p-4", reviewerName: "Devil's Advocate", rating: "P1", reasoning: "The core honesty question — one model talking to itself — is resolved in marketing's favor everywhere except one buried bullet." }
+      ],
+      debateTranscript: [],
+      judgeRuling: {
+        disputed: true,
+        reasoning: "Partially upheld. The README does disclose the shared-base-model limitation in Known Limitations, so it is not dishonest — the Devil's Advocate's framing overstates the case. But the disclosure is buried at line 381 while the top of the doc leans on \"independent reviewers.\" Valid P2 (not the P1 the reviewer implied): move the limitation up into \"Why Use a Panel\" and soften \"independent\" to \"structured multi-stance self-critique\" — keep it honest, it is still a real benefit.",
+        finalSeverity: "P2",
+        severityChangeReason: "Devil's Advocate implied P1-level severity; dampened to P2 because the README does disclose the limitation — the defect is placement and word choice, not dishonesty."
+      },
+      fixRecommendation: {
+        summary: "Move the \"same base model\" limitation up into \"Why Use a Panel\"; reframe \"independent reviewers\" as \"structured multi-stance self-critique.\"",
+        proposedChange: "Move the \"All reviewers are Claude instances\" limitation from Known Limitations (line 381) up into the \"Why Use a Panel\" section. Reframe \"independent reviewers\" throughout the top of the doc as \"structured multi-stance self-critique\" — it is still a real, legitimate benefit (parallel passes from assigned stances before cross-contamination), just sold honestly rather than as a fiction of independence.",
+        beforeCode: "",
+        afterCode: "",
+        regressionTest: "",
+        blastRadius: "Low — relocating one paragraph and adjusting framing wording in a few places.",
+        estimatedEffort: "1 hr"
+      },
+      crossRefs: [
+        { targetId: "AI-8", relationship: "same-class", note: "Both AI-8 and AI-11 address over-claiming in the README's framing." }
+      ],
+      priorRuns: []
+    },
+    {
+      id: "AI-12",
+      summary: "Consolidate Prerequisites into one place (incl. Node ≥18, currently only in a troubleshooting footnote).",
+      severity: "P2",
+      epistemicLabel: "[SINGLE-SOURCE]",
+      defectType: null,
+      sourceReviewers: ["Completeness Checker"],
+      verificationTier: null,
+      verificationVerdict: null,
+      verificationConfidence: null,
+      evidenceSummary: "Requirements appear in at least four places across the README and are inconsistent. Node ≥18 is not in the Prerequisites section at all — it only appears in a Troubleshooting footnote. OS support is never stated anywhere.",
+      fullEvidence: "",
+      narrative: "Raised by the Completeness Checker (P2-8), unrefuted.\n\n\"Requirements appear in at least four places: surfaces (line 13), 'Requires Claude Code' (lines 99–117), 'Claude Code version requirement' (lines 206–208), 'Prerequisites' (lines 399–403), and Node ≥18 (line 544, only in a Troubleshooting entry). Node version is not in the Prerequisites section at all — it only appears in a troubleshooting footnote. OS support is never stated anywhere.\n\nA reader checking 'can I run this?' should find one complete list, not assemble it from five fragments. Node ≥18 is a hard requirement for contributors/manual users and is effectively hidden.\"",
+      codeEvidence: [],
+      reviewerRatings: [
+        { reviewerId: "p-3", reviewerName: "Completeness Checker", rating: "P2", reasoning: "Prerequisites are scattered across four inconsistent locations; Node ≥18 is hidden in a troubleshooting footnote and OS support is never stated." }
+      ],
+      debateTranscript: [],
+      judgeRuling: {
+        disputed: false,
+        reasoning: "Single-source, unrefuted. Advisory P2. Consolidate Prerequisites into one place: Claude Code v1.0+, a supported surface, Pro/Max or API access, Node ≥18 (for tests/manual clone), OS. Node ≥18 currently only appears in a troubleshooting footnote.",
+        finalSeverity: "P2",
+        severityChangeReason: ""
+      },
+      fixRecommendation: {
+        summary: "Make the \"Prerequisites\" section the single source of truth: Claude Code v1.0+, supported surface, Pro/Max or API, Node ≥18, OS.",
+        proposedChange: "Consolidate all requirements into the \"Prerequisites\" section (around line 399): Claude Code v1.0+, a supported surface (link the surfaces list), Claude Pro/Max or API access, Node ≥18 (for tests/manual clone), OS support (state \"macOS/Linux/Windows — anywhere Claude Code runs\" or whatever is accurate), VoltAgent optional. Remove or cross-link the duplicate requirement fragments elsewhere.",
+        beforeCode: "",
+        afterCode: "",
+        regressionTest: "",
+        blastRadius: "Low — consolidating scattered requirement text into one section.",
+        estimatedEffort: "1 hr"
+      },
+      crossRefs: [
+        { targetId: "AI-10", relationship: "same-class", note: "Both AI-10 and AI-12 consolidate scattered onboarding/setup info into one findable place." }
+      ],
+      priorRuns: []
+    },
+    {
+      id: "AI-13",
+      summary: "P3 bundle: move the Vocabulary glossary up; add a \"finding looks wrong\" troubleshooting entry; note outputs aren't renameable; define or drop \"Schliff optimization (75 → 86)\"; reconcile the \"Claude Code surfaces\" vs. Agent SDK claim.",
+      severity: "P3",
+      epistemicLabel: "[SINGLE-SOURCE]",
+      defectType: null,
+      sourceReviewers: ["Clarity Editor", "Completeness Checker", "Devil's Advocate"],
+      verificationTier: null,
+      verificationVerdict: null,
+      verificationConfidence: null,
+      evidenceSummary: "A bundle of minor, individually low-impact polish items: glossary placement, a missing troubleshooting entry, undocumented output-naming constraints, an undefined \"Schliff\" metric, and a mild headline-scope contradiction with the Agent SDK.",
+      fullEvidence: "",
+      narrative: "A P3 bundle of minor items drawn from three reviewers, several of which the reviewers themselves flagged as their least-defensible findings.\n\nClarity Editor (F7): \"Move the Vocabulary table up — either right after the intro or as the first subsection of 'How It Works.' The README explicitly says 'This README uses these words consistently' and then provides the glossary as the second-to-last content section. The reader who needed it has already finished or given up.\"\n\nCompleteness Checker (P2-6, P2-7): \"State explicitly that output filenames and location are not configurable... Add a Troubleshooting entry for 'a finding looks wrong or overstated' tying the symptom to the epistemic-label/defect-type system and the HUMAN REVIEW RECOMMENDED flag.\"\n\nDevil's Advocate (F11, F12 — both self-identified as thin): \"'Schliff optimization (75 → 86)' is an undefined number presented as achievement — 75 → 86 of what? No unit, no scale, no definition anywhere. Define the score and the A/B setup, or remove the parenthetical.\" And: \"The hero callout says 'Runs only on Claude Code surfaces' then the Installation section adds the Agent SDK as a fourth supported surface. Make line 13 consistent.\"",
+      codeEvidence: [],
+      reviewerRatings: [
+        { reviewerId: "p-1", reviewerName: "Clarity Editor", rating: "P3", reasoning: "The Vocabulary glossary defining load-bearing terms sits ~550 lines below where those terms are first used." },
+        { reviewerId: "p-3", reviewerName: "Completeness Checker", rating: "P3", reasoning: "Minor gaps: output-naming constraints undocumented and no recovery guidance for when a finding itself is wrong." },
+        { reviewerId: "p-4", reviewerName: "Devil's Advocate", rating: "P3", reasoning: "Self-identified as thin — an undefined \"Schliff\" metric and a mild headline-scope contradiction with the Agent SDK." }
+      ],
+      debateTranscript: [],
+      judgeRuling: {
+        disputed: true,
+        reasoning: "Bundled the smallest items into a single P3 action. The Devil's Advocate self-identified F10 (grandiose naming) and F11 (Schliff metric) as its weakest findings; F10 is downgraded to this P3 bundle (the substantive part of F10 just restates the AI-11 framing critique), and F11 is folded in as a clean, fixable factual gap. Clarity's F7 (glossary placement) and the Completeness Checker's P2-6/P2-7 round out the bundle. None individually warrants its own action item; together they are a worthwhile polish pass.",
+        finalSeverity: "P3",
+        severityChangeReason: "Devil's Advocate F10 (grandiose naming) was self-identified as the reviewer's weakest finding and downgraded into this P3 bundle rather than carried as a standalone item."
+      },
+      fixRecommendation: {
+        summary: "A polish pass: relocate the Vocabulary glossary, add a \"finding looks wrong\" troubleshooting entry, document output-naming constraints, define or drop \"Schliff (75→86),\" and reconcile the surfaces-vs-SDK claim.",
+        proposedChange: "Move the Vocabulary glossary up (or add an early pointer to it). Add a Troubleshooting entry for \"a finding looks wrong\" tying the symptom to epistemic labels, defect types, and the HUMAN REVIEW RECOMMENDED flag, with a \"re-run with --runs 3 to test finding stability\" hint. State explicitly that output filenames and location are not configurable (rename/move the three review_panel_* files between runs). Define the \"Schliff optimization (75 → 86)\" score and its A/B setup, or remove the parenthetical. Make the line-13 \"Runs only on Claude Code surfaces\" headline consistent with the Agent SDK being listed as supported.",
+        beforeCode: "",
+        afterCode: "",
+        regressionTest: "",
+        blastRadius: "Low — a collection of small, independent text edits.",
+        estimatedEffort: "4 hr"
+      },
+      crossRefs: [],
+      priorRuns: []
+    }
+  ]
+};
+
+/* ============================ HELPERS ============================ */
+function escapeHtml(str) {
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+function initials(name) {
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[1][0]).toUpperCase();
+}
+const COLOR_MAP = {
+  indigo:'#6366f1', blue:'#3b82f6', cyan:'#06b6d4', teal:'#14b8a6', green:'#22c55e',
+  emerald:'#10b981', violet:'#8b5cf6', purple:'#a855f7', fuchsia:'#d946ef', rose:'#f43f5e',
+  orange:'#f97316', amber:'#f59e0b', slate:'#64748b', zinc:'#71717a'
+};
+function personaColor(id) {
+  const p = reviewData.personas.find(x => x.id === id);
+  if (p) return COLOR_MAP[p.avatar_color] || '#64748b';
+  if (id === 'judge') return COLOR_MAP.slate;
+  return '#64748b';
+}
+function personaById(id) { return reviewData.personas.find(x => x.id === id); }
+function personaByName(name) { return reviewData.personas.find(x => x.name === name); }
+
+const SEV_ORDER = { P0:0, P1:1, P2:2, P3:3 };
+const SEV_STRIPE = { P0:'border-red-500', P1:'border-orange-500', P2:'border-yellow-500', P3:'border-slate-500' };
+const SEV_CHIP = {
+  P0:'bg-red-900/60 text-red-300', P1:'bg-orange-900/60 text-orange-300',
+  P2:'bg-yellow-900/60 text-yellow-300', P3:'bg-slate-700 text-slate-300'
+};
+const EPI_CHIP = {
+  '[VERIFIED]':'bg-green-900/60 text-green-300',
+  '[CONSENSUS]':'bg-blue-900/60 text-blue-300',
+  '[SINGLE-SOURCE]':'bg-yellow-900/60 text-yellow-300',
+  '[UNVERIFIED]':'bg-slate-700 text-slate-300',
+  '[DISPUTED]':'bg-red-900/60 text-red-300'
+};
+const EPI_TOOLTIP = {
+  '[VERIFIED]':'Confirmed by claim verification AND at least 2 reviewers independently',
+  '[CONSENSUS]':'3+ reviewers agreed, not independently verified',
+  '[SINGLE-SOURCE]':'Only one reviewer raised this, unverified',
+  '[UNVERIFIED]':'Cited but not confirmed against source material',
+  '[DISPUTED]':'Reviewers explicitly disagreed, resolution was forced',
+  '[VR_CONFIRMED]':'Verification agent independently confirmed the claim',
+  '[VR_REFUTED]':'Verification agent found the claim to be incorrect',
+  '[VR_NEW_FINDING]':'Verification revealed an additional issue',
+  '[EXISTING_DEFECT]':'This bug exists in the current running code',
+  '[PLAN_RISK]':'This is a risk that would materialize if the plan is implemented as written'
+};
+const EPI_GENERIC_CHIP = {
+  '[VR_CONFIRMED]':'bg-emerald-900/60 text-emerald-300',
+  '[VR_REFUTED]':'bg-red-900/60 text-red-300',
+  '[VR_NEW_FINDING]':'bg-purple-900/60 text-purple-300',
+  '[EXISTING_DEFECT]':'bg-red-900/60 text-red-300',
+  '[PLAN_RISK]':'bg-amber-900/60 text-amber-300'
+};
+
+/* ============================ FILTER STATE ============================ */
+let filters = { severity:'all', tier:'all', verdict:'all', epistemic:'all', reviewer:null, search:'' };
+let sortBy = 'severity';
+
+function applyFilters() {
+  let items = reviewData.actionItems.slice();
+  if (filters.severity !== 'all') items = items.filter(i => i.severity === filters.severity);
+  if (filters.tier !== 'all') items = items.filter(i => i.verificationTier === filters.tier);
+  if (filters.verdict !== 'all') {
+    if (filters.verdict === 'none') items = items.filter(i => !i.verificationVerdict);
+    else items = items.filter(i => i.verificationVerdict === filters.verdict);
+  }
+  if (filters.epistemic !== 'all') items = items.filter(i => i.epistemicLabel === filters.epistemic);
+  if (filters.reviewer) {
+    const p = personaById(filters.reviewer);
+    if (p) items = items.filter(i => i.sourceReviewers.includes(p.name));
+  }
+  if (filters.search) {
+    const q = filters.search.toLowerCase();
+    items = items.filter(i =>
+      (i.id + ' ' + i.summary + ' ' + i.narrative + ' ' + i.evidenceSummary).toLowerCase().includes(q));
+  }
+  const confRank = { High:0, Medium:1, Low:2, null:3 };
+  const tierRank = { Light:0, Standard:1, Deep:2, null:3 };
+  items.sort((a,b) => {
+    if (sortBy === 'severity') return SEV_ORDER[a.severity] - SEV_ORDER[b.severity] || a.id.localeCompare(b.id);
+    if (sortBy === 'confidence') return (confRank[a.verificationConfidence]??3) - (confRank[b.verificationConfidence]??3) || a.id.localeCompare(b.id);
+    if (sortBy === 'tier') return (tierRank[a.verificationTier]??3) - (tierRank[b.verificationTier]??3) || a.id.localeCompare(b.id);
+    return 0;
+  });
+  return items;
+}
+
+/* ============================ RENDER: ISSUE CARDS ============================ */
+function renderItems(items) {
+  const container = document.getElementById('issues-container');
+  const total = reviewData.actionItems.length;
+  document.getElementById('live-count').textContent = `Showing ${items.length} of ${total} items`;
+
+  if (items.length === 0) {
+    container.innerHTML = `<div class="card bg-slate-900 border border-slate-800 rounded-lg p-6 text-center text-slate-400">
+      No items match the current filters. <button id="clear-all-filters" class="text-indigo-400 hover:text-white underline">Clear filters &#10005;</button></div>`;
+    const cab = document.getElementById('clear-all-filters');
+    if (cab) cab.addEventListener('click', clearAllFilters);
+    return;
+  }
+
+  container.innerHTML = items.map(renderIssueCard).join('');
+  attachCardListeners();
+  try { if (window.Prism) Prism.highlightAll(); } catch(e) {}
+}
+
+function renderRaisedByChips(item) {
+  return item.sourceReviewers.map(name => {
+    const p = personaByName(name);
+    const color = p ? COLOR_MAP[p.avatar_color] : '#64748b';
+    const pid = p ? p.id : '';
+    return `<button class="raised-by-chip inline-flex items-center justify-center w-6 h-6 rounded-full text-[10px] font-bold text-white" style="background:${color}" data-pid="${pid}" title="${escapeHtml(name)}">${initials(name)}</button>`;
+  }).join('');
+}
+
+function renderIssueCard(item) {
+  const stripe = SEV_STRIPE[item.severity] || 'border-slate-500';
+  const sevChip = SEV_CHIP[item.severity] || 'bg-slate-700 text-slate-300';
+  const epiChip = EPI_CHIP[item.epistemicLabel] || 'bg-slate-700 text-slate-300';
+  const verdictBadge = item.verificationVerdict
+    ? `<span class="px-2 py-0.5 rounded text-xs font-semibold bg-slate-700 text-slate-200">${escapeHtml(item.verificationVerdict)}</span>` : '';
+  const tierChip = item.verificationTier
+    ? `<span class="px-2 py-0.5 rounded text-xs font-semibold bg-blue-900/60 text-blue-300">${escapeHtml(item.verificationTier)}</span>` : '';
+  const defectChip = item.defectType
+    ? `<span class="px-2 py-0.5 rounded text-xs font-semibold ${EPI_GENERIC_CHIP[item.defectType]||'bg-slate-700 text-slate-300'}" title="${escapeHtml(EPI_TOOLTIP[item.defectType]||'')}">${escapeHtml(item.defectType)}</span>` : '';
+
+  // confidence bar
+  let confBar = '';
+  if (item.verificationTier && item.verificationConfidence) {
+    const lvl = item.verificationConfidence;
+    const w = lvl === 'High' ? '100%' : lvl === 'Medium' ? '50%' : '25%';
+    const col = lvl === 'High' ? 'bg-green-500' : lvl === 'Medium' ? 'bg-yellow-500' : 'bg-red-500';
+    confBar = `<div class="mt-2">
+      <div class="h-1.5 bg-slate-800 rounded-full overflow-hidden"><div class="h-full ${col}" style="width:${w}"></div></div>
+      <div class="text-[10px] text-slate-500 mt-0.5">Verification confidence: ${escapeHtml(lvl)}</div></div>`;
+  }
+
+  return `<details class="issue-card card bg-slate-900 border border-slate-800 border-l-4 ${stripe} rounded-lg" id="issue-${item.id}" tabindex="0">
+    <summary class="p-4">
+      <div class="flex flex-wrap items-start justify-between gap-3">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-baseline gap-2">
+            <code class="text-xs text-slate-500">${escapeHtml(item.id)}</code>
+            <span class="font-semibold text-white">${escapeHtml(item.summary)}</span>
+          </div>
+        </div>
+        <div class="flex flex-wrap items-center gap-1.5">
+          <span class="px-2 py-0.5 rounded text-xs font-bold ${sevChip}">${escapeHtml(item.severity)}</span>
+          <span class="px-2 py-0.5 rounded text-xs font-semibold ${epiChip}" title="${escapeHtml(EPI_TOOLTIP[item.epistemicLabel]||'')}">${escapeHtml(item.epistemicLabel)}</span>
+          ${defectChip}${verdictBadge}${tierChip}
+          <span class="text-slate-500 text-xs">&#9662;</span>
+        </div>
+      </div>
+      ${confBar}
+      <div class="mt-2 flex items-center gap-1.5 flex-wrap">
+        <span class="text-xs text-slate-500">Raised by:</span>
+        ${renderRaisedByChips(item)}
+      </div>
+    </summary>
+    <div class="px-4 pb-4">
+      <div class="section-accordion">
+        ${renderNarrative(item)}
+        ${renderCodeEvidence(item)}
+        ${renderRaisedBySection(item)}
+        ${renderVerificationTrail(item)}
+        ${renderDebate(item)}
+        ${renderJudgeRuling(item)}
+        ${renderFixRecommendation(item)}
+        ${renderCrossRefs(item)}
+        ${renderEpistemicTags(item)}
+        ${renderPriorRuns(item)}
+      </div>
+    </div>
+  </details>`;
+}
+
+function proseWithCode(text) {
+  // escape, then turn `backticks` into inline code, preserve paragraph breaks
+  const esc = escapeHtml(text);
+  const withCode = esc.replace(/`([^`]+)`/g, '<code class="bg-slate-800 px-1 rounded">$1</code>');
+  return withCode.split(/\n\n+/).map(p => `<p class="mb-2">${p.replace(/\n/g, '<br>')}</p>`).join('');
+}
+
+function renderNarrative(item) {
+  const body = item.narrative && item.narrative.trim()
+    ? `<div class="text-sm text-slate-300">${proseWithCode(item.narrative)}</div>`
+    : `<div class="text-sm text-slate-500 italic">No narrative captured for this finding.</div>`;
+  return `<details open><summary>&#128214; Narrative</summary>${body}</details>`;
+}
+
+function renderCodeEvidence(item) {
+  let body;
+  if (item.codeEvidence && item.codeEvidence.length) {
+    body = item.codeEvidence.map(ce => `
+      <div class="mt-3">
+        <div class="code-evidence-header">
+          <span class="file-path">${escapeHtml(ce.file)}</span>
+          <span class="line-range">${escapeHtml(ce.lineRange)}</span>
+          <span class="caption">${escapeHtml(ce.caption || '')}</span>
+        </div>
+        <pre class="max-h-96 overflow-y-auto rounded"><code class="language-${escapeHtml(ce.language||'text')}">${escapeHtml(ce.snippet)}</code></pre>
+      </div>`).join('');
+  } else {
+    body = `<div class="text-sm text-slate-500 italic">No code evidence captured for this finding. The reviewer may have raised this as a design/framing concern rather than a concrete code defect.</div>`;
+  }
+  return `<details open><summary>&#128196; Code Evidence</summary>${body}</details>`;
+}
+
+function renderRaisedBySection(item) {
+  let body;
+  if (item.reviewerRatings && item.reviewerRatings.length) {
+    body = `<div class="grid grid-cols-1 md:grid-cols-2 gap-3">` + item.reviewerRatings.map(r => {
+      const color = personaColor(r.reviewerId);
+      const sevChip = SEV_CHIP[r.rating] || 'bg-slate-700 text-slate-300';
+      const diff = r.rating !== item.severity
+        ? `<div class="text-xs text-yellow-400 mt-1">Rated ${escapeHtml(r.rating)}, final ${escapeHtml(item.severity)}</div>` : '';
+      return `<div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
+        <div class="flex items-center gap-2">
+          <span class="inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold text-white" style="background:${color}">${initials(r.reviewerName)}</span>
+          <span class="font-semibold text-sm text-white">${escapeHtml(r.reviewerName)}</span>
+          <span class="ml-auto px-2 py-0.5 rounded text-xs font-bold ${sevChip}">${escapeHtml(r.rating)}</span>
+        </div>
+        <div class="text-sm text-slate-300 italic mt-2">${escapeHtml(r.reasoning)}</div>
+        ${diff}
+      </div>`;
+    }).join('') + `</div>`;
+  } else if (item.sourceReviewers && item.sourceReviewers.length) {
+    body = `<div class="flex flex-wrap gap-2">` + item.sourceReviewers.map(name => {
+      const p = personaByName(name);
+      const color = p ? COLOR_MAP[p.avatar_color] : '#64748b';
+      return `<span class="inline-flex items-center gap-2 bg-slate-800/50 rounded-full pl-1 pr-3 py-1">
+        <span class="inline-flex items-center justify-center w-6 h-6 rounded-full text-[10px] font-bold text-white" style="background:${color}">${initials(name)}</span>
+        <span class="text-xs text-slate-300">${escapeHtml(name)}</span></span>`;
+    }).join('') + `</div>`;
+  } else {
+    body = `<div class="text-sm text-slate-500 italic">No raised-by data for this finding.</div>`;
+  }
+  return `<details open><summary>&#128101; Raised by</summary>${body}</details>`;
+}
+
+function renderVerificationTrail(item) {
+  let body;
+  if (item.verificationTier) {
+    const verdictBanners = {
+      VR_CONFIRMED:['bg-green-900/40 border-green-600 text-green-200','&#10003; Claim independently confirmed by verification agent'],
+      VR_REFUTED:['bg-red-900/40 border-red-600 text-red-200','&#9888; Claim was refuted — recommend downgrading or removing this action item'],
+      VR_PARTIAL:['bg-amber-900/40 border-amber-600 text-amber-200','&#9680; Claim partially confirmed — some details verified, others refuted'],
+      VR_INCONCLUSIVE:['bg-slate-800 border-slate-600 text-slate-300','? Verification was inconclusive — needs further investigation'],
+      VR_NEW_FINDING:['bg-purple-900/40 border-purple-600 text-purple-200','&#128269; Verification revealed an additional issue']
+    };
+    const vb = verdictBanners[item.verificationVerdict];
+    body = `
+      <div class="text-sm text-slate-300">
+        <p class="font-semibold text-slate-200">What was investigated:</p>
+        <p class="mb-2">${escapeHtml(item.evidenceSummary || '')}</p>
+        <p class="font-semibold text-slate-200">Key evidence:</p>
+        <blockquote class="border-l-4 border-blue-500 pl-3 italic text-slate-300 mb-2">${escapeHtml(item.evidenceSummary || '')}</blockquote>
+        <p class="font-semibold text-slate-200">Full investigation trail:</p>
+        <pre class="max-h-96 overflow-y-auto text-xs bg-slate-950 p-3 rounded">${escapeHtml(item.fullEvidence || '')}</pre>
+      </div>
+      ${vb ? `<div class="mt-3 px-3 py-2 rounded border ${vb[0]} text-sm">${vb[1]}</div>` : ''}`;
+  } else {
+    body = `<div class="text-sm text-slate-500 italic">This finding was not dispatched to a verification agent (Phase 13 was skipped or this finding was not disputed).`
+      + (item.fullEvidence ? ` Orchestrator claim-verification notes:</div><pre class="mt-2 max-h-96 overflow-y-auto text-xs bg-slate-950 p-3 rounded">${escapeHtml(item.fullEvidence)}</pre>`
+      : `</div>`);
+  }
+  return `<details open><summary>&#128269; Verification Trail</summary>${body}</details>`;
+}
+
+function renderDebate(item) {
+  let body;
+  if (item.debateTranscript && item.debateTranscript.length) {
+    body = item.debateTranscript.map(d => {
+      const p = personaByName(d.reviewer);
+      const color = p ? COLOR_MAP[p.avatar_color] : '#64748b';
+      return `<div class="debate-bubble">
+        <div class="avatar" style="background:${color}">${initials(d.reviewer)}</div>
+        <div class="content-box">
+          <div class="flex items-center gap-2">
+            <span class="font-semibold text-sm text-white">${escapeHtml(d.reviewer)}</span>
+            <span class="text-xs bg-slate-700 px-2 py-0.5 rounded-full">Round ${escapeHtml(String(d.round))}</span>
+          </div>
+          <div class="text-sm text-slate-300 mt-1">${escapeHtml(d.content)}</div>
+        </div>
+      </div>`;
+    }).join('');
+  } else {
+    body = `<div class="text-sm text-slate-500 italic">This finding was not debated in Phase 5 (no open dispute between reviewers).</div>`;
+  }
+  return `<details open><summary>&#128172; Debate</summary>${body}</details>`;
+}
+
+function renderJudgeRuling(item) {
+  let body;
+  if (item.judgeRuling) {
+    const jr = item.judgeRuling;
+    const callout = jr.severityChangeReason && jr.severityChangeReason.trim()
+      ? `<div class="mt-3 p-3 border-l-4 border-yellow-500 bg-yellow-950/20 rounded-r-lg">
+           <span class="font-semibold text-yellow-300">Severity adjusted:</span>
+           <span class="text-sm text-slate-300"> ${escapeHtml(jr.severityChangeReason)}</span></div>` : '';
+    body = `
+      <div class="flex items-center gap-2 mb-2">
+        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold text-white" style="background:${COLOR_MAP.slate}">SJ</span>
+        <span class="font-semibold text-sm text-white">Supreme Judge</span>
+        ${jr.disputed ? '<span class="px-2 py-0.5 rounded text-xs bg-red-900/60 text-red-300">Disputed</span>' : '<span class="px-2 py-0.5 rounded text-xs bg-slate-700 text-slate-300">No dispute</span>'}
+      </div>
+      <div class="text-sm text-slate-300">${proseWithCode(jr.reasoning)}</div>
+      ${callout}`;
+  } else {
+    body = `<div class="text-sm text-slate-500 italic">The Supreme Judge did not arbitrate this finding (no dispute required resolution).</div>`;
+  }
+  return `<details open><summary>&#9878;&#65039; Judge Ruling</summary>${body}</details>`;
+}
+
+function renderFixRecommendation(item) {
+  const fr = item.fixRecommendation;
+  let body;
+  if (!fr) {
+    body = `<div class="text-sm text-slate-500 italic">No fix recommendation data for this finding.</div>`;
+    return `<details open><summary>&#128736;&#65039; Fix Recommendation</summary>${body}</details>`;
+  }
+  const hasDetail = fr.proposedChange || fr.beforeCode || fr.afterCode || fr.regressionTest || fr.blastRadius;
+  if (!hasDetail) {
+    body = `<div class="p-3 bg-slate-800/50 rounded text-sm text-slate-300">${escapeHtml(fr.summary||'')}</div>
+      <div class="text-sm text-slate-500 italic mt-2">Fix details not specified — see Narrative section for reviewer's recommendation.</div>`;
+    return `<details open><summary>&#128736;&#65039; Fix Recommendation</summary>${body}</details>`;
+  }
+  let codeBlock = '';
+  const lang = (item.codeEvidence && item.codeEvidence[0] && item.codeEvidence[0].language) || 'text';
+  if (fr.beforeCode && fr.afterCode) {
+    codeBlock = `<div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+      <div><div class="text-xs font-semibold text-red-300 mb-1">Before</div>
+        <pre class="bg-red-950/30 border border-red-800/50 rounded max-h-96 overflow-y-auto"><code class="language-${escapeHtml(lang)}">${escapeHtml(fr.beforeCode)}</code></pre></div>
+      <div><div class="text-xs font-semibold text-green-300 mb-1">After</div>
+        <pre class="bg-green-950/30 border border-green-800/50 rounded max-h-96 overflow-y-auto"><code class="language-${escapeHtml(lang)}">${escapeHtml(fr.afterCode)}</code></pre></div>
+    </div>`;
+  } else if (fr.beforeCode) {
+    codeBlock = `<div class="mt-3"><div class="text-xs font-semibold text-red-300 mb-1">Before</div>
+      <pre class="bg-red-950/30 border border-red-800/50 rounded max-h-96 overflow-y-auto"><code class="language-${escapeHtml(lang)}">${escapeHtml(fr.beforeCode)}</code></pre></div>`;
+  } else if (fr.afterCode) {
+    codeBlock = `<div class="mt-3"><div class="text-xs font-semibold text-green-300 mb-1">After</div>
+      <pre class="bg-green-950/30 border border-green-800/50 rounded max-h-96 overflow-y-auto"><code class="language-${escapeHtml(lang)}">${escapeHtml(fr.afterCode)}</code></pre></div>`;
+  }
+  const regTest = fr.regressionTest && fr.regressionTest.trim()
+    ? `<div class="mt-3"><div class="text-xs font-semibold text-slate-300 mb-1">&#129514; Regression test to add:</div>
+       <div class="bg-slate-900 p-3 rounded text-xs font-mono text-slate-300">${escapeHtml(fr.regressionTest)}</div></div>` : '';
+  const blastClass = { Low:'chip-low', Medium:'chip-med', High:'chip-high' };
+  let blastChip = '';
+  if (fr.blastRadius) {
+    const lvl = fr.blastRadius.split(/[\s—-]/)[0];
+    blastChip = `<span class="chip ${blastClass[lvl]||'chip-blue'}">Blast: ${escapeHtml(fr.blastRadius)}</span>`;
+  }
+  const effortChip = fr.estimatedEffort ? `<span class="chip chip-blue">Effort: ${escapeHtml(fr.estimatedEffort)}</span>` : '';
+  body = `
+    <div class="text-sm text-slate-300">${proseWithCode(fr.proposedChange || fr.summary || '')}</div>
+    ${codeBlock}
+    ${regTest}
+    <div class="mt-3 flex flex-wrap gap-2">${blastChip}${effortChip}</div>`;
+  return `<details open><summary>&#128736;&#65039; Fix Recommendation</summary>${body}</details>`;
+}
+
+function renderCrossRefs(item) {
+  let body;
+  if (item.crossRefs && item.crossRefs.length) {
+    const relClass = {
+      'root-cause':'xref-root-cause', 'same-class':'xref-same-class',
+      'depends-on':'xref-depends-on', 'blocks':'xref-blocks'
+    };
+    body = `<div class="space-y-2">` + item.crossRefs.map(cr => `
+      <div class="text-sm text-slate-300">
+        <a href="#issue-${escapeHtml(cr.targetId)}" class="xref-link ${relClass[cr.relationship]||'xref-same-class'}" data-target="${escapeHtml(cr.targetId)}">${escapeHtml(cr.targetId)}: ${escapeHtml(cr.relationship)}</a>
+        <span class="italic ml-2 text-slate-400">${escapeHtml(cr.note)}</span>
+      </div>`).join('') + `</div>`;
+  } else {
+    body = `<div class="text-sm text-slate-500 italic">No related findings. This finding stands alone.</div>`;
+  }
+  return `<details open><summary>&#128279; Cross-references</summary>${body}</details>`;
+}
+
+function renderEpistemicTags(item) {
+  const tags = [item.epistemicLabel];
+  if (item.defectType) tags.push(item.defectType);
+  if (item.verificationVerdict) tags.push('[' + item.verificationVerdict.replace(/^VR_/, 'VR_') + ']');
+  const chipClass = Object.assign({}, EPI_CHIP, EPI_GENERIC_CHIP);
+  const body = `<div class="flex flex-wrap gap-2">` + tags.map(t => {
+    const cls = chipClass[t] || 'bg-slate-700 text-slate-300';
+    const tip = EPI_TOOLTIP[t] || '';
+    return `<span class="chip ${cls}" title="${escapeHtml(tip)}">${escapeHtml(t)}
+      <span class="info-icon cursor-pointer" data-tip="${escapeHtml(tip)}">&#8505;&#65039;</span></span>`;
+  }).join('') + `</div>`;
+  return `<details open><summary>&#127991;&#65039; Epistemic Tags</summary>${body}</details>`;
+}
+
+function renderPriorRuns(item) {
+  let body;
+  if (item.priorRuns && item.priorRuns.length) {
+    body = `<div class="bg-slate-900/50 rounded-lg overflow-hidden text-sm">
+      <table class="w-full"><thead class="bg-slate-800 text-slate-300"><tr>
+        <th class="text-left px-3 py-1.5">Run</th><th class="text-left px-3 py-1.5">Severity</th>
+        <th class="text-left px-3 py-1.5">Rating</th><th class="text-left px-3 py-1.5">Note</th>
+      </tr></thead><tbody class="divide-y divide-slate-800">` + item.priorRuns.map(r => `
+        <tr><td class="px-3 py-1.5 font-mono text-xs">${escapeHtml(r.runLabel)}</td>
+        <td class="px-3 py-1.5"><span class="px-2 py-0.5 rounded text-xs font-bold ${SEV_CHIP[r.severity]||'bg-slate-700 text-slate-300'}">${escapeHtml(r.severity)}</span></td>
+        <td class="px-3 py-1.5"><span class="chip chip-blue">${escapeHtml(r.rating)}</span></td>
+        <td class="px-3 py-1.5 text-slate-400">${escapeHtml(r.note)}</td></tr>`).join('') + `</tbody></table></div>`;
+  } else {
+    body = `<div class="text-sm text-slate-500 italic">No prior-run data available (this is a single-run review, not a meta-comparison).</div>`;
+  }
+  return `<details open><summary>&#128202; Prior Runs</summary>${body}</details>`;
+}
+
+/* ============================ CARD LISTENERS ============================ */
+function attachCardListeners() {
+  document.querySelectorAll('.issue-card').forEach(card => {
+    card.addEventListener('toggle', () => {
+      if (card.open) history.replaceState(null, '', '#' + card.id);
+    });
+  });
+  document.querySelectorAll('.raised-by-chip').forEach(chip => {
+    chip.addEventListener('click', (e) => {
+      e.preventDefault(); e.stopPropagation();
+      const pid = chip.getAttribute('data-pid');
+      if (pid) setReviewerFilter(pid);
+    });
+  });
+  document.querySelectorAll('.xref-link').forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const targetId = link.getAttribute('data-target');
+      const target = document.getElementById('issue-' + targetId);
+      if (target) {
+        target.open = true;
+        target.scrollIntoView({ behavior:'smooth', block:'start' });
+        target.classList.add('issue-highlight');
+        setTimeout(() => target.classList.remove('issue-highlight'), 2000);
+      }
+    });
+  });
+  document.querySelectorAll('.info-icon').forEach(icon => {
+    icon.addEventListener('click', (e) => {
+      e.preventDefault(); e.stopPropagation();
+      alert(icon.getAttribute('data-tip'));
+    });
+  });
+}
+
+/* ============================ REVIEWER FILTER ============================ */
+function setReviewerFilter(pid) {
+  if (filters.reviewer === pid) { filters.reviewer = null; }
+  else { filters.reviewer = pid; }
+  updateReviewerBanner();
+  updateGalleryHighlights();
+  renderItems(applyFilters());
+  if (filters.reviewer) {
+    document.getElementById('action-items-section').scrollIntoView({ behavior:'smooth', block:'start' });
+  }
+}
+function updateReviewerBanner() {
+  const banner = document.getElementById('reviewer-filter-banner');
+  const text = document.getElementById('reviewer-filter-text');
+  if (filters.reviewer) {
+    const p = personaById(filters.reviewer);
+    text.textContent = `Filtered to items raised by ${p ? p.name : filters.reviewer}`;
+    banner.classList.remove('hidden');
+  } else {
+    banner.classList.add('hidden');
+  }
+}
+function updateGalleryHighlights() {
+  document.querySelectorAll('.persona-card').forEach(c => {
+    if (c.getAttribute('data-pid') === filters.reviewer) {
+      c.classList.add('ring-2','ring-yellow-400');
+    } else {
+      c.classList.remove('ring-2','ring-yellow-400');
+    }
+  });
+}
+function clearAllFilters() {
+  filters = { severity:'all', tier:'all', verdict:'all', epistemic:'all', reviewer:null, search:'' };
+  sortBy = 'severity';
+  document.getElementById('filter-severity').value = 'all';
+  document.getElementById('filter-tier').value = 'all';
+  document.getElementById('filter-verdict').value = 'all';
+  document.getElementById('filter-epistemic').value = 'all';
+  document.getElementById('sort-by').value = 'severity';
+  document.getElementById('search-box').value = '';
+  updateReviewerBanner();
+  updateGalleryHighlights();
+  renderItems(applyFilters());
+}
+
+/* ============================ PANEL GALLERY ============================ */
+function renderPersonaCards() {
+  const gallery = document.getElementById('panel-gallery');
+  // Sub-group A — Panel Reviewers
+  const reviewerCards = reviewData.personas.map(p => {
+    const color = COLOR_MAP[p.avatar_color] || '#64748b';
+    const phaseBadges = p.phases_active.map(ph =>
+      `<span class="px-1.5 py-0.5 rounded text-[10px] bg-slate-800 text-slate-400">Phase ${ph}</span>`).join(' ');
+    return `<div class="persona-card card bg-slate-900 border border-slate-800 rounded-lg p-4 cursor-pointer hover:border-slate-600 transition-all" data-pid="${p.id}">
+      <div class="flex items-center gap-3">
+        <span class="inline-flex items-center justify-center w-10 h-10 rounded-full text-sm font-bold text-white" style="background:${color}">${initials(p.name)}</span>
+        <div>
+          <div class="font-semibold text-white">${escapeHtml(p.name)}</div>
+          <div class="text-xs text-slate-400">${escapeHtml(p.role)}</div>
+        </div>
+      </div>
+      <div class="flex flex-wrap gap-2 mt-3 text-xs text-slate-300">
+        <span>&#127919; ${p.agreement_intensity}%</span>
+        <span>&#129504; ${escapeHtml(p.reasoning_strategy)}</span>
+        <span>&#128203; ${p.items_raised.length} items raised</span>
+      </div>
+      <div class="flex flex-wrap gap-1 mt-2">${phaseBadges}</div>
+      <div class="text-xs text-slate-500 italic mt-2">${escapeHtml(p.domain_focus)}</div>
+    </div>`;
+  }).join('');
+
+  // Sub-group C — Support Agents
+  const supportCards = reviewData.supportAgents.map(a => {
+    return `<div class="card bg-slate-900 border border-slate-800 rounded-lg p-3" title="${escapeHtml(a.role)}">
+      <div class="flex items-center gap-2">
+        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold text-white" style="background:${COLOR_MAP.zinc}">${initials(a.name)}</span>
+        <div>
+          <div class="text-sm font-semibold text-white">${escapeHtml(a.name)}</div>
+          <div class="text-[11px] text-slate-400 leading-tight">${escapeHtml(a.role.length > 90 ? a.role.slice(0,90)+'…' : a.role)}</div>
+        </div>
+      </div>
+      <div class="mt-2"><span class="px-1.5 py-0.5 rounded text-[10px] bg-slate-800 text-slate-400">${escapeHtml(a.phase)}</span></div>
+    </div>`;
+  }).join('');
+
+  gallery.innerHTML = `
+    <div class="mb-6">
+      <h3 class="text-sm font-semibold text-slate-300 mb-3">Panel Reviewers <span class="text-slate-500">(${reviewData.personas.length})</span></h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">${reviewerCards}</div>
+      <p class="text-xs text-slate-500 mt-2">Click a reviewer card to filter the Action Items list to items they raised; click again to clear.</p>
+    </div>
+    <div class="border-t border-slate-800 pt-6 mb-6">
+      <h3 class="text-sm font-semibold text-slate-300 mb-3">Verification Specialists</h3>
+      <p class="text-sm text-slate-500 italic">No Phase 13 verification specialists were dispatched — this was a pure-documentation review and claim verification was performed directly by the orchestrator (Phases 8–11).</p>
+    </div>
+    <div class="border-t border-slate-800 pt-6">
+      <h3 class="text-sm font-semibold text-slate-300 mb-3">Support Agents</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">${supportCards}</div>
+      <p class="text-xs text-slate-500 mt-2">Hover a card for the full role description.</p>
+    </div>`;
+
+  gallery.querySelectorAll('.persona-card').forEach(c => {
+    c.addEventListener('click', () => setReviewerFilter(c.getAttribute('data-pid')));
+  });
+  updateGalleryHighlights();
+}
+
+/* ============================ SCORE TABLE ============================ */
+function renderScoreTable() {
+  const tbody = document.getElementById('score-table-body');
+  const scoreColor = (s) => s >= 7 ? 'text-green-400' : s >= 4 ? 'text-yellow-400' : 'text-red-400';
+  tbody.innerHTML = reviewData.scoreTable.map(r => {
+    const delta = r.final - r.initial;
+    const deltaStr = delta === 0 ? '0' : (delta > 0 ? '+' : '') + delta;
+    return `<tr class="hover:bg-slate-800/40">
+      <td class="px-4 py-2 font-semibold text-white">${escapeHtml(r.reviewer)}
+        <span class="ml-2 px-1.5 py-0.5 rounded text-[10px] bg-slate-800 text-slate-400">&#127919; ${r.intensity}%</span></td>
+      <td class="px-4 py-2 text-slate-400 text-xs">${escapeHtml(r.persona)}</td>
+      <td class="px-4 py-2 text-center font-bold ${scoreColor(r.initial)}">${r.initial}</td>
+      <td class="px-4 py-2 text-center font-bold ${scoreColor(r.final)}">${r.final}</td>
+      <td class="px-4 py-2 text-center text-slate-400">${deltaStr}</td>
+      <td class="px-4 py-2 text-slate-300 text-xs">${escapeHtml(r.recommendation)}</td>
+    </tr>`;
+  }).join('');
+}
+
+/* ============================ CHARTS ============================ */
+function initCharts() {
+  if (typeof Chart === 'undefined') {
+    document.querySelectorAll('canvas').forEach(c => {
+      const wrap = c.parentElement;
+      wrap.innerHTML = '<div class="flex items-center justify-center h-full text-xs text-slate-500">Charts unavailable (CDN unreachable)</div>';
+    });
+    return;
+  }
+  Chart.defaults.color = '#94a3b8';
+  Chart.defaults.borderColor = 'rgba(51,65,85,0.4)';
+
+  // Score gauge (doughnut)
+  try {
+    new Chart(document.getElementById('chart-score'), {
+      type: 'doughnut',
+      data: { datasets: [{ data: [5,5], backgroundColor: ['#f97316','#1e293b'], borderWidth: 0 }] },
+      options: { responsive: true, maintainAspectRatio: false, cutout: '72%',
+        plugins: { legend: { display: false }, tooltip: { enabled: false } } }
+    });
+  } catch(e) {}
+
+  // Confidence distribution — grouped bar by reviewer (per-finding confidence)
+  // No Phase 13 verification confidence available; show items-raised counts per reviewer instead, by severity.
+  try {
+    const reviewers = reviewData.personas.map(p => p.name);
+    const p1 = [], p2 = [], p3 = [];
+    reviewData.personas.forEach(p => {
+      let c1 = 0, c2 = 0, c3 = 0;
+      p.items_raised.forEach(id => {
+        const it = reviewData.actionItems.find(a => a.id === id);
+        if (!it) return;
+        if (it.severity === 'P1') c1++;
+        else if (it.severity === 'P2') c2++;
+        else if (it.severity === 'P3') c3++;
+      });
+      p1.push(c1); p2.push(c2); p3.push(c3);
+    });
+    new Chart(document.getElementById('chart-confidence'), {
+      type: 'bar',
+      data: {
+        labels: reviewers,
+        datasets: [
+          { label: 'P1', data: p1, backgroundColor: '#f97316' },
+          { label: 'P2', data: p2, backgroundColor: '#eab308' },
+          { label: 'P3', data: p3, backgroundColor: '#64748b' }
+        ]
+      },
+      options: { responsive: true, maintainAspectRatio: false,
+        scales: { x: { stacked: false, ticks: { font: { size: 9 } } }, y: { beginAtZero: true, ticks: { precision: 0 } } },
+        plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } },
+          title: { display: true, text: 'Action items raised, by reviewer & severity', font: { size: 10 } } } }
+    });
+  } catch(e) {}
+
+  // Severity breakdown — bar
+  try {
+    new Chart(document.getElementById('chart-severity'), {
+      type: 'bar',
+      data: {
+        labels: ['P0','P1','P2','P3'],
+        datasets: [{ label: 'Action items', data: [0,4,8,1],
+          backgroundColor: ['#ef4444','#f97316','#eab308','#64748b'] }]
+      },
+      options: { responsive: true, maintainAspectRatio: false,
+        scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
+        plugins: { legend: { display: false } } }
+    });
+  } catch(e) {}
+
+  // Epistemic label breakdown — horizontal bar
+  try {
+    const labelCounts = {};
+    reviewData.actionItems.forEach(i => {
+      labelCounts[i.epistemicLabel] = (labelCounts[i.epistemicLabel] || 0) + 1;
+    });
+    const labels = Object.keys(labelCounts);
+    const colorByLabel = {
+      '[VERIFIED]':'#22c55e', '[CONSENSUS]':'#3b82f6', '[SINGLE-SOURCE]':'#eab308',
+      '[UNVERIFIED]':'#64748b', '[DISPUTED]':'#ef4444'
+    };
+    new Chart(document.getElementById('chart-epistemic'), {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{ label: 'Action items', data: labels.map(l => labelCounts[l]),
+          backgroundColor: labels.map(l => colorByLabel[l] || '#64748b') }]
+      },
+      options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+        scales: { x: { beginAtZero: true, ticks: { precision: 0 } } },
+        plugins: { legend: { display: false } } }
+    });
+  } catch(e) {}
+}
+
+/* ============================ COLLAPSIBLE SECTIONS ============================ */
+function setupToggles() {
+  document.querySelectorAll('.toggle-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const t = document.getElementById(btn.getAttribute('data-target'));
+      if (t) t.classList.toggle('hidden');
+    });
+  });
+  const galleryToggle = document.getElementById('gallery-toggle');
+  galleryToggle.addEventListener('click', () => {
+    const g = document.getElementById('panel-gallery');
+    g.classList.toggle('hidden');
+    galleryToggle.textContent = g.classList.contains('hidden') ? 'Expand' : 'Collapse';
+  });
+  const scoreToggle = document.getElementById('score-toggle');
+  scoreToggle.addEventListener('click', () => {
+    const b = document.getElementById('score-body');
+    b.classList.toggle('hidden');
+    scoreToggle.textContent = b.classList.contains('hidden') ? 'Expand' : 'Collapse';
+  });
+  const consensusToggle = document.getElementById('consensus-toggle');
+  consensusToggle.addEventListener('click', () => {
+    const b = document.getElementById('consensus-body');
+    b.classList.toggle('hidden');
+    consensusToggle.textContent = b.classList.contains('hidden') ? 'Expand' : 'Collapse';
+  });
+}
+
+/* ============================ FILTER BAR ============================ */
+function setupFilterBar() {
+  document.getElementById('filter-severity').addEventListener('change', e => { filters.severity = e.target.value; renderItems(applyFilters()); });
+  document.getElementById('filter-tier').addEventListener('change', e => { filters.tier = e.target.value; renderItems(applyFilters()); });
+  document.getElementById('filter-verdict').addEventListener('change', e => { filters.verdict = e.target.value; renderItems(applyFilters()); });
+  document.getElementById('filter-epistemic').addEventListener('change', e => { filters.epistemic = e.target.value; renderItems(applyFilters()); });
+  document.getElementById('sort-by').addEventListener('change', e => { sortBy = e.target.value; renderItems(applyFilters()); });
+  document.getElementById('search-box').addEventListener('input', e => { filters.search = e.target.value; renderItems(applyFilters()); });
+  document.getElementById('expand-all').addEventListener('click', () => {
+    document.querySelectorAll('.issue-card:not(.hidden)').forEach(d => d.open = true);
+  });
+  document.getElementById('collapse-all').addEventListener('click', () => {
+    document.querySelectorAll('.issue-card:not(.hidden)').forEach(d => d.open = false);
+  });
+  document.getElementById('clear-reviewer-filter').addEventListener('click', () => setReviewerFilter(filters.reviewer));
+}
+
+/* ============================ KEYBOARD NAV ============================ */
+function setupKeyboardNav() {
+  const container = document.getElementById('issues-container');
+  container.addEventListener('keydown', (e) => {
+    const cards = Array.from(document.querySelectorAll('.issue-card:not(.hidden)'));
+    if (cards.length === 0) return;
+    const active = document.activeElement;
+    let idx = cards.indexOf(active);
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      idx = idx < 0 ? 0 : Math.min(idx + 1, cards.length - 1);
+      cards[idx].focus();
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      idx = idx < 0 ? 0 : Math.max(idx - 1, 0);
+      cards[idx].focus();
+    } else if (e.key === 'Home') {
+      e.preventDefault(); cards[0].focus();
+    } else if (e.key === 'End') {
+      e.preventDefault(); cards[cards.length - 1].focus();
+    }
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === '/' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+      e.preventDefault();
+      document.getElementById('search-box').focus();
+    }
+  });
+}
+
+/* ============================ DEEP LINKING ============================ */
+function handleDeepLink() {
+  const hash = window.location.hash;
+  const m = hash.match(/^#issue-(.+)$/);
+  if (m) {
+    const id = m[1];
+    if (reviewData.actionItems.find(a => a.id === id)) {
+      const el = document.getElementById('issue-' + id);
+      if (el) {
+        el.open = true;
+        setTimeout(() => {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          el.classList.add('issue-highlight');
+          setTimeout(() => el.classList.remove('issue-highlight'), 2000);
+        }, 100);
+      }
+    }
+  }
+}
+
+/* ============================ PRISM ============================ */
+function setupPrism() {
+  try {
+    if (window.Prism && Prism.plugins && Prism.plugins.autoloader) {
+      Prism.plugins.autoloader.languages_path = 'https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/';
+    }
+  } catch(e) {}
+}
+
+/* ============================ INIT ============================ */
+document.addEventListener('DOMContentLoaded', () => {
+  setupPrism();
+  renderPersonaCards();
+  renderScoreTable();
+  renderItems(applyFilters());
+  setupToggles();
+  setupFilterBar();
+  setupKeyboardNav();
+  initCharts();
+  handleDeepLink();
+  try { if (window.Prism) Prism.highlightAll(); } catch(e) {}
+});
+</script>
+</body>
+</html>
