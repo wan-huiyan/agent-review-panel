@@ -72,7 +72,13 @@ The panel forces the same model to take multiple passes from assigned, divergent
 
 ## Sample output
 
-The panel was run against this very README on 2026-05-14. Excerpt from the resulting `review_panel_report.md`:
+The panel was run against this very README on 2026-05-14. The interactive HTML dashboard:
+
+[![Agent Review Panel — interactive HTML dashboard with expandable issue cards](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/v3.3.0/docs/html-demo.gif)](docs/reviews/2026-05-14-readme/review_panel_report.html)
+
+*Expandable 10-section issue cards (narrative, code evidence with Prism.js syntax highlighting, debate transcripts, judge rulings, fix recommendations, cross-references), deep-linkable, keyboard-navigable, print-friendly. The GIF above links to the actual generated report for this README.*
+
+Excerpt from the matching `review_panel_report.md`:
 
 ```markdown
 # Review Panel Report — README.md
