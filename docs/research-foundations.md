@@ -14,4 +14,4 @@ Agent Review Panel is grounded in 9 peer-reviewed papers on multi-agent debate a
 | [CONSENSAGENT](https://aclanthology.org/2025.findings-acl.1141/) | ACL 2025 | Dynamic sycophancy intervention |
 | [Trust or Escalate](https://arxiv.org/abs/2407.18370) | ICLR 2025 Oral | Judge confidence gating with selective escalation |
 
-The skill adapts these mechanisms (demonstrated on reasoning benchmarks) to the practical domain of code and document review. Additional integrations: [AI Trust Evaluation Framework](https://github.com/wan-huiyan/ai-trust-evaluation) (claim verification, epistemic labels), [VoltAgent](https://github.com/VoltAgent/awesome-claude-code-subagents) (127+ specialist agents). See [ROADMAP.md](../ROADMAP.md) for planned additions.
+The skill adapts these mechanisms (demonstrated on reasoning benchmarks) to the practical domain of code and document review. Additional integrations: [AI Trust Evaluation Framework](https://github.com/wan-huiyan/ai-trust-evaluation) (claim verification, epistemic labels), [VoltAgent](https://github.com/VoltAgent/awesome-claude-code-subagents) (130+ specialist agents). See [ROADMAP.md](../ROADMAP.md) for planned additions.

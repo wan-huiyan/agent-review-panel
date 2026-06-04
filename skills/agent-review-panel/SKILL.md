@@ -31,7 +31,7 @@ description: >
   composition/seam bugs.
 ---
 
-# Agent Review Panel v3.3.0
+# Agent Review Panel v3.4.0
 
 A multi-agent adversarial review system based on nine research foundations:
 ChatEval (ICLR 2024), AutoGen, Du et al. (ICML 2024), MachineSoM (ACL 2024),
@@ -324,10 +324,13 @@ Correctness, Completeness, Quality, Edge Cases (override if user specifies).
 
 ### VoltAgent Integration (v2.9)
 
-VoltAgent specialist agents (127+ across 10 families) have built-in domain
+VoltAgent specialist agents (130+ across 10 families) have built-in domain
 expertise via their system prompts, making them stronger reviewers than generic
 persona-prompted agents. When available, the panel should **upgrade** personas
 to VoltAgent agents. Full catalog: github.com/VoltAgent/awesome-claude-code-subagents
+(a point-in-time snapshot of every agent the mapping tables below may reference
+is vendored at `references/voltagent-catalog.json`; run `scripts/refresh-voltagent-catalog.sh`
+to regenerate it and `scripts/voltagent-catalog-check.sh` to detect drift).
 
 **Step 1: Check availability.** During Phase 1 setup, check whether VoltAgent
 agents are available by scanning the system-reminder agent list for any
@@ -345,7 +348,7 @@ agents are available by scanning the system-reminder agent list for any
 | Security Auditor | `voltagent-qa-sec:security-auditor` | `voltagent-qa-sec:penetration-tester` | Generic + prompt |
 | Code Quality Auditor | `voltagent-qa-sec:code-reviewer` | | Generic + prompt |
 | Feasibility Analyst | `voltagent-data-ai:data-scientist` | `voltagent-biz:business-analyst` | Generic + prompt |
-| Risk Assessor | `voltagent-qa-sec:chaos-engineer` | `voltagent-biz:risk-manager` | Generic + prompt |
+| Risk Assessor | `voltagent-qa-sec:chaos-engineer` | `voltagent-domains:risk-manager` | Generic + prompt |
 | Performance Specialist | `voltagent-qa-sec:performance-engineer` | `voltagent-infra:sre-engineer` | Generic + prompt |
 | Stakeholder Advocate | `voltagent-biz:product-manager` | `voltagent-biz:business-analyst` | Generic + prompt |
 | Devil's Advocate | Generic + prompt | | (intentionally generic) |
@@ -401,6 +404,36 @@ VoltAgent agents instead of generic personas:
 | IoT / embedded | Embedded Reviewer | `voltagent-domains:embedded-systems` |
 | SEO | SEO Reviewer | `voltagent-domains:seo-specialist` |
 | Quant / financial models | Quant Reviewer | `voltagent-domains:quant-analyst` |
+| Vue / Nuxt | Vue Reviewer | `voltagent-lang:vue-expert` |
+| Angular | Angular Reviewer | `voltagent-lang:angular-architect` |
+| Next.js | Next.js Reviewer | `voltagent-lang:nextjs-developer` |
+| React Native / Expo | Mobile Reviewer | `voltagent-lang:expo-react-native-expert` |
+| Electron / desktop apps | Desktop Reviewer | `voltagent-core-dev:electron-pro` |
+| Django | Django Reviewer | `voltagent-lang:django-developer` |
+| FastAPI | FastAPI Reviewer | `voltagent-lang:fastapi-developer` |
+| Spring Boot | Spring Boot Reviewer | `voltagent-lang:spring-boot-engineer` |
+| Symfony | Symfony Reviewer | `voltagent-lang:symfony-specialist` |
+| C / C++ | C++ Reviewer | `voltagent-lang:cpp-pro` |
+| Kotlin | Kotlin Reviewer | `voltagent-lang:kotlin-specialist` |
+| Elixir / Phoenix | Elixir Reviewer | `voltagent-lang:elixir-expert` |
+| MLOps / model deployment | MLOps Reviewer | `voltagent-data-ai:mlops-engineer` |
+| Reinforcement learning | RL Reviewer | `voltagent-data-ai:reinforcement-learning-engineer` |
+| Prompt optimization / evals | Prompt Reviewer | `voltagent-data-ai:prompt-engineer` |
+| AI systems / agentic apps | AI Systems Reviewer | `voltagent-data-ai:ai-engineer` |
+| Database admin / replication / HA | DBA Reviewer | `voltagent-infra:database-administrator` |
+| Incident response / outages | Incident Reviewer | `voltagent-infra:incident-responder` |
+| Windows Server / IIS | Windows Reviewer | `voltagent-infra:windows-infra-admin` |
+| Cloud security / secrets mgmt | Cloud Security Reviewer | `voltagent-infra:security-engineer` |
+| CLI tools / TUIs | CLI Reviewer | `voltagent-dev-exp:cli-developer` |
+| MCP servers / tools | MCP Reviewer | `voltagent-dev-exp:mcp-developer` |
+| Refactoring / legacy modernization | Refactoring Reviewer | `voltagent-dev-exp:refactoring-specialist` |
+| Build systems / bundlers | Build Reviewer | `voltagent-dev-exp:build-engineer` |
+| Dependencies / supply chain | Dependency Reviewer | `voltagent-dev-exp:dependency-manager` |
+| Git workflows / branching | Git Workflow Reviewer | `voltagent-dev-exp:git-workflow-manager` |
+| Game dev / engines | Game Reviewer | `voltagent-domains:game-developer` |
+| API docs / OpenAPI | API Docs Reviewer | `voltagent-domains:api-documenter` |
+| Legal / licensing / contracts | Legal Reviewer | `voltagent-biz:legal-advisor` |
+| UX research / usability | UX Research Reviewer | `voltagent-biz:ux-researcher` |
 
 #### Multi-Agent Orchestration Mapping (for pre/post-panel phases)
 
@@ -1484,7 +1517,7 @@ Tell user:
 - Counts: consensus points, disagreements, action items, verification verdicts
 - Top P0 action item (if any)
 - Note: HTML report requires internet connection for Tailwind CSS, Chart.js, and Prism.js CDNs
-- HTML footer should read "Agent Review Panel v3.3.0" (MUST match the full semver from `plugin.json` — update this line whenever the version is bumped)
+- HTML footer should read "Agent Review Panel v3.4.0" (MUST match the full semver from `plugin.json` — update this line whenever the version is bumped)
 
 ---
 

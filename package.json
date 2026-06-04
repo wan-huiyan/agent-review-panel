@@ -1,11 +1,12 @@
 {
   "name": "roundtable",
-  "version": "3.3.0",
+  "version": "3.4.0",
   "private": true,
   "description": "Multi-agent adversarial review panel for Claude Code",
   "scripts": {
-    "test": "node --test tests/trigger-classification.test.mjs tests/manifest-consistency.test.mjs tests/eval-suite-integrity.test.mjs tests/report-structure.test.mjs tests/behavioral-assertions.test.mjs tests/golden-file.test.mjs",
+    "test": "node --test tests/trigger-classification.test.mjs tests/manifest-consistency.test.mjs tests/eval-suite-integrity.test.mjs tests/report-structure.test.mjs tests/behavioral-assertions.test.mjs tests/golden-file.test.mjs tests/voltagent-catalog.test.mjs",
     "test:triggers": "node --test tests/trigger-classification.test.mjs",
+    "test:voltagent": "node --test tests/voltagent-catalog.test.mjs",
     "test:manifest": "node --test tests/manifest-consistency.test.mjs",
     "test:eval-suite": "node --test tests/eval-suite-integrity.test.mjs",
     "test:report": "node --test tests/report-structure.test.mjs",

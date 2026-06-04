@@ -1,8 +1,8 @@
 {
   "skill_name": "agent-review-panel",
-  "version": "3.3.0",
+  "version": "3.4.0",
   "created_by": "manual",
-  "updated": "2026-05-14",
+  "updated": "2026-06-04",
   "triggers": [
     {
       "id": "pos-1",

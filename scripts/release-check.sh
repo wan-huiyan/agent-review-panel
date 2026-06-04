@@ -178,6 +178,21 @@ else
   fail "CHANGELOG.md has NO section for [${CANON_VERSION}] — changelog frozen"
 fi
 
+# --- 8. VoltAgent catalog drift ----------------------------------------------
+#
+# Every `voltagent-<family>:<slug>` referenced in the live skill files must
+# resolve to a real agent in the vendored snapshot (references/voltagent-catalog.json).
+# Catches upstream renames/removals the docs still name. Snapshot is regenerated
+# by scripts/refresh-voltagent-catalog.sh. (Also enforced by the node test suite.)
+
+if [ -f scripts/voltagent-catalog-check.sh ]; then
+  if bash scripts/voltagent-catalog-check.sh --quiet >/dev/null 2>&1; then
+    pass "VoltAgent catalog: no dangling agent references in live skill files"
+  else
+    fail "VoltAgent catalog drift — a referenced agent is absent from the snapshot. Run: bash scripts/voltagent-catalog-check.sh"
+  fi
+fi
+
 # --- Summary -----------------------------------------------------------------
 
 echo ""
