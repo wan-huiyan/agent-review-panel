@@ -74,7 +74,7 @@ Skip Phases 3-8 and go directly to Phase 10 with a summary confirming the clean 
 
 ## VoltAgent Specialist Verification (v1.3)
 
-VoltAgent specialist agents (127+ across 10 families) have built-in domain
+VoltAgent specialist agents (130+ across 10 families) have built-in domain
 expertise via their system prompts. Unlike agent-review-panel (which replaces
 reviewer personas with VoltAgent agents), this skill uses VoltAgent as an
 **optional second-opinion verifier** for high-severity edits. The skill remains
@@ -108,6 +108,16 @@ If none found, skip all VoltAgent steps silently -- everything works without the
 | GraphQL | `voltagent-core-dev:graphql-architect` | Verify schema changes |
 | React / frontend | `voltagent-lang:react-specialist` | Verify frontend code corrections |
 | Compliance / GDPR | `voltagent-qa-sec:compliance-auditor` | Verify regulatory compliance of edits |
+| Vue / Nuxt | `voltagent-lang:vue-expert` | Verify Vue component corrections |
+| Angular | `voltagent-lang:angular-architect` | Verify Angular code corrections |
+| Next.js | `voltagent-lang:nextjs-developer` | Verify Next.js code corrections |
+| Django | `voltagent-lang:django-developer` | Verify Django code corrections |
+| FastAPI | `voltagent-lang:fastapi-developer` | Verify FastAPI code corrections |
+| C / C++ | `voltagent-lang:cpp-pro` | Verify C/C++ code corrections |
+| Kotlin | `voltagent-lang:kotlin-specialist` | Verify Kotlin code corrections |
+| Elixir / Phoenix | `voltagent-lang:elixir-expert` | Verify Elixir code corrections |
+| React Native / Expo | `voltagent-lang:expo-react-native-expert` | Verify mobile code corrections |
+| MCP servers / tools | `voltagent-dev-exp:mcp-developer` | Verify MCP server edits |
 
 **Step 3: Suggest installation when beneficial.** If content signals match
 VoltAgent specialists but the relevant agent families are not available,

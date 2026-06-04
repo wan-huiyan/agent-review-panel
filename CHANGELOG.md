@@ -2,6 +2,50 @@
 
 All notable changes to Agent Review Panel.
 
+## [3.4.0] — 2026-06-04 — VoltAgent catalog expansion + drift automation
+
+### Added — 30 new signal→specialist mappings
+
+The Signal-Detected Specialist Mapping table in `SKILL.md` gained 30 content-signal rows, roughly doubling the auto-upgrade coverage. New signals: Vue/Nuxt, Angular, Next.js, React Native/Expo, Electron, Django, FastAPI, Spring Boot, Symfony, C/C++, Kotlin, Elixir, MLOps, reinforcement learning, prompt optimization, AI/agentic systems, database administration, incident response, Windows Server, cloud security, CLI tools, MCP servers, refactoring/legacy modernization, build systems, dependency/supply-chain, git workflows, game dev, API documentation, legal/licensing, and UX research. Every id was validated against the catalog snapshot (below). The sibling `plan-review-integrator` verification table gained the 10 code-relevant rows (Vue, Angular, Next.js, Django, FastAPI, C/C++, Kotlin, Elixir, React Native, MCP).
+
+The catalog count claim was corrected from "127+" to "130+ across 10 families" (135 real agents in the vendored snapshot, README pseudo-files excluded).
+
+### Added — catalog drift automation (vendored snapshot + CI gate)
+
+VoltAgent agent ids in the mapping tables are hand-maintained editorial choices, but whether a referenced agent still *exists* upstream is a fact that drifts. New tooling detects that drift without making the editorial mapping itself "automatic" (runtime availability detection in Phase 1 already handles that, and a stale mapping degrades gracefully to a generic reviewer):
+
+- `skills/agent-review-panel/references/voltagent-catalog.json` — vendored point-in-time snapshot of all 135 agents across 10 families, with a `_provenance` block (source repo, marketplace version, snapshot date, method).
+- `scripts/refresh-voltagent-catalog.sh` — regenerates the snapshot from the locally installed `voltagent-subagents` marketplace (README files excluded).
+- `scripts/voltagent-catalog-check.sh` — on-demand drift check: fails on any dangling reference across the live skill files; reports unmapped agents as FYI. Frozen-history files (changelogs, `docs/`) are excluded.
+- `tests/voltagent-catalog.test.mjs` — the CI gate (CI runs `npm test`, which has no marketplace installed, so it validates against the committed snapshot). 5 new tests.
+- `scripts/release-check.sh` — new section 8 enforces the same invariant in the pre-release sweep.
+
+### Fixed
+
+- **Pre-existing namespace mislabel** surfaced by the new drift check on its first run: the Risk Assessor persona's alternate mapping pointed at `voltagent-biz:risk-manager`, but `risk-manager` lives in `voltagent-domains`. Corrected to `voltagent-domains:risk-manager`. (The agent was never resolvable under the wrong namespace, so this persona silently fell back to generic before.)
+
+### Tests
+
+- `tests/voltagent-catalog.test.mjs` (5 tests): snapshot parses + carries provenance; counts are internally consistent and README-free; live refs reference ≥50 known ids; **no dangling references**; every referenced namespace resolves to a real family. Suite total 401 → 406, all green.
+
+### Files Changed
+
+- `skills/agent-review-panel/SKILL.md` — 30 new signal rows; risk-manager namespace fix; count claim 127+ → 130+; snapshot/refresh/check pointer; H1 + footer version bump
+- `skills/plan-review-integrator/SKILL.md` — 10 new code-relevant verification rows
+- `skills/agent-review-panel/references/voltagent-catalog.json` — new vendored snapshot
+- `scripts/refresh-voltagent-catalog.sh`, `scripts/voltagent-catalog-check.sh` — new
+- `tests/voltagent-catalog.test.mjs` — new; registered in `package.json` test script
+- `scripts/release-check.sh` — new section 8 (catalog drift)
+- Version bumps across `package.json`, `.claude-plugin/plugin.json`, `.claude-plugin/marketplace.json`, `eval-suite.json`, SKILL.md H1 + footer (3.3.0 → 3.4.0); README test-count 401 → 406
+
+### Operational note
+
+The three families that back several mappings — `voltagent-core-dev`, `voltagent-dev-exp`, `voltagent-biz` — are not installed by default. Install all 10 with `claude plugin install <name>@voltagent-subagents` (user scope; takes effect next session). Until installed, those personas fall back to generic reviewers exactly as before — no run breaks.
+
+### Breaking changes
+
+None. All changes are additive (new mapping rows, new tooling) plus one namespace correction; no phase, agent, or state-file changes.
+
 ## [3.3.0] — 2026-05-14 — Live-State Claim Discipline (#40)
 
 ### Added — Live-State Claim Discipline

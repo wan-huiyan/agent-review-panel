@@ -89,7 +89,7 @@ Excerpt from the matching `review_panel_report.md`:
 ## Executive Summary
 
 The README is factually careful where it counts — install commands, marketplace
-handles, slash commands, "401 tests", and spot-checked anchors all verify
+handles, slash commands, the test-count claim, and spot-checked anchors all verify
 cleanly against the repo. But three problems pull the score to 5/10: the
 version/release story is incoherent and actively misleads every current
 user, the document is roughly a third too long, and it never shows what a
@@ -243,7 +243,7 @@ Phase 15 has three sequential sub-steps (15.1 → 15.2 → 15.3) so the HTML age
 
 **Advanced**
 
-- **VoltAgent integration** — maps personas to 127+ specialist agents across 10 families for deeper domain-specific reviews when installed
+- **VoltAgent integration** — maps personas to 130+ specialist agents across 10 families for deeper domain-specific reviews when installed
 - **Multi-Run Union Protocol** — invoke `--runs N` or "run 3 times and merge" to execute the panel N times with rotated persona compositions. Phase 16 merges findings by location + bug class, scores stability as `[K/N RUNS]`, resolves judge divergence. Mitigates the ~30% single-run blind spot observed in early consistency analyses
 - **Codebase state check** — detects worktree/branch divergence to prevent false "missing code" findings
 - **Tiered knowledge mining** (L0 index / L1 summary / L2 full) — scans index lines first, only reads full content for relevant items
@@ -370,10 +370,10 @@ Both are activated by natural language or by `/roundtable:agent-review-panel` an
 
 ## Tests
 
-The test suite (401 tests) uses Node's built-in test runner — zero dependencies, requires Node ≥18:
+The test suite (406 tests) uses Node's built-in test runner — zero dependencies, requires Node ≥18:
 
 ```bash
-npm test                    # run all 401 tests
+npm test                    # run all 406 tests
 npm run test:triggers       # trigger classification
 npm run test:manifest       # manifest consistency + phase/opus enforcement
 npm run test:eval-suite     # eval suite integrity
