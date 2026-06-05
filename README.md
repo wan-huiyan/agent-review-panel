@@ -121,7 +121,7 @@ review actually produces.
 | 4 | P1 [VERIFIED]            | Add a text sample of a real report.       |
 ```
 
-You're reading the v3.3.0 rewrite that lands those findings. The full artifacts live at:
+You're reading the rewrite that lands those findings. The full artifacts live at:
 
 - [`docs/reviews/2026-05-14-readme/review_panel_report.md`](docs/reviews/2026-05-14-readme/review_panel_report.md) — the full markdown report (13 action items)
 - [`docs/reviews/2026-05-14-readme/review_panel_report.html`](docs/reviews/2026-05-14-readme/review_panel_report.html) — the interactive HTML dashboard
