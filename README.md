@@ -30,6 +30,15 @@ Same effect. Shell form (`claude plugin …`) from the terminal; REPL form (`/pl
 
 **Verify it loaded.** In a fresh Claude Code session, type `/roundtable:agent-review-panel` with no arguments. The skill should introduce itself and ask what to review. If you get `unknown command`, see [Troubleshooting](TROUBLESHOOTING.md#after-install-roundtableagent-review-panel-is-not-recognized). Migrating from an older install handle? See [MIGRATION.md](MIGRATION.md).
 
+**⚡ Recommended — add VoltAgent specialists.** Reviews get noticeably sharper when [VoltAgent specialist agents](https://github.com/VoltAgent/awesome-claude-code-subagents) are installed: the panel auto-upgrades each reviewer to a real domain specialist (e.g. Security Auditor → `voltagent-qa-sec:security-auditor`) instead of a generic persona. Not installed? It falls back gracefully — nothing breaks.
+
+```bash
+claude plugin marketplace add VoltAgent/awesome-claude-code-subagents
+claude plugin install voltagent-qa-sec@voltagent-subagents   # backs the core code-review personas
+```
+
+Add `voltagent-lang`, `voltagent-data-ai`, `voltagent-infra`, … as you need them (10 families, 130+ agents; the `/plugin …` REPL form works too — takes effect next session). Why it's worth it → [Sharper reviews with VoltAgent](#sharper-reviews-with-voltagent-specialists). *(VoltAgent installs through Claude Code's plugin system.)*
+
 **Use:**
 
 ```
@@ -112,11 +121,21 @@ review actually produces.
 | 4 | P1 [VERIFIED]            | Add a text sample of a real report.       |
 ```
 
-You're reading the v3.3.0 rewrite that lands those findings. The full artifacts live at:
+You're reading the rewrite that lands those findings. The full artifacts live at:
 
 - [`docs/reviews/2026-05-14-readme/review_panel_report.md`](docs/reviews/2026-05-14-readme/review_panel_report.md) — the full markdown report (13 action items)
 - [`docs/reviews/2026-05-14-readme/review_panel_report.html`](docs/reviews/2026-05-14-readme/review_panel_report.html) — the interactive HTML dashboard
 - [`docs/reviews/2026-05-14-readme/review_panel_process.md`](docs/reviews/2026-05-14-readme/review_panel_process.md) — verbatim process log with all four reviewers' raw output
+
+## Sharper reviews with VoltAgent specialists
+
+By default every reviewer is a *generic* Claude agent wearing a persona prompt ("act as a Security Auditor"). That works — but if you install [VoltAgent's specialist agents](https://github.com/VoltAgent/awesome-claude-code-subagents), the panel **upgrades each persona to a matching domain specialist** whose expertise is built into its own system prompt: a real Security Auditor, Database Optimizer, or SRE instead of a generalist asked to role-play one.
+
+- **Automatic, zero-config.** During setup (Phase 1) the panel scans for installed `voltagent-*` agents and routes personas to them. No specialist installed for a given role? That reviewer falls back to a generic persona — nothing to configure, nothing breaks.
+- **130+ specialists across 10 families** — `qa-sec` (code review, security, performance, chaos), `lang` (20+ language experts), `data-ai`, `infra`, `core-dev`, and more. Content signals auto-add the right one: SQL → a database optimizer, Terraform → an IaC engineer, React → a frontend specialist. v3.4 added 30 such signal→specialist mappings, roughly doubling coverage.
+- **Install what you review.** `voltagent-qa-sec` backs the core code-review personas; add `voltagent-lang` / `voltagent-data-ai` / `voltagent-infra` for language-, ML-, or infra-heavy work. Commands are in [Quick Start](#quick-start).
+
+> *VoltAgent specialists install through Claude Code's plugin system — the same Claude Code surfaces the panel itself runs on (CLI / IDE / Desktop "Code" tab / Agent SDK). Codex isn't a supported surface for the panel: it needs Claude Code's `Agent` tool to spawn reviewers in parallel — see [Surfaces & Requirements](#surfaces--requirements).*
 
 ## Surfaces & Requirements
 
@@ -138,7 +157,7 @@ This plugin needs the Claude Code `Agent` tool for parallel subagent spawning, l
 - **Claude Code v1.0+** on a supported surface, or the Claude Agent SDK
 - A Claude **Pro / Max** subscription or API access (Opus is the reviewer model)
 - **Node ≥18** (only needed if running `npm test` or developing locally)
-- **Optional:** [VoltAgent specialist agents](https://github.com/VoltAgent/awesome-claude-code-subagents) for stronger domain-specific reviews
+- **Recommended:** [VoltAgent specialist agents](https://github.com/VoltAgent/awesome-claude-code-subagents) — the panel auto-upgrades reviewers to domain specialists ([why it helps](#sharper-reviews-with-voltagent-specialists))
 
 Don't have Claude Code yet? Install it from [claude.ai/code](https://claude.ai/code), then come back to [Quick Start](#quick-start).
 
@@ -243,7 +262,7 @@ Phase 15 has three sequential sub-steps (15.1 → 15.2 → 15.3) so the HTML age
 
 **Advanced**
 
-- **VoltAgent integration** — maps personas to 130+ specialist agents across 10 families for deeper domain-specific reviews when installed
+- **VoltAgent integration** — auto-upgrades personas to 130+ domain specialists across 10 families when installed; content signals route each domain (SQL, Terraform, React, …) to its matching expert. See [Sharper reviews with VoltAgent](#sharper-reviews-with-voltagent-specialists)
 - **Multi-Run Union Protocol** — invoke `--runs N` or "run 3 times and merge" to execute the panel N times with rotated persona compositions. Phase 16 merges findings by location + bug class, scores stability as `[K/N RUNS]`, resolves judge divergence. Mitigates the ~30% single-run blind spot observed in early consistency analyses
 - **Codebase state check** — detects worktree/branch divergence to prevent false "missing code" findings
 - **Tiered knowledge mining** (L0 index / L1 summary / L2 full) — scans index lines first, only reads full content for relevant items
@@ -467,6 +486,7 @@ See [CHANGELOG.md](CHANGELOG.md) for detailed version history and [ROADMAP.md](R
 
 | Version | Highlights |
 |---|---|
+| **v3.4** | VoltAgent catalog expansion — 30 new signal→specialist mappings (130+ agents / 10 families) + drift-detection automation (vendored catalog snapshot, CI gate) |
 | **v3.3** | Live-State Claim Discipline — cross-cutting rule set for findings asserting facts about *live* infrastructure or runtime state |
 | **v3.2** | Post-judge verification gate + Chart.js wrapper-div mandate — Phase 14.5 re-verifies judge-introduced P0/P1 against ground truth |
 | **v3.1** | Silent-phase-compression fix — file-based subagent state under `state/`, Phase 13.5 Pre-Judge Verification Gate |
