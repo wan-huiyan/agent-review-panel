@@ -47,7 +47,7 @@
 
   <!-- ═══ TITLE ROW ═══ -->
   <text x="450" y="30" text-anchor="middle" fill="#e6edf3" font-size="15" font-weight="700" letter-spacing="0.5">Agent Review Panel</text>
-  <text x="450" y="47" text-anchor="middle" fill="#8b949e" font-size="10.5" letter-spacing="0.3">Multi-Agent Adversarial Code Review — 10-Phase Pipeline</text>
+  <text x="450" y="47" text-anchor="middle" fill="#8b949e" font-size="10.5" letter-spacing="0.3">Multi-Agent Adversarial Code Review Pipeline</text>
 
   <!-- ══════════════════════════════════════════════════════════════
        LEFT: INPUT BLOCK
@@ -333,23 +333,23 @@
   <!-- Flow step pills at bottom -->
   <!-- Stage: Gather -->
   <rect x="30" y="472" width="88" height="18" rx="9" fill="#161b22" stroke="#30363d" stroke-width="1"/>
-  <text x="74" y="484" text-anchor="middle" fill="#58a6ff" font-size="7.5" font-weight="600">Gather (1–2)</text>
+  <text x="74" y="484" text-anchor="middle" fill="#58a6ff" font-size="7.5" font-weight="600">Gather</text>
   <line x1="118" y1="481" x2="128" y2="481" stroke="#8b949e" stroke-width="1" marker-end="url(#arrowGray)"/>
   <!-- Stage: Review -->
   <rect x="132" y="472" width="98" height="18" rx="9" fill="#161b22" stroke="#30363d" stroke-width="1"/>
-  <text x="181" y="484" text-anchor="middle" fill="#58a6ff" font-size="7.5" font-weight="600">Review (3–4)</text>
+  <text x="181" y="484" text-anchor="middle" fill="#58a6ff" font-size="7.5" font-weight="600">Review</text>
   <line x1="230" y1="481" x2="240" y2="481" stroke="#8b949e" stroke-width="1" marker-end="url(#arrowGray)"/>
   <!-- Stage: Debate -->
   <rect x="244" y="472" width="120" height="18" rx="9" fill="#161b22" stroke="#30363d" stroke-width="1"/>
-  <text x="304" y="484" text-anchor="middle" fill="#d29922" font-size="7.5" font-weight="600">Debate (5–7)</text>
+  <text x="304" y="484" text-anchor="middle" fill="#d29922" font-size="7.5" font-weight="600">Debate</text>
   <line x1="364" y1="481" x2="374" y2="481" stroke="#8b949e" stroke-width="1" marker-end="url(#arrowGray)"/>
   <!-- Stage: Verify -->
   <rect x="378" y="472" width="120" height="18" rx="9" fill="#161b22" stroke="#30363d" stroke-width="1"/>
-  <text x="438" y="484" text-anchor="middle" fill="#3fb950" font-size="7.5" font-weight="600">Verify (8–9)</text>
+  <text x="438" y="484" text-anchor="middle" fill="#3fb950" font-size="7.5" font-weight="600">Verify</text>
   <line x1="498" y1="481" x2="508" y2="481" stroke="#8b949e" stroke-width="1" marker-end="url(#arrowGray)"/>
   <!-- Stage: Adjudicate -->
   <rect x="512" y="472" width="130" height="18" rx="9" fill="#161b22" stroke="#388bfd" stroke-width="1.2"/>
-  <text x="577" y="484" text-anchor="middle" fill="#58a6ff" font-size="7.5" font-weight="700">Adjudicate (10–11)</text>
+  <text x="577" y="484" text-anchor="middle" fill="#58a6ff" font-size="7.5" font-weight="700">Adjudicate</text>
   <line x1="642" y1="481" x2="652" y2="481" stroke="#388bfd" stroke-width="1.2" marker-end="url(#arrowBlue)"/>
   <!-- Output pill -->
   <rect x="656" y="472" width="84" height="18" rx="9" fill="#1a2b1a" stroke="#3fb950" stroke-width="1.2"/>
