@@ -37,7 +37,7 @@ claude plugin marketplace add VoltAgent/awesome-claude-code-subagents
 claude plugin install voltagent-qa-sec@voltagent-subagents   # backs the core code-review personas
 ```
 
-Add `voltagent-lang`, `voltagent-data-ai`, `voltagent-infra`, … as you need them (10 families, 130+ agents; the `/plugin …` REPL form works too — takes effect next session). Why it's worth it → [Sharper reviews with VoltAgent](#sharper-reviews-with-voltagent-specialists). *(Installs via Claude Code's plugin system; Codex support is unverified.)*
+Add `voltagent-lang`, `voltagent-data-ai`, `voltagent-infra`, … as you need them (10 families, 130+ agents; the `/plugin …` REPL form works too — takes effect next session). Why it's worth it → [Sharper reviews with VoltAgent](#sharper-reviews-with-voltagent-specialists). *(VoltAgent installs through Claude Code's plugin system.)*
 
 **Use:**
 
@@ -135,7 +135,7 @@ By default every reviewer is a *generic* Claude agent wearing a persona prompt (
 - **130+ specialists across 10 families** — `qa-sec` (code review, security, performance, chaos), `lang` (20+ language experts), `data-ai`, `infra`, `core-dev`, and more. Content signals auto-add the right one: SQL → a database optimizer, Terraform → an IaC engineer, React → a frontend specialist. v3.4 added 30 such signal→specialist mappings, roughly doubling coverage.
 - **Install what you review.** `voltagent-qa-sec` backs the core code-review personas; add `voltagent-lang` / `voltagent-data-ai` / `voltagent-infra` for language-, ML-, or infra-heavy work. Commands are in [Quick Start](#quick-start).
 
-> *VoltAgent specialists install through Claude Code's plugin system (CLI / IDE / Desktop "Code" tab). Whether the marketplace loads in a Codex session is unverified by maintainers — the panel still runs there, just with generic personas.*
+> *VoltAgent specialists install through Claude Code's plugin system — the same Claude Code surfaces the panel itself runs on (CLI / IDE / Desktop "Code" tab / Agent SDK). Codex isn't a supported surface for the panel: it needs Claude Code's `Agent` tool to spawn reviewers in parallel — see [Surfaces & Requirements](#surfaces--requirements).*
 
 ## Surfaces & Requirements
 
