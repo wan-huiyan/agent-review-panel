@@ -58,6 +58,14 @@ function parseReport(markdown) {
     report.compressedRun = { detected: false, phasesSkipped: null };
   }
 
+  // --- No-debate warning (v3.5.0) ---
+  // Stamped at the Phase 15.1 report-write chokepoint when no Phase-5
+  // round-1 state files exist (the adversarial debate never ran).
+  const noDebateMatch = markdown.match(
+    /^>\s*⚠️\s*\*\*\[NO-DEBATE\][^\n]*\*\*/m
+  );
+  report.noDebate = { detected: Boolean(noDebateMatch) };
+
   // --- Required sections ---
   const requiredSections = [
     "Executive Summary",
@@ -420,6 +428,61 @@ describe("compressed-run fixture", () => {
       false,
       "non-compressed fixture must report compressedRun.detected = false"
     );
+  });
+});
+
+describe("no-debate fixture (v3.5.0)", () => {
+  it("detects the [NO-DEBATE] banner when Phase-5 state is absent", () => {
+    const fixturePath = resolve(FIXTURES, "sample-report-no-debate.md");
+    const md = readFileSync(fixturePath, "utf-8");
+    const report = parseReport(md);
+    assert.equal(
+      report.noDebate?.detected,
+      true,
+      "parser must set report.noDebate.detected = true when the banner is present"
+    );
+  });
+
+  it("a no-debate run never reports High confidence (capped at Medium)", () => {
+    const md = readFileSync(
+      resolve(FIXTURES, "sample-report-no-debate.md"),
+      "utf-8"
+    );
+    const report = parseReport(md);
+    assert.notEqual(
+      report.header.confidence,
+      "High",
+      "NO-DEBATE run must cap Confidence at Medium — never High"
+    );
+  });
+
+  it("every action item in a no-debate run carries the [NO-DEBATE] suffix", () => {
+    const md = readFileSync(
+      resolve(FIXTURES, "sample-report-no-debate.md"),
+      "utf-8"
+    );
+    const actionLines = md
+      .split("\n")
+      .filter((l) => /^\d+\.\s+\*\*/.test(l));
+    assert.ok(actionLines.length > 0, "fixture must have action items");
+    for (const line of actionLines) {
+      assert.ok(
+        line.includes("[NO-DEBATE]"),
+        `action item missing [NO-DEBATE] suffix: ${line}`
+      );
+    }
+  });
+
+  it("fixtures without the banner report noDebate.detected = false", () => {
+    for (const name of ["sample-report-valid.md", "sample-report-compressed-run.md"]) {
+      const md = readFileSync(resolve(FIXTURES, name), "utf-8");
+      const report = parseReport(md);
+      assert.equal(
+        report.noDebate?.detected ?? false,
+        false,
+        `${name} must report noDebate.detected = false`
+      );
+    }
   });
 });
 

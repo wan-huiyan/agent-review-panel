@@ -229,6 +229,18 @@ A run executes 16 top-level phases (plus two verification gates — 13.5 and 14.
 
 Phase 15 has three sequential sub-steps (15.1 → 15.2 → 15.3) so the HTML agent can read the already-written markdown and process files from disk.
 
+### Choosing a review mode
+
+This skill is the **full adversarial panel** — its defining feature is the **Phase 5–7 debate**, where reviewers cross-examine each other before a judge rules. Debate is expensive (sequential cross-talk) and only pays off when reviewers would genuinely change each other's verdicts. Pick deliberately:
+
+| You want | Use | Debate? |
+|---|---|---|
+| Fast eyes on a tiny PR | `/code-review`, single-persona review | no |
+| Independent parallel lenses on small / autonomous multi-PR work | streamlined panel (no-debate) | no, by design |
+| **Adversarial tradeoff, high-stakes gating, a verdict debate would change** (security vs perf, "is this P0 real", merge go/no-go) | **this skill (full panel) — invoke as a skill, not a workflow** | **yes** |
+
+Debate lives in the skill's Agent-tool orchestration. Running a review as a **Workflow / ultracode** task routes it through a *parallel fan-out* engine (agents never see each other) whose canonical shape is "find → verify → judge" — structurally debate-less. If a run produces no debate, the report now stamps a loud **`[NO-DEBATE]`** banner and caps confidence at Medium, so a debate-less review is never silent. To get the panel's depth under a Workflow, author an explicit `Debate` phase (see the debate-in-Workflow recipe in `SKILL.md`).
+
 ## Features
 
 **Review process**
@@ -391,10 +403,10 @@ Both are activated by natural language or by `/roundtable:agent-review-panel` an
 
 ## Tests
 
-The test suite (406 tests) uses Node's built-in test runner — zero dependencies, requires Node ≥18:
+The test suite (442 tests) uses Node's built-in test runner — zero dependencies, requires Node ≥18:
 
 ```bash
-npm test                    # run all 406 tests
+npm test                    # run all 442 tests
 npm run test:triggers       # trigger classification
 npm run test:manifest       # manifest consistency + phase/opus enforcement
 npm run test:eval-suite     # eval suite integrity
