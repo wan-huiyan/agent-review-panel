@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Agent Review Panel — The Quest</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root{
+    --bg:#0b0e16; --panel:#141a2b; --panelB:#1b2236; --line:#283150;
+    --ink:#eef2fb; --ink2:#aeb7cf; --mut:#7b86a2;
+    --grn:#54c163; --red:#ff6259; --yel:#f0bb3e; --blu:#6db4ff; --pur:#c79dff; --gold:#f5d05e;
+    --org:#ff9d4d; --pink:#ff7ec2;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:radial-gradient(120% 90% at 50% 0%, #131a30 0%, #0b0e16 60%, #070910 100%);
+    color:var(--ink); font-family:"DM Mono", ui-monospace, Menlo, Consolas, monospace;}
+  .app{min-height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; padding:24px 16px;}
+  .frame{position:relative; width:min(1040px, 96vw); aspect-ratio:256/144; border-radius:12px; overflow:hidden;
+    box-shadow:0 24px 70px -20px #000, 0 0 0 1px #232c46, inset 0 0 0 2px #0a0d16;}
+  canvas{position:absolute; inset:0; width:100%; height:100%; display:block; image-rendering:pixelated;}
+
+  /* ---------- overlay ---------- */
+  .ov{position:absolute; inset:0; pointer-events:none; font-feature-settings:"tnum";}
+  .ov *{pointer-events:auto;}
+
+  .title{position:absolute; left:3.2%; top:5.2%;}
+  .title h1{margin:0; font-family:"Pixelify Sans", sans-serif; font-weight:700;
+    font-size:clamp(15px,2.5vw,26px); letter-spacing:.02em; line-height:1;
+    color:#fff; text-shadow:0 2px 0 #0a0d16, 0 0 14px rgba(109,180,255,.35);}
+  .title .sub{margin-top:5px; font-size:clamp(8px,1.05vw,11px); letter-spacing:.14em; text-transform:uppercase; color:var(--ink2); white-space:nowrap;}
+  .title .sub b{color:var(--blu); font-weight:500;}
+
+  .controls{position:absolute; right:2.6%; top:5%; display:flex; gap:8px;}
+  .btn{font-family:"Pixelify Sans",sans-serif; font-size:13px; letter-spacing:.04em; color:var(--ink);
+    background:rgba(20,26,43,.82); border:1px solid var(--line); border-radius:8px; padding:7px 11px; cursor:pointer;
+    backdrop-filter:blur(4px); display:inline-flex; align-items:center; gap:7px; transition:.15s;}
+  .btn:hover{background:rgba(28,36,58,.92); border-color:#3c4a72; transform:translateY(-1px);}
+  .btn svg{width:12px;height:12px;display:block}
+
+  /* stage rail */
+  .rail{position:absolute; left:0; right:0; bottom:23%; display:flex; justify-content:center; gap:6px; flex-wrap:wrap; padding:0 14px;}
+  .chip{font-family:"Pixelify Sans",sans-serif; font-size:clamp(8px,1.05vw,12px); letter-spacing:.04em;
+    background:rgba(13,17,28,.6); border:1px solid rgba(35,44,70,.9); border-radius:999px;
+    padding:5px 11px 4px; cursor:pointer; display:flex; align-items:center; gap:6px;
+    transition:.22s cubic-bezier(.2,.8,.2,1); white-space:nowrap; opacity:.72;}
+  .chip .dot{width:7px;height:7px;border-radius:2px; opacity:.6; transition:.22s;}
+  .chip:hover{opacity:1;}
+  .chip.done{opacity:1;}
+  .chip.active{opacity:1; transform:translateY(-3px) scale(1.07);}
+
+  /* level banner (game-style stage announce) */
+  .banner{position:absolute; left:0; right:0; top:18%; display:flex; flex-direction:column; align-items:center; gap:4px;
+    opacity:0; pointer-events:none; color:#6db4ff;}
+  .banner.run{animation:bannerIn 2.7s cubic-bezier(.2,.8,.2,1) forwards;}
+  .banner .bkick{font-family:"Pixelify Sans",sans-serif; font-size:clamp(9px,1.2vw,13px); letter-spacing:.34em;
+    text-transform:uppercase; color:var(--ink2); text-shadow:0 2px 6px #000;}
+  .banner .bname{font-family:"Pixelify Sans",sans-serif; font-weight:700; font-size:clamp(26px,5.2vw,56px); line-height:1;
+    color:#fff; text-shadow:0 3px 0 #06080f, 0 0 26px currentColor;}
+  .banner .brule{width:0; height:3px; border-radius:2px; background:currentColor; box-shadow:0 0 14px currentColor;}
+  .banner.run .brule{animation:ruleGrow 2.7s cubic-bezier(.2,.8,.2,1) forwards;}
+  @keyframes bannerIn{0%{opacity:0;transform:translateY(-16px) scale(.95)}10%{opacity:1;transform:translateY(0) scale(1)}
+    74%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-10px) scale(1.03)}}
+  @keyframes ruleGrow{0%{width:0}14%{width:0}42%{width:130px}74%{width:130px}100%{width:96px;opacity:0}}
+
+  /* mascot speech bubbles */
+  .bubbles{position:absolute; inset:0; pointer-events:none;}
+  .bub{position:absolute; transform:translate(-50%,-100%) scale(.6); transform-origin:center bottom; opacity:0;
+    font-family:"DM Mono",monospace; font-size:clamp(9px,1.12vw,13px); line-height:1.25; color:var(--ink);
+    background:#0e1424; border:2px solid var(--c,#6db4ff); border-radius:9px; padding:6px 9px; width:max-content; max-width:32%; text-align:center;
+    box-shadow:0 8px 22px -8px #000; animation:bubIn .34s cubic-bezier(.2,1.5,.4,1) forwards;}
+  .bub b{color:var(--c,#6db4ff); font-weight:500;}
+  .bub:after{content:""; position:absolute; left:50%; bottom:-9px; width:0;height:0; border:8px solid transparent; border-top-color:var(--c,#6db4ff); transform:translateX(-50%);}
+  .bub:before{content:""; position:absolute; left:50%; bottom:-5px; width:0;height:0; border:6px solid transparent; border-top-color:#0e1424; transform:translateX(-50%); z-index:1;}
+  @keyframes bubIn{to{opacity:1; transform:translate(-50%,-100%) scale(1)}}
+
+  /* caption bar */
+  .caption{position:absolute; left:0; right:0; bottom:0; padding:14px 4.2% 16px;
+    background:linear-gradient(to top, rgba(8,10,18,.92) 0%, rgba(8,10,18,.7) 55%, rgba(8,10,18,0) 100%);}
+  .capInner{display:flex; align-items:baseline; gap:14px; max-width:1000px; margin:0 auto;}
+  .capStage{font-family:"Pixelify Sans",sans-serif; font-weight:600; font-size:clamp(15px,2.3vw,26px);
+    letter-spacing:.01em; line-height:1; white-space:nowrap; transition:color .2s;}
+  .capDesc{font-size:clamp(10px,1.35vw,15px); color:var(--ink2); line-height:1.35; text-wrap:pretty;}
+  .capStep{margin-left:auto; font-size:clamp(8px,1vw,11px); color:var(--mut); letter-spacing:.14em; white-space:nowrap; align-self:center;}
+
+  /* progress */
+  .prog{position:absolute; left:0; bottom:0; height:3px; background:var(--blu); width:0; box-shadow:0 0 10px var(--blu); transition:width .08s linear;}
+
+  /* report card */
+  .report{position:absolute; right:2.4%; top:50%; transform:translateY(-50%) translateX(36px); width:min(38%,300px);
+    background:linear-gradient(180deg,#161c2e,#11162400); background-color:#141a2b;
+    border:1px solid #2a3454; border-radius:12px; padding:14px 15px 15px; opacity:0; transition:.5s cubic-bezier(.2,.8,.2,1);
+    box-shadow:0 26px 60px -22px #000, inset 0 1px 0 #2c3760;}
+  .report.show{opacity:1; transform:translateY(-50%) translateX(0);}
+  .report .rhd{display:flex; align-items:center; gap:9px; margin-bottom:10px;}
+  .report .rico{width:22px;height:26px;border:2px solid var(--pink);border-radius:3px;position:relative;flex:0 0 auto;}
+  .report .rico:before,.report .rico:after{content:"";position:absolute;left:4px;right:4px;height:2px;background:var(--mut);}
+  .report .rico:before{top:6px}.report .rico:after{top:12px;box-shadow:0 5px 0 var(--mut)}
+  .report h2{margin:0;font-family:"Pixelify Sans",sans-serif;font-size:15px;letter-spacing:.03em;color:#fff;line-height:1.1}
+  .report h2 b{color:var(--pink)}
+  .rsec{margin-top:11px}
+  .rsec .lbl{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--blu);margin-bottom:5px}
+  .rverdict{font-family:"Pixelify Sans",sans-serif;font-size:14px;color:var(--ink)}
+  .crow{display:flex;align-items:center;gap:8px;margin:4px 0;font-size:11px;color:var(--ink2)}
+  .crow .bar{height:7px;border-radius:3px;flex:0 0 auto;width:0;transition:width .6s cubic-bezier(.2,.8,.2,1)}
+  .report.show .crow .bar.b1{width:64px}.report.show .crow .bar.b2{width:42px}.report.show .crow .bar.b3{width:22px}
+  .pill{display:inline-flex;align-items:center;gap:5px;font-size:9.5px;letter-spacing:.06em;font-weight:500;
+    padding:3px 7px;border-radius:6px;border:1px solid;margin:3px 5px 0 0}
+  .pill.crit{color:var(--red);border-color:#5a2630;background:#2a1419}
+  .pill.ver{color:var(--grn);border-color:#244a2c;background:#142a1c}
+  .ritem{font-size:11px;color:var(--ink2);margin-top:6px;display:flex;gap:7px;align-items:center}
+
+  .hint{font-size:11px;color:var(--mut);letter-spacing:.06em}
+  .hint b{color:var(--ink2);font-weight:500}
+  @media (max-width:640px){ .report{display:none} .title .sub{display:none} }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="frame" id="frame">
+    <canvas id="cv"></canvas>
+    <div class="ov">
+      <div class="title">
+        <h1>Agent Review Panel</h1>
+        <div class="sub">Multi-Agent <b>Adversarial</b> Code Review</div>
+      </div>
+
+      <div class="controls">
+        <button class="btn" id="playBtn"><svg id="playIco" viewBox="0 0 12 12"><rect x="1" y="1" width="3" height="10" fill="currentColor"/><rect x="8" y="1" width="3" height="10" fill="currentColor"/></svg><span id="playTxt">Pause</span></button>
+        <button class="btn" id="replayBtn"><svg viewBox="0 0 12 12"><path d="M6 1 A5 5 0 1 0 11 6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M6 -1 L6 3 L9 1 Z" fill="currentColor"/></svg>Replay</button>
+      </div>
+
+      <div class="report" id="report">
+        <div class="rhd"><div class="rico"></div><h2>Review <b>Report</b></h2></div>
+        <div class="rsec"><div class="lbl">Verdict</div><div class="rverdict">Ship with fixes</div></div>
+        <div class="rsec"><div class="lbl">Consensus</div>
+          <div class="crow"><span class="bar b1" style="background:var(--grn)"></span>3 agreed</div>
+          <div class="crow"><span class="bar b2" style="background:var(--yel)"></span>2 disputed</div>
+          <div class="crow"><span class="bar b3" style="background:var(--red)"></span>1 critical</div>
+        </div>
+        <div class="rsec"><div class="lbl">Action Items</div>
+          <div class="ritem"><span class="pill crit">CRITICAL</span> Fix auth token leak</div>
+          <div class="ritem"><span class="pill ver">VERIFIED</span> Added regression tests</div>
+        </div>
+      </div>
+
+      <div class="banner" id="banner"><div class="bkick" id="bkick">Stage 1 / 6</div><div class="bname" id="bname">Gather</div><div class="brule"></div></div>
+      <div class="bubbles" id="bubbles"></div>
+
+      <div class="rail" id="rail"></div>
+
+      <div class="caption">
+        <div class="capInner">
+          <div class="capStage" id="capStage">Your Code / Plan</div>
+          <div class="capDesc" id="capDesc">A code change or plan sets off on its review quest.</div>
+          <div class="capStep" id="capStep"></div>
+        </div>
+      </div>
+      <div class="prog" id="prog"></div>
+    </div>
+  </div>
+  <div class="hint">Watch your code journey through the pipeline · <b>click a stage</b> to jump · <b>Replay</b> to start over</div>
+</div>
+
+<script src="engine.js"></script>
+<script src="quest.js"></script>
+<script>
+(function(){
+  var STAGES = {
+    start:      {name:'Your Code / Plan', color:'#6db4ff',  desc:'A code change or plan sets off on its review quest.'},
+    gather:     {name:'Gather',        color:'#ff9d4d',  desc:'Scouting signals, then assigning a reviewer persona for each angle of the change.'},
+    review:     {name:'Review',        color:'#c79dff',  desc:'4–6 specialists inspect the change in parallel — independently, with no cross-talk.'},
+    debate:     {name:'Debate',        color:'#f0bb3e',  desc:'Reviewers argue it out, reflect privately, then submit blind scores to fight groupthink.'},
+    verify:     {name:'Verify',        color:'#54c163',  desc:'Every claim is audited and checked against the facts — verified or flagged critical.'},
+    adjudicate: {name:'Adjudicate',    color:'#6db4ff',  desc:'The Supreme Judge (Opus) weighs all the evidence and delivers a final ruling.'},
+    report:     {name:'Review Report', color:'#ff7ec2',  desc:'The verdict is posted: consensus, action items, and scope — ready to act on.'}
+  };
+  var ORDER = ['gather','review','debate','verify','adjudicate','report'];
+  var CHIPCOL  = {gather:'#ff9d4d',review:'#c79dff',debate:'#f0bb3e',verify:'#54c163',adjudicate:'#6db4ff',report:'#ff7ec2'};
+  var CHIPNAME = {gather:'GATHER',review:'REVIEW',debate:'DEBATE',verify:'VERIFY',adjudicate:'ADJUDICATE',report:'REPORT'};
+
+  // per stage:beat mascot speech bubbles — x/y are % of the frame (tail tip),
+  // placed in clear sky above each mascot so they never cover blobs or the title.
+  var BUB = {
+    'gather:collect':  [{x:54,y:48,c:'#ff9d4d',t:'Reading the diff — gathering <b>signals & context</b>.'}],
+    'gather:persona':  [{x:64,y:50,c:'#ff9d4d',t:'Assigning a <b>persona</b> to each reviewer.'}],
+    'review:scan':     [{x:52,y:38,c:'#c79dff',t:'6 specialists review <b>in parallel</b> — no peeking at each other!'}],
+    'debate:argue':    [{x:39,y:49,c:'#f0bb3e',t:'This change looks <b>risky!</b>'},{x:69,y:49,c:'#c79dff',t:'<b>Prove it</b> — show evidence.'}],
+    'debate:reflect':  [{x:53,y:42,c:'#f0bb3e',t:'Now each reviewer <b>reflects privately</b>…'}],
+    'debate:blind':    [{x:53,y:40,c:'#f0bb3e',t:'…then submits a <b>blind score</b>. No groupthink.'}],
+    'verify:check':    [{x:40,y:46,c:'#54c163',t:'Auditing every <b>claim</b> against the actual code.'}],
+    'adjudicate:weigh':[{x:53,y:35,c:'#6db4ff',t:'Weighing <b>all sides</b> of the evidence…'}],
+    'adjudicate:rule': [{x:53,y:34,c:'#6db4ff',t:'Final ruling: <b>ship with fixes</b>.'}],
+    'report:post':     [{x:45,y:50,c:'#ff7ec2',t:'Review <b>complete</b> — report posted!'}]
+  };
+
+  // build chips
+  var rail = document.getElementById('rail'), chipEls = {};
+  function hexA(hex, a){ var r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16); return 'rgba('+r+','+g+','+b+','+a+')'; }
+  ORDER.forEach(function(k){
+    var c = document.createElement('div'); c.className='chip';
+    c.innerHTML = '<span class="dot"></span>'+CHIPNAME[k];
+    c.onclick = function(){ QUEST.seek(QUEST.stageStart(k)); QUEST.play(); syncBtn(); };
+    rail.appendChild(c); chipEls[k]=c;
+  });
+  function paintChip(k, state){ // 'active' | 'done' | 'next'
+    var el = chipEls[k], hex = CHIPCOL[k], dot = el.querySelector('.dot');
+    if(state==='active'){ el.style.background=hex; el.style.color='#0a0d16'; el.style.borderColor=hex;
+      el.style.boxShadow='0 0 22px '+hexA(hex,.5)+', 0 6px 16px -6px #000'; dot.style.background='#0a0d16'; dot.style.opacity='.85'; }
+    else if(state==='done'){ el.style.background=hexA(hex,.14); el.style.color=hex; el.style.borderColor=hexA(hex,.45);
+      el.style.boxShadow='none'; dot.style.background=hex; dot.style.opacity='1'; }
+    else { el.style.background='rgba(13,17,28,.6)'; el.style.color=hexA(hex,.62); el.style.borderColor='rgba(35,44,70,.9)';
+      el.style.boxShadow='none'; dot.style.background=hexA(hex,.6); dot.style.opacity='.6'; }
+  }
+
+  var capStage=document.getElementById('capStage'), capDesc=document.getElementById('capDesc'),
+      capStep=document.getElementById('capStep'), report=document.getElementById('report'), prog=document.getElementById('prog'),
+      banner=document.getElementById('banner'), bkick=document.getElementById('bkick'), bname=document.getElementById('bname'),
+      bubbles=document.getElementById('bubbles');
+  ORDER.forEach(function(k){ paintChip(k,'next'); });
+
+  var lastBannerStage = '';
+  function triggerBanner(stage){
+    var idx = ORDER.indexOf(stage);
+    bkick.textContent = stage==='start' ? 'The Quest Begins' : (stage==='report' ? 'Final Stage' : 'Stage '+(idx+1)+' / 6');
+    bname.textContent = STAGES[stage] ? STAGES[stage].name : 'Your Code / Plan';
+    banner.style.color = CHIPCOL[stage] || '#6db4ff';
+    banner.classList.remove('run'); void banner.offsetWidth; banner.classList.add('run');
+  }
+
+  function renderBubbles(list){
+    bubbles.innerHTML = '';
+    (list||[]).forEach(function(b){
+      var el = document.createElement('div'); el.className='bub';
+      el.style.left = b.x+'%'; el.style.top = b.y+'%'; el.style.setProperty('--c', b.c);
+      el.innerHTML = b.t; bubbles.appendChild(el);
+    });
+  }
+
+  function setStage(stage, kind, st){
+    if(kind==='walk') return; // linger on the just-finished stage while travelling (more time to read)
+    var meta = STAGES[stage] || STAGES.start;
+    capStage.textContent = meta.name; capStage.style.color = meta.color;
+    capDesc.textContent = meta.desc;
+    var idx = ORDER.indexOf(stage);
+    ORDER.forEach(function(k,i){
+      var isActive = (k===stage), isDone = (idx>i);
+      chipEls[k].classList.toggle('active', isActive);
+      chipEls[k].classList.toggle('done', isDone);
+      paintChip(k, isActive ? 'active' : (isDone ? 'done' : 'next'));
+    });
+    capStep.textContent = stage==='start' ? 'START' : ('STAGE '+(idx+1)+' / 6');
+    report.classList.toggle('show', stage==='report');
+    if(stage!==lastBannerStage){ lastBannerStage = stage; triggerBanner(stage); }
+  }
+
+  var lastBubKey = '';
+  setStage.progress = function(frac, st){
+    prog.style.width = (frac*100).toFixed(1)+'%';
+    var key = (st.beat!=null) ? (st.stage+':'+st.beat) : ('_'+st.stage+'_'+st.phase.kind);
+    if(key!==lastBubKey){ lastBubKey = key; renderBubbles(BUB[st.stage+':'+st.beat]); }
+  };
+
+  function syncBtn(){
+    var playing = QUEST.isPlaying();
+    document.getElementById('playTxt').textContent = playing ? 'Pause' : 'Play';
+    document.getElementById('playIco').innerHTML = playing
+      ? '<rect x="1" y="1" width="3" height="10" fill="currentColor"/><rect x="8" y="1" width="3" height="10" fill="currentColor"/>'
+      : '<path d="M2 1 L11 6 L2 11 Z" fill="currentColor"/>';
+  }
+  document.getElementById('playBtn').onclick = function(){ QUEST.toggle(); syncBtn(); };
+  document.getElementById('replayBtn').onclick = function(){ lastBannerStage=''; QUEST.restart(); syncBtn(); };
+
+  QUEST.start(document.getElementById('cv'), { onStage: setStage });
+  syncBtn();
+  window.__QUEST_READY = true;
+})();
+</script>
+</body>
+</html>
