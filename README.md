@@ -4,7 +4,7 @@
 
 **4–6 AI reviewers independently evaluate your code, plan, or docs, debate each other's findings, then a judge resolves disagreements.** A [Claude Code](https://claude.ai/code) plugin that orchestrates structured multi-stance review. Each run costs roughly **$3–$20** in Opus tokens and takes **6–15 minutes** — built for high-stakes reviews, not routine code review.
 
-[![Agent Review Panel — watch your code journey through the multi-agent review pipeline](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/quest-hero.gif?v=1)](https://wan-huiyan.github.io/agent-review-panel/quest/)
+[![Agent Review Panel — watch your code journey through the multi-agent review pipeline](https://raw.githubusercontent.com/wan-huiyan/agent-review-panel/main/docs/quest-hero.gif?v=2)](https://wan-huiyan.github.io/agent-review-panel/quest/)
 
 <p align="center"><em>▶️ <a href="https://wan-huiyan.github.io/agent-review-panel/quest/">Play the interactive version</a> — pause, replay, jump to any stage. Your code/plan journeys <b>Gather → Review → Debate → Verify → Adjudicate → Report</b>. <a href="docs/hero-flow.svg">(static pipeline diagram)</a></em></p>
 
