@@ -31,7 +31,7 @@ description: >
   composition/seam bugs.
 ---
 
-# Agent Review Panel v3.4.0
+# Agent Review Panel v3.5.0
 
 A multi-agent adversarial review system based on nine research foundations:
 ChatEval (ICLR 2024), AutoGen, Du et al. (ICML 2024), MachineSoM (ACL 2024),
@@ -1104,6 +1104,36 @@ Plus panel-level files:
 **On full gate pass:** proceed to Phase 14. The COMPRESSED RUN header is NOT
 emitted (its absence is the green light).
 
+**Debate-presence assertion (v3.5.0) — distinct from per-file compression.**
+The per-file gate above re-dispatches an *individual* missing file. But the
+dominant real-world failure (2026-06-06 audit: 50/51 runs had no debate) is
+the *wholesale* skip — the orchestrator never ran Phase 5 at all and jumps
+from independent reviews straight to the judge. So, separately from the
+per-file check, **count the `reviewer_*_phase_5_round1.md` files across the
+whole panel** (or `state/run_<N>/` in multi-run mode):
+
+- **If the count is ZERO when mode = full panel** (the entire debate phase is
+  absent, not just one reviewer's file), this is the **NO-DEBATE** condition.
+  Do NOT proceed to Phase 14 silently. Instead:
+  1. **Preferred — run Phase 5 now.** Debate was skipped; execute it (round 1
+     is non-skippable per the protocol) and re-run this assertion.
+  2. **If debate is genuinely unavailable for this execution shape** (e.g.,
+     the run is executing as a parallel Workflow / ultracode fan-out with no
+     sequential cross-talk primitive — see *Debate inside a Workflow* below),
+     stamp the **`[NO-DEBATE]` banner** (Phase 15.1 / 15.3) and lower the
+     verdict confidence (cap at Medium). The judge still rules, but the report
+     announces that no adversarial cross-examination happened.
+- **If the count is ≥ 1**, debate ran; no NO-DEBATE banner. (Individual
+  missing round-1 files for *some* reviewers remain a per-file COMPRESSED
+  case, handled above.)
+
+**Detection is not solely anchored here.** Phase 13.5 does not fire on every
+execution shape (an inline/workflow-shaped run can skip this gate entirely —
+that is exactly how the audit's silent skips slipped through). The
+load-bearing NO-DEBATE check therefore *also* runs at the Phase 15.1
+report-write chokepoint (every completed run passes through it). See Phase
+15.1.
+
 **Why bytes + headers, not just existence:** A subagent can write a stub and
 crash, leaving an empty/partial file. Existence alone passes the gate on a
 stub. Bytes + required-headers makes the check load-bearing. This mirrors
@@ -1234,6 +1264,48 @@ appended to its epistemic label (e.g., `[CONSENSUS][COMPRESSED]`,
 
 For full runs, the warning block is absent. Its absence is the green-light
 signal that the panel completed the full protocol.
+
+**No-debate warning (v3.5.0) — the load-bearing debate-skip chokepoint.**
+Phase 15.1 is the terminal step every completed run passes through, so the
+NO-DEBATE detection is anchored HERE (not only in the Phase 13.5 gate, which
+an inline/workflow-shaped run can skip — that is precisely how the audit's
+silent skips slipped past). **Before writing the report, the orchestrator
+MUST independently check whether any `reviewer_*_phase_5_round1.md` state
+files exist** (under `state/`, or any `state/run_<N>/` in multi-run mode). If
+**none exist** — the adversarial debate (Phase 5) did not run for this panel —
+Phase 15.1 MUST emit this block as report content (immediately AFTER the
+COMPRESSED RUN block if one is present, otherwise FIRST, before the Executive
+Summary):
+
+```markdown
+> ⚠️ **[NO-DEBATE] — adversarial debate (Phase 5) did not run.**
+>
+> Reviewers evaluated independently but never cross-examined each other's
+> findings. The Supreme Judge reconciled disagreements alone, without a debate
+> record. Treat consensus and disagreement rulings as **lower confidence** —
+> no reviewer had the chance to revise a verdict in light of a peer's. For a
+> high-stakes or adversarial-tradeoff decision, re-run the **full** panel with
+> debate (invoke as a skill, not a workflow), or use the debate-in-Workflow
+> recipe.
+```
+
+In a no-debate run:
+- Every action item MUST have `[NO-DEBATE]` appended to its epistemic label
+  (e.g., `[CONSENSUS][NO-DEBATE]`, `[SINGLE-SOURCE][NO-DEBATE]`).
+- The `**Confidence:**` header field MUST be capped at **Medium** (if the
+  judge ruled High, lower it one level to Medium and note why); a no-debate
+  run can never report High confidence.
+- The "Debate Rounds + Summaries" collapsible in Detailed Reviews renders the
+  placeholder "No debate rounds — Phase 5 did not run for this panel."
+
+**Banner stacking & the COMPRESSED overlap.** COMPRESSED (per-file loss) and
+NO-DEBATE (wholesale Phase-5 absence) are distinct signals and **stack**: when
+both apply, render NO-DEBATE first (it is the more specific, higher-severity
+signal for the verdict), then COMPRESSED. NO-DEBATE is the named signal for
+zero Phase-5 output, so a COMPRESSED block need not also enumerate "5" in its
+phases-skipped list when the NO-DEBATE banner is present. For full runs where
+debate ran, the NO-DEBATE block is absent; its absence is the green-light
+signal that adversarial debate occurred.
 
 ```markdown
 # Review Panel Report
@@ -1490,6 +1562,23 @@ warning text. Suggested CSS:
 
 The banner appears above the report header summary card.
 
+**No-debate banner (v3.5.0):** If the source Phase 15.1 markdown report
+contains the `⚠️ [NO-DEBATE]` blockquote, Phase 15.3 MUST render a prominent
+amber banner at the top of the HTML body with the same warning text. Use a
+distinct amber/orange palette so it reads as separate from the red COMPRESSED
+banner; when both are present, render NO-DEBATE first, then COMPRESSED.
+Suggested CSS:
+
+```html
+<div role="alert" style="background:#FEF3C7; color:#92400E; padding:1rem 1.25rem; margin:1rem 0; border:2px solid #D97706; border-radius:6px;">
+  <strong>⚠️ [NO-DEBATE] — adversarial debate (Phase 5) did not run.</strong>
+  <p>Reviewers evaluated independently but never cross-examined each other. The judge reconciled disagreements without a debate record — treat rulings as lower confidence. Re-run the full panel with debate for high-stakes decisions.</p>
+</div>
+```
+
+The banner appears above the report header summary card (and above the
+COMPRESSED banner if both are present).
+
 ---
 
 ### Phase 15 Verification Gate (MANDATORY — v2.16.4)
@@ -1517,7 +1606,7 @@ Tell user:
 - Counts: consensus points, disagreements, action items, verification verdicts
 - Top P0 action item (if any)
 - Note: HTML report requires internet connection for Tailwind CSS, Chart.js, and Prism.js CDNs
-- HTML footer should read "Agent Review Panel v3.4.0" (MUST match the full semver from `plugin.json` — update this line whenever the version is bumped)
+- HTML footer should read "Agent Review Panel v3.5.0" (MUST match the full semver from `plugin.json` — update this line whenever the version is bumped)
 
 ---
 
@@ -1539,6 +1628,64 @@ review. The spec in `references/prompt-templates.md` is authoritative — it
 specifies Tailwind CSS, Chart.js, Prism.js, the 10-section expandable accordion,
 Panel Gallery, filter logic, keyboard navigation, deep-linking, and print styles.
 Any HTML report that does not follow this spec is non-compliant.
+
+---
+
+## Review-Mode Spectrum & Debate-in-Workflow (v3.5.0)
+
+This skill is the **full adversarial panel** — its distinguishing feature is
+Phase 5–7 **debate** (reviewers cross-examine each other before a judge rules).
+Debate is expensive (sequential cross-talk) and only pays off when reviewers
+would genuinely change each other's verdicts. A 2026-06-06 audit of 51 real
+runs found debate ran in only 1 — most reviews were (correctly or not) routed
+to debate-less fast modes. Pick the mode deliberately:
+
+| Want | Use | Debate? |
+|---|---|---|
+| Fast eyes on a tiny PR | `code-review` / `single-agent-multi-persona-review` | no |
+| Independent parallel lenses, small PR, autonomous multi-PR run | `parallel-panel-streamlined-no-debate` | no (by design) |
+| **Adversarial tradeoff, high-stakes gating, debate would change the verdict** (security vs perf, "is this P0 real", merge go/no-go) | **this skill (full panel) — invoke as a skill, NOT a workflow** | **yes (Phase 5–7)** |
+
+**Why "invoke as a skill, not a workflow" matters.** Debate lives in this
+skill's Agent-tool orchestration. The Workflow / ultracode engine is a
+*parallel fan-out* engine (`parallel()` / `pipeline()` — agents never see each
+other) whose canonical recipe is literally "find → verify → judge". Running
+"review this in ultracode" therefore produces a structurally debate-less run,
+and the panel's NO-DEBATE banner will fire. If you *want* the panel's depth
+under a Workflow, you must author debate as an explicit phase.
+
+### Debate-in-Workflow recipe (ultracode-mode)
+
+Debate IS achievable inside a Workflow — it just isn't the default shape. The
+trick: a debate "round" is just re-spawning each reviewer agent **with its
+peers' prior-round findings injected** (it reads peer state files). Sequential
+cross-talk becomes a pipeline where stage N reads stage N−1's siblings:
+
+```js
+// 1. Round 1 — independent reviews, in parallel (no cross-talk yet).
+const round1 = await parallel(PERSONAS.map(p => () =>
+  agent(`Review the work as ${p.name}. Write findings to state/reviewer_${p.key}_phase_5_round1.md`,
+        {phase: 'Review', schema: FINDINGS_SCHEMA})));
+
+// 2. Debate round 2 — each reviewer re-runs WITH every peer's round-1 findings
+//    as input, and rebuts/revises. This is the cross-examination.
+const round2 = await parallel(PERSONAS.map((p, i) => () =>
+  agent(`You are ${p.name}. Your round-1 findings: ${JSON.stringify(round1[i])}.
+         Your peers' round-1 findings: ${JSON.stringify(round1.filter((_,j)=>j!==i))}.
+         Where do you concede, push back, or find a NEW issue their angle exposes?
+         Write to state/reviewer_${p.key}_phase_5_round2.md`,
+        {phase: 'Debate', schema: REBUTTAL_SCHEMA})));
+
+// 3. Judge reconciles WITH the debate record (not alone).
+const ruling = await agent(`Adjudicate. Read the round-1 and round-2 state files;
+  rule on each disagreement citing how the debate moved (or didn't).`,
+  {phase: 'Judge', schema: RULING_SCHEMA});
+```
+
+Authoring an explicit `Debate` phase (the audit's one debating run used
+`phases [Review, Debate, Audit+Verify, Judge]`) is what makes the round-1
+state files exist — which in turn satisfies the NO-DEBATE check. A Workflow
+that skips the `Debate` phase will (correctly) get the NO-DEBATE banner.
 
 ---
 

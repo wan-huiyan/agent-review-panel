@@ -2,6 +2,33 @@
 
 All notable changes to Agent Review Panel.
 
+## [3.5.0] — 2026-06-06 — Loud debate-skip (`[NO-DEBATE]` banner)
+
+Closes [#56](https://github.com/wan-huiyan/agent-review-panel/issues/56). A 7-day audit of **51 real review runs** ([`docs/analysis/2026-06-06-debate-disappearance-audit.md`](docs/analysis/2026-06-06-debate-disappearance-audit.md)) found the adversarial **debate phase (Phase 5–7) ran in only 1 of 51 runs** — and, most concerning, invoking the skill did *not* reliably produce a debate (on inline/workflow execution shapes it silently collapsed to reviews → judge). The `SKILL.md` still mandates debate, so this is an **observability gap, not a spec regression**: make a debate-less run announce itself instead of passing silently.
+
+### Added — `[NO-DEBATE]` banner (the load-bearing fix)
+
+- **Detection anchored at the Phase 15.1 report-write chokepoint** — the terminal step every completed run passes through (the Phase 13.5 gate does *not* fire on the inline/workflow shapes, which is exactly how the audit's silent skips slipped past). Before writing the report, the orchestrator independently checks whether any `reviewer_*_phase_5_round1.md` state files exist. If **none** do, the adversarial debate never ran:
+  - a `⚠️ [NO-DEBATE]` banner is stamped on `review_panel_report.md` **and** the HTML dashboard (amber palette, distinct from the red `[COMPRESSED]` banner);
+  - every action item is suffixed `[NO-DEBATE]`;
+  - the `**Confidence:**` header is **capped at Medium** (a no-debate run can never report High);
+  - the "Debate Rounds" detail renders a "Phase 5 did not run" placeholder.
+- **COMPRESSED / NO-DEBATE are distinct and stack** — `[COMPRESSED]` (a *specific* mandatory phase file lost after retry) vs `[NO-DEBATE]` (the *entire* Phase 5 absent). When both apply, NO-DEBATE renders first. Mirrors the v3.1 `[COMPRESSED]` machinery.
+
+### Added — Phase 13.5 debate-presence assertion
+
+The Pre-Judge Verification Gate now counts panel-wide `reviewer_*_phase_5_round1.md` files: if zero when mode = full panel, it must run Phase 5 or stamp `[NO-DEBATE]` — never proceed to the judge with zero debate output silently.
+
+### Added — Review-Mode Spectrum + debate-in-Workflow recipe
+
+- A **Review-Mode Spectrum** section (`SKILL.md` + README) clarifying when to use the full debate panel vs the streamlined / single-persona fast modes, and why debate lives in the skill's Agent-tool orchestration (not the parallel-fan-out Workflow engine).
+- A canonical **debate-in-Workflow recipe** for ultracode/Workflow execution: round 1 reviewers → each re-runs with peers' round-1 findings injected (the cross-examination) → judge reconciles with the debate record. Authoring an explicit `Debate` phase is what makes the round-1 state files exist (and satisfies the NO-DEBATE check).
+
+### Tests
+
+- New `tests/fixtures/sample-report-no-debate.md` fixture + `report-structure.test.mjs` parser support (`report.noDebate.detected`) — asserts the banner is detected when Phase-5 state is absent (issue acceptance criterion).
+- New `v3.5.0 loud debate-skip ([NO-DEBATE])` behavioral-assertion block validating the Phase 13.5 / 15.1 / 15.3 spec text, the confidence cap, the mode-spectrum doc, and the debate-in-Workflow recipe.
+
 ## [3.4.0] — 2026-06-04 — VoltAgent catalog expansion + drift automation
 
 ### Added — 30 new signal→specialist mappings

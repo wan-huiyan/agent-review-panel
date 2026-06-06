@@ -798,5 +798,156 @@ describe("v3.3.0 Live-State Claim Discipline (#40)", () => {
   });
 });
 
+describe("v3.5.0 loud debate-skip ([NO-DEBATE])", () => {
+  it("Phase 13.5 documents the panel-level debate-presence assertion", () => {
+    assert.match(
+      skillMd,
+      /## Phase 13\.5[\s\S]+?Debate-presence assertion[\s\S]+?reviewer_\*_phase_5_round1\.md/i,
+      "Phase 13.5 must count reviewer_*_phase_5_round1.md files panel-wide"
+    );
+    assert.match(
+      skillMd,
+      /## Phase 13\.5[\s\S]+?NO-DEBATE[\s\S]+?do not proceed to phase 14 silently/i,
+      "Phase 13.5 must forbid proceeding to the judge silently when debate is absent"
+    );
+  });
+
+  it("Phase 15.1 anchors NO-DEBATE detection at the report-write chokepoint", () => {
+    // The load-bearing fix: detection must NOT live only in Phase 13.5
+    // (which doesn't fire on inline/workflow shapes). Phase 15.1 re-checks.
+    assert.match(
+      skillMd,
+      /No-debate warning \(v3\.5\.0\)[\s\S]+?independently check whether any `reviewer_\*_phase_5_round1\.md`/i,
+      "Phase 15.1 must independently re-check for Phase-5 state files at report-write time"
+    );
+    assert.match(
+      skillMd,
+      /No-debate warning[\s\S]+?terminal step every completed run passes through/i,
+      "Phase 15.1 must justify itself as the terminal chokepoint anchoring detection"
+    );
+  });
+
+  it("Phase 15.1 defines the [NO-DEBATE] markdown banner and action-item suffix", () => {
+    assert.match(
+      skillMd,
+      /⚠️ \*\*\[NO-DEBATE\] — adversarial debate \(Phase 5\) did not run\.\*\*/,
+      "SKILL.md must define the [NO-DEBATE] markdown banner block"
+    );
+    assert.match(
+      skillMd,
+      /`\[NO-DEBATE\]` appended to its epistemic label/i,
+      "SKILL.md must require the [NO-DEBATE] suffix on every action item"
+    );
+  });
+
+  it("Phase 15.1 caps no-debate confidence at Medium (testable wiring)", () => {
+    assert.match(
+      skillMd,
+      /`\*\*Confidence:\*\*` header field MUST be capped at \*\*Medium\*\*/,
+      "SKILL.md must wire the confidence cap to the actual Confidence header field"
+    );
+    assert.match(
+      skillMd,
+      /no-debate\s+run can never report High confidence/i,
+      "SKILL.md must state a no-debate run can never report High confidence"
+    );
+  });
+
+  it("documents the COMPRESSED / NO-DEBATE stacking interaction explicitly", () => {
+    assert.match(
+      skillMd,
+      /Banner stacking[\s\S]+?COMPRESSED[\s\S]+?NO-DEBATE[\s\S]+?stack/i,
+      "SKILL.md must explicitly resolve the COMPRESSED/NO-DEBATE overlap (banners stack)"
+    );
+  });
+
+  it("Phase 15.3 documents the [NO-DEBATE] HTML banner (SKILL.md)", () => {
+    assert.match(
+      skillMd,
+      /No-debate banner \(v3\.5\.0\)[\s\S]+?amber[\s\S]+?\[NO-DEBATE\]/i,
+      "Phase 15.3 must document the amber [NO-DEBATE] HTML banner"
+    );
+  });
+
+  it("prompt-templates.md Phase 15.3 INSTRUCTS the HTML agent to render the run-integrity banners", () => {
+    // The HTML agent reads prompt-templates.md, NOT SKILL.md — so the
+    // banner-rendering instruction must live HERE to actually fire.
+    // Mirrors the v3.2.0 Chart.js phase15_3 gold-standard test.
+    const promptTemplates = readFileSync(
+      resolve(ROOT, "skills/agent-review-panel/references/prompt-templates.md"),
+      "utf-8"
+    );
+    const phase15_3 = promptTemplates.split(/^## Phase 15\.3/m)[1] || "";
+    assert.match(
+      phase15_3,
+      /Run-Integrity Banners/i,
+      "Phase 15.3 prompt must include a Run-Integrity Banners instruction"
+    );
+    assert.match(
+      phase15_3,
+      /role="alert"/,
+      "Phase 15.3 prompt must instruct an alert div for the banners"
+    );
+    assert.match(
+      phase15_3,
+      /\[NO-DEBATE\][\s\S]+?amber/i,
+      "Phase 15.3 prompt must instruct the amber [NO-DEBATE] banner specifically"
+    );
+    assert.match(
+      phase15_3,
+      /COMPRESSED RUN[\s\S]+?red/i,
+      "Phase 15.3 prompt must also cover the red COMPRESSED banner (same machinery)"
+    );
+    assert.match(
+      phase15_3,
+      /NO-DEBATE first[\s\S]+?COMPRESSED/i,
+      "Phase 15.3 prompt must define the stacking order when both banners apply"
+    );
+  });
+
+  it("documents the review-mode spectrum (full-debate vs streamlined)", () => {
+    assert.match(
+      skillMd,
+      /## Review-Mode Spectrum & Debate-in-Workflow \(v3\.5\.0\)/,
+      "SKILL.md must contain a Review-Mode Spectrum section"
+    );
+    assert.match(
+      skillMd,
+      /parallel-panel-streamlined-no-debate[\s\S]+?full panel/i,
+      "Review-Mode Spectrum must contrast the streamlined panel with the full-debate panel"
+    );
+  });
+
+  it("documents the debate-in-Workflow recipe for ultracode runs", () => {
+    assert.match(
+      skillMd,
+      /Debate-in-Workflow recipe/i,
+      "SKILL.md must contain a debate-in-Workflow recipe"
+    );
+    assert.match(
+      skillMd,
+      /Debate-in-Workflow recipe[\s\S]+?round-1[\s\S]+?peers['’][\s\S]+?judge/i,
+      "the recipe must describe round 1 → peers-injected round 2 → judge"
+    );
+  });
+
+  it("the [NO-DEBATE] fixture parses and is detected by the report parser", () => {
+    const fixture = readFileSync(
+      resolve(ROOT, "tests/fixtures/sample-report-no-debate.md"),
+      "utf-8"
+    );
+    assert.match(
+      fixture,
+      /^>\s*⚠️\s*\*\*\[NO-DEBATE\]/m,
+      "the no-debate fixture must carry the [NO-DEBATE] banner as its first block"
+    );
+    assert.match(
+      fixture,
+      /\*\*Confidence:\*\*\s*Medium/,
+      "the no-debate fixture must demonstrate the Medium-confidence cap"
+    );
+  });
+});
+
 // Export utilities for other test files
 export { makeAssertionChecker, runAssertions };
