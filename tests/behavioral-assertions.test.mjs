@@ -861,11 +861,47 @@ describe("v3.5.0 loud debate-skip ([NO-DEBATE])", () => {
     );
   });
 
-  it("Phase 15.3 documents the [NO-DEBATE] HTML banner", () => {
+  it("Phase 15.3 documents the [NO-DEBATE] HTML banner (SKILL.md)", () => {
     assert.match(
       skillMd,
       /No-debate banner \(v3\.5\.0\)[\s\S]+?amber[\s\S]+?\[NO-DEBATE\]/i,
       "Phase 15.3 must document the amber [NO-DEBATE] HTML banner"
+    );
+  });
+
+  it("prompt-templates.md Phase 15.3 INSTRUCTS the HTML agent to render the run-integrity banners", () => {
+    // The HTML agent reads prompt-templates.md, NOT SKILL.md — so the
+    // banner-rendering instruction must live HERE to actually fire.
+    // Mirrors the v3.2.0 Chart.js phase15_3 gold-standard test.
+    const promptTemplates = readFileSync(
+      resolve(ROOT, "skills/agent-review-panel/references/prompt-templates.md"),
+      "utf-8"
+    );
+    const phase15_3 = promptTemplates.split(/^## Phase 15\.3/m)[1] || "";
+    assert.match(
+      phase15_3,
+      /Run-Integrity Banners/i,
+      "Phase 15.3 prompt must include a Run-Integrity Banners instruction"
+    );
+    assert.match(
+      phase15_3,
+      /role="alert"/,
+      "Phase 15.3 prompt must instruct an alert div for the banners"
+    );
+    assert.match(
+      phase15_3,
+      /\[NO-DEBATE\][\s\S]+?amber/i,
+      "Phase 15.3 prompt must instruct the amber [NO-DEBATE] banner specifically"
+    );
+    assert.match(
+      phase15_3,
+      /COMPRESSED RUN[\s\S]+?red/i,
+      "Phase 15.3 prompt must also cover the red COMPRESSED banner (same machinery)"
+    );
+    assert.match(
+      phase15_3,
+      /NO-DEBATE first[\s\S]+?COMPRESSED/i,
+      "Phase 15.3 prompt must define the stacking order when both banners apply"
     );
   });
 

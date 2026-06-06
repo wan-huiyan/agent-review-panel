@@ -1349,6 +1349,24 @@ REQUIRED v2.15 deep-detail fields (extracted from Phase 15.2 process history):
 
 ## Required HTML Structure
 
+### 0. Run-Integrity Banners (top of `<body>`, above the header bar)
+
+Before the header bar, inspect the top of the source Phase 15.1 markdown
+report for run-integrity warning blockquotes and transcribe each into a
+prominent top-of-body alert `<div role="alert">` with the SAME warning text.
+These tell the reader the run did not complete the full protocol — never drop
+them when rebuilding the structured dashboard:
+
+- **`⚠️ COMPRESSED RUN — Phases skipped: …`** → **red** banner
+  (`background:#FEE2E2; color:#991B1B; border:2px solid #DC2626; border-radius:6px; padding:1rem 1.25rem; margin:1rem 0;`).
+- **`⚠️ [NO-DEBATE] — adversarial debate (Phase 5) did not run.`** → **amber**
+  banner (`background:#FEF3C7; color:#92400E; border:2px solid #D97706; border-radius:6px; padding:1rem 1.25rem; margin:1rem 0;`).
+
+If **both** blockquotes are present, render **NO-DEBATE first, then
+COMPRESSED**, both above the header bar. If the source report carries **neither**
+(a full run), render no banner — its absence is the green-light signal. Do NOT
+invent a banner the markdown report does not carry.
+
 ### 1. Header Bar
 Dark background. Left: work title (bold) + date. Right: verdict badge (color-coded:
 green=Accept, yellow=Minor changes, orange=Significant revision, red=Reject) +
