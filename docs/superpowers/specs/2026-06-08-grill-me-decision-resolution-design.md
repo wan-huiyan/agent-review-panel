@@ -194,7 +194,7 @@ recent practitioner signal via the `/last30days` engine, tagged
 `[COMMUNITY-SIGNAL]`, judge-discounted, never grounding a CRITICAL, never run for
 correctness reviews. It is a *research-input* concern (different axis from this
 human-loop feature) and carries epistemic risk that warrants its own focused
-version + tests. Add a placeholder entry to `ROADMAP.md`.
+version + tests. Add a placeholder entry to `ROADMAP.md`. **Tracked as #58.**
 
 ## 11. Edit surface (tracked paths verified on `main`)
 
