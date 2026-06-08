@@ -254,6 +254,29 @@ Techniques evaluated and rejected for our use case.
 
 ---
 
+## Candidate Next Work (post-v3.5.0)
+
+Deferred enhancements on already-shipped guardrails. Both share a root cause: the
+panel's terminal gates fire only on the *literal Phase 1→16 protocol*, not on the
+inline / Workflow / ultracode execution shapes the 2026-06-06 audit found skipping
+debate. Full write-up + rationale:
+[`docs/analysis/2026-06-08-agency-agents-evaluation.md`](docs/analysis/2026-06-08-agency-agents-evaluation.md)
+(§ Recommended next work).
+
+- **Debate-presence guardrail — next increment (on v3.5.0 / #57).** Ship the
+  "debate-in-Workflow" recipe as a reusable primitive (not just prose); tighten the
+  audit's least-precise trigger-(3) count (`ran_as: skill` 13 vs full-panel 2); consider
+  auto-routing high-stakes / security-gating reviews to the full debate panel.
+- **Judge-grounding step — next increment (on v3.2.0 / Phase 14.5).** Anchor judge-output
+  verification at a terminal chokepoint (mirror v3.5.0's Phase-15.1 anchor for NO-DEBATE)
+  so Phase 14.5 can't be skipped by execution shape; couple it to the no-debate case where
+  the solo judge is the highest-risk configuration.
+- **Not pursued:** bolting the [`agency-agents`](https://github.com/msitarzewski/agency-agents)
+  catalog on alongside VoltAgent — breadth-of-personas, not depth-of-reviewers; doesn't move
+  the quality levers above. See the evaluation doc.
+
+---
+
 ## Version History
 
 | Version | Date | Changes |
