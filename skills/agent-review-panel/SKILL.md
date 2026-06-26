@@ -300,6 +300,7 @@ If user specifies personas, use those. Otherwise select 4 from content-type sets
 2. **Technical Accuracy Reviewer** (30%)
 3. **Completeness Checker** (40%)
 4. **Devil's Advocate** (20%)
+5. **Fresh-Reader Reviewer** (50%) — reads the doc COLD as a newcomer with zero prior context: catches journey-narration ("now built", "corrected this round", dated probes, "was X — now Y", "superseded"), assumed prior knowledge / undefined jargon / internal nicknames, and feasibility-vs-built identity confusion — defects Clarity/Accuracy/Completeness routinely miss. **Strongly recommended (replace Devil's Advocate) for any near-final delivery / feasibility / status / handoff document, especially one heavily iterated or mass-rewritten.** Dispatch via the `Fresh-Reader Delivery Reviewer` agent.
 
 After base selection, auto-add signal-detected personas (up to 6 total).
 Replace Devil's Advocate first if at cap (keep ≥1 DA if panel ≥4).
@@ -316,6 +317,7 @@ Code Quality Auditor — the #1 cause of missed details in v1.**
 | Security Auditor / Risk Assessor | Adversarial simulation | "Imagine you are an attacker. How would you break this?" |
 | Devil's Advocate | Analogical reasoning | "Compare to known failure patterns from similar projects." |
 | Stakeholder Advocate / Clarity Editor | First-principles | "Question every assumption from scratch." |
+| Fresh-Reader Reviewer | Cold first-read | "You have zero prior context. Read as a newcomer; flag anything that narrates the team's journey, assumes prior knowledge, or leaves the doc self-contradictory." |
 | Auto-added specialists | Checklist verification | "Use your domain checklist. Verify each item." |
 
 ### Default Evaluation Criteria
@@ -359,6 +361,7 @@ agents are available by scanning the system-reminder agent list for any
 | Clarity Editor | `voltagent-dev-exp:documentation-engineer` | `voltagent-biz:technical-writer` | Generic + prompt |
 | Technical Accuracy | `voltagent-qa-sec:code-reviewer` | | Generic + prompt |
 | Completeness Checker | `voltagent-qa-sec:qa-expert` | | Generic + prompt |
+| Fresh-Reader Reviewer | `Fresh-Reader Delivery Reviewer` (custom cold-read agent) | | Generic + prompt |
 
 #### Signal-Detected Specialist Mapping (auto-added by content signals)
 
@@ -367,6 +370,7 @@ VoltAgent agents instead of generic personas:
 
 | Content Signal | Auto-Add Persona | VoltAgent `subagent_type` |
 |---|---|---|
+| Delivery / feasibility / status / handoff doc (esp. heavily iterated or mass-rewritten) | Fresh-Reader Reviewer | `Fresh-Reader Delivery Reviewer` |
 | SQL / database queries | Data Quality Auditor | `voltagent-data-ai:database-optimizer` |
 | Terraform / IaC | Infrastructure Reviewer | `voltagent-infra:terraform-engineer` |
 | Terragrunt | Infrastructure Reviewer | `voltagent-infra:terragrunt-expert` |
