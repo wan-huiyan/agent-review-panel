@@ -833,6 +833,36 @@ PR #33 collapsed the layout. PR #34 added an upgrade-friendly install path after
 
 ---
 
+> *v3.1–v3.5 are chronicled in [CHANGELOG.md](CHANGELOG.md) (Pre-Judge Verification Gate, Post-Judge gate, Live-State Claim Discipline, VoltAgent catalog expansion, the `[NO-DEBATE]` banner). This chronicle jumps from v3.0 to v3.6.*
+
+## Step 22: Assessment Mode — Quality Discrimination + Control-Validation Gate (v3.6, 2026-06-28)
+
+### Motivation
+
+The trigger came from *outside* this repo. While running a model bake-off for a China brand-strategy report (the monksIQ project), a 6-judge panel's four qualitative axes — grounding, depth, comprehensiveness, readability — **all saturated at 8–9.5**, and a deliberately-constructed **no-data control** (a report written with zero research, pure model memory) scored *as high as* the genuinely-researched reports. Only an out-of-band freshness fact-check discriminated. That exposed a gap in this skill: every existing mode (Precise for code, Exhaustive for plans/docs) is built to **find defects**. For a subjective-quality deliverable — a strategy report, marketing copy, a pitch — the failure isn't a discrete bug; it's that every competent draft *reads* good, so a generic "rate 0–10" panel can't tell a real deliverable from a confident-but-empty one.
+
+### Method — the strongest models designed their own panel
+
+Rather than hand-design personas, we asked the three strongest models (by grounding+completeness) to (a) design a review panel for this assessment and (b) critique our evaluation angles, given the saturation finding. **The three-way convergence was the signal:** independently, all three proposed the same scoring inversion (subtract-points + veto, not add-points), the same specificity probe (swap the brand name — if the strategy still holds, it's generic), and — unprompted — the exact control-validation rule (*a persona is valid only if it scores the no-data control below ~3/10*). When three independent strong models converge on a mechanism, that's evidence it's real, not one model's quirk.
+
+### What Changed
+
+- A fourth review mode, **Assessment**, auto-detected for subjective-quality deliverables.
+- A **generated, domain-tailored** adversarial persona set (4 archetypes: Domain-Authenticity / Executability-Operator / Decision-Maker-ROI / Intent-Fidelity) instead of hardcoded personas.
+- **Subtract-points + veto** scoring (a fatal domain violation → 0, not averaged away).
+- **The swap test** — a cheap, automatable specificity probe.
+- **Out-of-band currency check** — factual/freshness claims verified against a curated checklist *outside* the panel.
+- **The control-validation gate** (the signature) — run a degenerate no-input control through the same personas; drop any persona that can't score it clearly below the real deliverable. Complementary to the Phase-6 CONSENSAGENT check (that tests reviewer *agreement*; this tests against a *known-bad floor*).
+
+### Lessons
+
+47. **Saturation is a different failure mode than defects, and needs different machinery.** The whole skill answers "what's wrong?" — additive bug-finding where more findings = better. Quality discrimination is the inverse: everything reads fine, and the job is to *spread* a saturated distribution. Add-points scoring (the natural default) works *against* you there — it produces agreeable 9s. Subtract-from-10 + veto forces "good" to mean "survived the deductions."
+48. **A negative control is the calibration instrument for any subjective rubric.** Promoting the bake-off's one-off no-data control to a *standing* gate — "keep a persona only if it scores the control low" — generalizes it. It catches non-discriminating sycophancy that the reviewer-*agreement* check (CONSENSAGENT) structurally cannot, because two reviewers can confidently agree on a high score for an empty draft.
+49. **Personas fix the subjective axes but not factuality.** A CEO/creator/skeptic persona changes *what* is asked (insight, actionability, authenticity) and de-saturates those — but no persona can tell a confident *current* fact from a confident *stale* one; it has no ground truth. Currency must stay an out-of-band fact-check. Knowing which problem a mechanism does and doesn't solve kept the design honest.
+50. **Meta-eval: ask the strongest domain models to design the evaluator, and treat convergence as signal.** Letting the models that scored highest on the task design the panel produced a sharper rubric than guessing — and three independent models converging on subtract-points + the swap test + the control gate was stronger evidence than any single rationale. (Caveat: convergence is a hypothesis to validate *with the control*, not proof.)
+
+---
+
 ## File Inventory
 
 ```
@@ -874,9 +904,9 @@ PR #33 collapsed the layout. PR #34 added an upgrade-friendly install path after
 ├── .github/workflows/
 │   └── test.yml                        # GitHub Actions — runs `npm test` on every push/PR
 ├── README.md                           # User-facing documentation (install via /plugin marketplace add)
-├── HOW_WE_BUILT_THIS.md                # This file (Steps 1–21 chronicling v1–v3.0)
+├── HOW_WE_BUILT_THIS.md                # This file (Steps 1–22 chronicling v1–v3.6; v3.1–v3.5 in CHANGELOG)
 ├── ROADMAP.md                          # Unified research + trust roadmap (22+ papers, 14 projects)
-├── CHANGELOG.md                        # Top-level changelog (v1.0 → v3.0.0)
+├── CHANGELOG.md                        # Top-level changelog (v1.0 → v3.6.0)
 ├── package.json                        # Node.js test runner config (v3.0.0, name "roundtable")
 └── LICENSE                             # MIT
 ```
