@@ -2,6 +2,19 @@
 
 All notable changes to Agent Review Panel.
 
+## [3.6.0] — 2026-06-28 — Assessment mode (quality discrimination + control-validation gate)
+
+Adds a fourth review mode for **subjective-quality deliverables** (strategy reports, marketing/creative copy, pitches, research syntheses), where the failure mode is **saturation** — a generic "rate 0–10" panel scores a confident-but-empty draft as highly as a real one — not discrete defects.
+
+### Added — Assessment mode
+
+- **Mode-detection** row + an **Assessment** persona set: 4 GENERATED, domain-tailored adversarial archetypes (Domain-Authenticity / Executability-Operator / Decision-Maker-ROI / Intent-Fidelity), all high-intensity.
+- **De-saturation scoring:** subtract-points + **veto** (fatal domain violation → 0), not add-points.
+- **The swap test:** replace the subject's proper noun with a competitor's; if it still reads true, it has zero specificity.
+- **Out-of-band currency check:** factual/freshness claims are verified against a curated checklist *outside* the panel — a persona can't tell current from stale (see skill `llm-judge-cant-detect-stale-or-fabricated-grounding`).
+- **The control-validation gate (signature):** run a degenerate no-input control through the same personas; keep a persona only if it scores the control < ~3/10 — testing the panel against a known-bad floor (complements the Phase 6 CONSENSAGENT sycophancy check, which tests reviewer agreement). Run whenever scores look suspiciously uniform, in any mode.
+- Origin: monksIQ China brand-report bake-off — a 6-judge panel's generic quality axes all saturated (a no-data control scored as high as real reports); the strongest models, asked to design their own panel, independently proposed these exact mechanisms.
+
 ## [3.5.0] — 2026-06-06 — Loud debate-skip (`[NO-DEBATE]` banner)
 
 Closes [#56](https://github.com/wan-huiyan/agent-review-panel/issues/56). A 7-day audit of **51 real review runs** ([`docs/analysis/2026-06-06-debate-disappearance-audit.md`](docs/analysis/2026-06-06-debate-disappearance-audit.md)) found the adversarial **debate phase (Phase 5–7) ran in only 1 of 51 runs** — and, most concerning, invoking the skill did *not* reliably produce a debate (on inline/workflow execution shapes it silently collapsed to reviews → judge). The `SKILL.md` still mandates debate, so this is an **observability gap, not a spec regression**: make a debate-less run announce itself instead of passing silently.

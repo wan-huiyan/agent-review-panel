@@ -31,7 +31,7 @@ description: >
   composition/seam bugs.
 ---
 
-# Agent Review Panel v3.5.0
+# Agent Review Panel v3.6.0
 
 A multi-agent adversarial review system based on nine research foundations:
 ChatEval (ICLR 2024), AutoGen, Du et al. (ICML 2024), MachineSoM (ACL 2024),
@@ -149,6 +149,7 @@ Auto-detect review mode from content type. No user toggle.
 | Pure plan/design | **Exhaustive** | Broader risk identification allowed. Findings may reference design sections or architectural patterns without line-number evidence. |
 | Mixed | **Precise** for code, **Exhaustive** for prose | Reviewers label each finding with its mode. Code findings without line citations are demoted. |
 | Documentation | **Exhaustive** | Same as plan/design. |
+| Subjective-quality deliverable (strategy report, marketing/creative copy, pitch deck, research synthesis) | **Assessment** | Goal is quality *discrimination*, not defect-finding. Score each axis 0–10 by **subtract-points + veto**, run the **swap test**, fact-check currency **out-of-band**, and **control-validate the personas** against a known-bad floor. See *Assessment Mode* below. |
 
 The detected mode is injected into Phase 3 reviewer prompts and the judge prompt.
 Report header states the detected mode.
@@ -302,6 +303,14 @@ If user specifies personas, use those. Otherwise select 4 from content-type sets
 4. **Devil's Advocate** (20%)
 5. **Fresh-Reader Reviewer** (50%) — reads the doc COLD as a newcomer with zero prior context: catches journey-narration ("now built", "corrected this round", dated probes, "was X — now Y", "superseded"), assumed prior knowledge / undefined jargon / internal nicknames, and feasibility-vs-built identity confusion — defects Clarity/Accuracy/Completeness routinely miss. **Strongly recommended (replace Devil's Advocate) for any near-final delivery / feasibility / status / handoff document, especially one heavily iterated or mass-rewritten.** Dispatch via the `Fresh-Reader Delivery Reviewer` agent.
 
+**For subjective-quality deliverables (Assessment mode — strategy / marketing / creative / research output):**
+GENERATE 4 domain-tailored adversarial personas (do not reuse the generic sets — saturation comes from generic "is this good?" questions). Each must ask a question that **exposes a difference a generic reviewer misses**, and all four default to **HIGH agreement-intensity** (appreciative personas re-saturate):
+1. **Domain-Authenticity Critic** (90%) — "does this ring true to a real practitioner/native of this space, or is it a plausible outsider's caricature?"
+2. **Executability / Operator** (90%) — "could I act on this tomorrow? name the concrete next step, number, or channel — any vagueness = a castle in the air."
+3. **Decision-Maker / ROI** (90%) — "would I fund or ship this? what's the measurable commitment, and is the claimed upside real or just baseline?"
+4. **Intent-Fidelity Critic** (90%) — "does this serve the *specific* brief/brand/audience — or would it read identically for a competitor? (apply the swap test in *Assessment Mode*.)"
+Tailor each archetype's wording to the deliverable's actual domain. *Worked example — a China beauty-brand strategy report:* 化妆品合规审查员 (regulatory, with veto) · 本土电商操盘手 (executability) · 比稿甲方 / ROI 审计官 (decision-maker) · 成分党品牌死忠 (intent fidelity). Reasoning strategies: adversarial simulation + first-principles.
+
 After base selection, auto-add signal-detected personas (up to 6 total).
 Replace Devil's Advocate first if at cap (keep ≥1 DA if panel ≥4).
 
@@ -323,6 +332,25 @@ Code Quality Auditor — the #1 cause of missed details in v1.**
 ### Default Evaluation Criteria
 
 Correctness, Completeness, Quality, Edge Cases (override if user specifies).
+*(Assessment mode overrides these — see below.)*
+
+### Assessment Mode (v3.6) — quality discrimination, not defect-finding
+
+Triggers when the work is a **subjective-quality deliverable** (a strategy report, marketing/creative copy, a pitch, a research synthesis) rather than code/plan/docs. The other modes hunt discrete defects; here the failure mode is **saturation** — every competent draft *reads* good, so a generic "rate 0–10" panel hands out 8–9s to everything, **including a confident-but-empty draft.** The job is to *discriminate* quality, which needs different machinery:
+
+**1. Subtract-points + veto (not add-points).** Start each axis at 10; adversarial personas *deduct* 1–2 per hole, cliché, or unsupported claim. A fatal domain violation (regulatory red-line, factually impossible claim) is a **veto → 0 on that axis**, not averaged away. Add-points scoring produces agreeable 9s; subtract-points forces "good" to mean "survived the deductions."
+
+**2. The swap test (cheap specificity probe).** Replace the subject's proper noun (brand/product/person) with a plausible competitor's. If the deliverable still reads as true, it has **zero specificity** — flag it. Automatable; directly attacks "generic draft scores high."
+
+**3. Out-of-band fact-check for currency.** A persona **cannot** tell a confident *current* fact from a confident *stale* one — it has no ground truth. So any freshness / factual / quantitative claim (market sizes, prices, dates, "latest X") must be verified against a curated checklist built from primary sources **outside** the panel and scored deterministically. Never let a persona "rate freshness." See skill `llm-judge-cant-detect-stale-or-fabricated-grounding`.
+
+**4. THE CONTROL-VALIDATION GATE — the signature step.** Before trusting any Assessment score, calibrate the panel: construct a **degenerate control** — a version of the deliverable made with NO real input (generic template / no research / subject name find-replaced) — and run it through the SAME personas. **A persona is valid only if it scores the control clearly below the real deliverable (rule of thumb: control < 3/10).** A persona that rates the degenerate control as highly as the real one is non-discriminating sycophancy → **drop it and report it.** This is the assessment analogue of the Phase 6 CONSENSAGENT sycophancy check, but it tests the panel against a **known-bad floor** rather than against reviewer agreement — run it whenever scores look suspiciously uniform, in ANY mode.
+
+**Assessment criteria** (override the defaults): Insight (a falsifiable, non-obvious claim — not rhetoric like "counter-intuitive"), Specificity (survives the swap test), Executability, Domain-authenticity, plus an **out-of-band** Currency axis. Demote/merge generic "completeness" (rewards padding) and "readability" (everyone writes pretty) — they're the weakest discriminators.
+
+**Report:** state mode = Assessment; per-axis scores *with the deductions that produced them*; swap-test result; out-of-band currency verdict; and the control-validation result (which personas passed / were dropped). If no control was run, cap confidence at Medium and say so.
+
+*Worked example (monksIQ China brand-report bake-off, 2026-06):* a 6-judge panel's four generic quality axes all saturated at 8–9.5 — a **no-data control scored as high as real reports** — and only an out-of-band freshness checklist plus adversarial domain personas (compliance-with-veto / e-commerce-operator / pitch-ROI / brand-fidelity) discriminated. Asked to design their own panel, the strongest models independently proposed subtract-points, the swap test, and this control-validation gate.
 
 ### VoltAgent Integration (v2.9)
 
@@ -1610,7 +1638,7 @@ Tell user:
 - Counts: consensus points, disagreements, action items, verification verdicts
 - Top P0 action item (if any)
 - Note: HTML report requires internet connection for Tailwind CSS, Chart.js, and Prism.js CDNs
-- HTML footer should read "Agent Review Panel v3.5.0" (MUST match the full semver from `plugin.json` — update this line whenever the version is bumped)
+- HTML footer should read "Agent Review Panel v3.6.0" (MUST match the full semver from `plugin.json` — update this line whenever the version is bumped)
 
 ---
 
