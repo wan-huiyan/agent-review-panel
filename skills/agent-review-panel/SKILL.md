@@ -1783,6 +1783,12 @@ always, not just under a budget constraint.
    context is cached; a fresh spawn re-reads the work at full price.
    Fallback: if SendMessage fails or is unavailable, fresh-spawn the persona
    with instructions to read its own prior `state/` files from disk.
+   **Nested-context caveat (measured 2026-07-16):** when the orchestrator is
+   itself a subagent, reviewers' SendMessage *replies* may not route back and
+   wave-completion notifications may not arrive. The state files on disk are
+   the reliable signal: after dispatching a wave, do NOT end the turn to
+   "wait" — poll the state directory for the expected files (sleep loop),
+   verify, and proceed.
 3. **≤50-word agent returns** — every subagent returns a state-file path +
    a ≤50-word summary, never verbatim content (tightened from 100 words in
    v3.8.0).

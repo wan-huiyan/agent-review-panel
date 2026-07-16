@@ -13,6 +13,8 @@ Promotes the quality-free portion of budget mode's turn diet to a **default for 
 
 Budget mode remains the explicit opt-in profile for the quality-*trading* cuts (3 sonnet reviewers, 1 debate round, consolidated verification, markdown-only output).
 
+**Empirically verified** (2026-07-16, full protocol on a 206-line script, 4 opus reviewers, 3 adaptive debate rounds, HTML skipped): orchestrator **51 turns / $22 / 31% of run cost** vs the pre-discipline baseline's **157 turns / $111 / 69%** — the targeted driver collapsed while review quality held (0 hallucinated claims, 20/20 citations verified, a genuine P1 discovered, judge introduced 0 findings). The ≤40-turn target was missed by 11 turns, attributable to nested-verification harness effects (idle/nudge cycles before the poll-loop instruction landed). Measured trade to watch: persistent reviewers accumulate context across rounds — reviewer-side cost share rises when debate runs the full 3 rounds.
+
 ## [3.7.1] — 2026-07-16 — Budget mode discoverability (broader triggers + docs)
 
 Makes budget mode easier to reach without weakening the explicit-opt-in guarantee:
