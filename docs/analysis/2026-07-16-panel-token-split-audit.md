@@ -14,7 +14,7 @@ Total run cost: **$162.01**. Split by agent:
 
 | Component | Cost | Share | Notes |
 |---|---|---|---|
-| **Main session (orchestrator)** | **$111.49** | **69%** | Fable 5 main loop; 157 assistant turns; context grew 72k → 630k tokens with no compaction; 58.75M cumulative cache-read tokens |
+| **Main session (orchestrator)** | **$111.49** | **69%** | Fable 5 main loop; 157 assistant turns; context grew 270k → 630k tokens with no compaction; 58.75M cumulative cache-read tokens |
 | Supreme Judge — ran twice | $13.53 | 8% | $11.49 (Fable pass) + $2.04 (Opus advisory pass) |
 | P14.5 judge-output verification agent | $4.77 | 3% | |
 | HTML report agent (P15.3) | $6.50 | 4% | 75k output tokens; plus a large share of the orchestrator's late-session turns were spent driving it |
