@@ -1,6 +1,6 @@
 {
   "skill_name": "agent-review-panel",
-  "version": "3.7.0",
+  "version": "3.7.1",
   "created_by": "manual",
   "updated": "2026-07-16",
   "triggers": [
@@ -423,6 +423,20 @@
       "should_trigger": true,
       "category": "positive",
       "notes": "v3.7.0 budget mode trigger: 'cheap review' + 'budget mode'"
+    },
+    {
+      "id": "pos-budget-3",
+      "prompt": "Get a review panel on this refactor, but keep the token cost down — last run was expensive.",
+      "should_trigger": true,
+      "category": "positive",
+      "notes": "v3.7.1 budget mode trigger: cost constraint attached to a panel request (no named 'budget' phrase)"
+    },
+    {
+      "id": "pos-budget-4",
+      "prompt": "Token-efficient multi-agent review of docs/design.md please.",
+      "should_trigger": true,
+      "category": "positive",
+      "notes": "v3.7.1 budget mode trigger: 'token-efficient review'"
     }
   ],
   "test_cases": [
