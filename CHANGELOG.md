@@ -2,6 +2,19 @@
 
 All notable changes to Agent Review Panel.
 
+## [3.7.0] — 2026-07-16 — Budget mode (measured-cost reduction profile)
+
+Adds an explicit opt-in **budget mode** ("budget review", "cheap review", or `budget` to `/agent-review-panel`) that runs the same adversarial protocol shape at ~20–25% of full-run cost. Unlike generic "use cheaper models" advice, every cut targets a **measured** cost driver: a 2026-07-16 token audit of a real full-protocol run (2026-07-02, all phases + debate, $162) found the cost was NOT in the reviewer fan-out (~$12, 7%) but in the **orchestrator main loop ($111, 69%** — 157 turns re-reading a 270k→630k-token context, 58.7M cumulative cache-read tokens), duplicate judge passes (+P14.5 agent, $18), and the HTML report ($7 + main-loop driving).
+
+### Added — Budget mode
+
+- **Orchestrator turn diet** (targets the measured 69%): batched launches, persistent reviewers driven by SendMessage, ≤50-word agent returns, no inter-phase narration, ≤25 orchestrator-turn target (measured full run: 157), and fresh-session guidance when the conversation already carries heavy context.
+- **Phase consolidation:** Phases 3+4 merged into one reviewer wave; exactly 1 debate round (round-1 state files still written, so `[NO-DEBATE]` stays honest); Phases 8+10+11 collapsed into ONE consolidated verification agent (`phase_8_10_11_verification.md`, prompt template in `references/prompt-templates.md`); Phase 12a-only; Phase 13 skipped (disputes go to the judge as `[UNVERIFIED]`); Phase 14.5 becomes an orchestrator grep-check (judge-hallucination protection retained, agent spin-up removed); Phase 15.1 markdown only (15.2/15.3 offered post-hoc — their agents read state files from disk, so nothing is lost).
+- **Model tiering:** reviewers + consolidated verifier `model: "sonnet"` (explicit), Supreme Judge stays `model: "opus"`, single pass. The v2.14 force-opus rule is reworded to **explicit-model-always** — the rule was about silent fallthrough, not opus per se.
+- **`[BUDGET-MODE]` banner** (💸, blue in post-hoc HTML) with stacking order NO-DEBATE → COMPRESSED → BUDGET-MODE, and a confidence rule: High only if the consolidated pass confirmed every P0/P1.
+- **Incompatibilities declared:** multi-run (refuse), deep research (budget wins, noted in header), assessment mode (full protocol required).
+- Review-Mode Spectrum row, 2 new eval-suite trigger cases, budget-mode fixture + parser support (`report.budgetMode.detected`), 12 new behavioral assertions. Tests: 443 → 484.
+
 ## [3.6.0] — 2026-06-28 — Assessment mode (quality discrimination + control-validation gate)
 
 Adds a fourth review mode for **subjective-quality deliverables** (strategy reports, marketing/creative copy, pitches, research syntheses), where the failure mode is **saturation** — a generic "rate 0–10" panel scores a confident-but-empty draft as highly as a real one — not discrete defects.

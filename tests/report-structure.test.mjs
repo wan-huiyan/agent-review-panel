@@ -66,6 +66,13 @@ function parseReport(markdown) {
   );
   report.noDebate = { detected: Boolean(noDebateMatch) };
 
+  // --- Budget-mode banner (v3.7.0) ---
+  // Stamped by Phase 15.1 whenever the run used the reduced-cost profile.
+  const budgetMatch = markdown.match(
+    /^>\s*💸\s*\*\*\[BUDGET-MODE\][^\n]*\*\*/m
+  );
+  report.budgetMode = { detected: Boolean(budgetMatch) };
+
   // --- Required sections ---
   const requiredSections = [
     "Executive Summary",
@@ -481,6 +488,59 @@ describe("no-debate fixture (v3.5.0)", () => {
         report.noDebate?.detected ?? false,
         false,
         `${name} must report noDebate.detected = false`
+      );
+    }
+  });
+});
+
+describe("budget-mode fixture (v3.7.0)", () => {
+  it("detects the [BUDGET-MODE] banner", () => {
+    const md = readFileSync(
+      resolve(FIXTURES, "sample-report-budget-mode.md"),
+      "utf-8"
+    );
+    const report = parseReport(md);
+    assert.equal(
+      report.budgetMode?.detected,
+      true,
+      "parser must set report.budgetMode.detected = true when the banner is present"
+    );
+  });
+
+  it("a budget-mode fixture still parses as a structurally valid report", () => {
+    const md = readFileSync(
+      resolve(FIXTURES, "sample-report-budget-mode.md"),
+      "utf-8"
+    );
+    const report = parseReport(md);
+    assert.equal(
+      report.errors.length,
+      0,
+      `budget-mode fixture must satisfy full report structure, got: ${report.errors.join("; ")}`
+    );
+  });
+
+  it("a budget run with debate does NOT trip the [NO-DEBATE] banner", () => {
+    const md = readFileSync(
+      resolve(FIXTURES, "sample-report-budget-mode.md"),
+      "utf-8"
+    );
+    const report = parseReport(md);
+    assert.equal(
+      report.noDebate?.detected,
+      false,
+      "budget mode runs one real debate round — [NO-DEBATE] must not apply"
+    );
+  });
+
+  it("fixtures without the banner report budgetMode.detected = false", () => {
+    for (const name of ["sample-report-valid.md", "sample-report-no-debate.md"]) {
+      const md = readFileSync(resolve(FIXTURES, name), "utf-8");
+      const report = parseReport(md);
+      assert.equal(
+        report.budgetMode?.detected ?? false,
+        false,
+        `${name} must report budgetMode.detected = false`
       );
     }
   });

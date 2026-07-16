@@ -239,6 +239,7 @@ This skill is the **full adversarial panel** — its defining feature is the **P
 | Independent parallel lenses on small / autonomous multi-PR work | streamlined panel (no-debate) | no, by design |
 | **Adversarial tradeoff, high-stakes gating, a verdict debate would change** (security vs perf, "is this P0 real", merge go/no-go) | **this skill (full panel) — invoke as a skill, not a workflow** | **yes** |
 | **Discriminate the quality of a subjective deliverable** (strategy report, marketing/creative copy, pitch, research synthesis) where every competent draft *reads* good | **this skill — Assessment mode** (auto-detected) | **yes** |
+| Adversarial coverage on a cost leash (routine-but-nontrivial changes, cost-sensitive or autonomous runs) | **this skill — Budget mode** ("budget review", explicit opt-in) | yes (1 round) |
 
 Debate lives in the skill's Agent-tool orchestration. Running a review as a **Workflow / ultracode** task routes it through a *parallel fan-out* engine (agents never see each other) whose canonical shape is "find → verify → judge" — structurally debate-less. If a run produces no debate, the report now stamps a loud **`[NO-DEBATE]`** banner and caps confidence at Medium, so a debate-less review is never silent. To get the panel's depth under a Workflow, author an explicit `Debate` phase (see the debate-in-Workflow recipe in `SKILL.md`).
 
@@ -406,10 +407,10 @@ Both are activated by natural language or by `/roundtable:agent-review-panel` an
 
 ## Tests
 
-The test suite (443 tests) uses Node's built-in test runner — zero dependencies, requires Node ≥18:
+The test suite (484 tests) uses Node's built-in test runner — zero dependencies, requires Node ≥18:
 
 ```bash
-npm test                    # run all 443 tests
+npm test                    # run all 484 tests
 npm run test:triggers       # trigger classification
 npm run test:manifest       # manifest consistency + phase/opus enforcement
 npm run test:eval-suite     # eval suite integrity
@@ -503,6 +504,7 @@ See [CHANGELOG.md](CHANGELOG.md) for detailed version history and [ROADMAP.md](R
 
 | Version | Highlights |
 |---|---|
+| **v3.7** | **Budget mode** — explicit opt-in reduced-cost profile (~20–25% of full-run cost), targeting *measured* cost drivers: orchestrator turn diet (the measured 69%), 3 sonnet reviewers + opus judge, single debate round, consolidated verification, markdown-only output, `[BUDGET-MODE]` banner |
 | **v3.6** | **Assessment mode** — quality *discrimination* for subjective deliverables (vs defect-finding): subtract-points + veto, swap test, out-of-band currency check, and the **control-validation gate** (drop personas that can't beat a no-input control) |
 | **v3.5** | Loud `[NO-DEBATE]` banner — a debate-less run announces itself (Phase 15.1 chokepoint + Phase 13.5 assertion) instead of passing silently |
 | **v3.4** | VoltAgent catalog expansion — 30 new signal→specialist mappings (130+ agents / 10 families) + drift-detection automation (vendored catalog snapshot, CI gate) |

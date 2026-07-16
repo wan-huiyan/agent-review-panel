@@ -949,5 +949,164 @@ describe("v3.5.0 loud debate-skip ([NO-DEBATE])", () => {
   });
 });
 
+describe("v3.7.0 budget mode", () => {
+  const promptTemplates = readFileSync(
+    resolve(ROOT, "skills/agent-review-panel/references/prompt-templates.md"),
+    "utf-8"
+  );
+
+  it("budget mode is explicit opt-in, never auto-selected", () => {
+    assert.match(
+      skillMd,
+      /## Budget Mode \(v3\.7\.0\)[\s\S]{0,300}Explicit opt-in only — never auto-selected/,
+      "SKILL.md must declare budget mode as explicit opt-in"
+    );
+  });
+
+  it("frontmatter description carries the budget-mode trigger phrases", () => {
+    const frontmatter = skillMd.slice(0, skillMd.indexOf("\n---", 4));
+    for (const phrase of ['"budget', 'review"', '"cheap review"']) {
+      assert.ok(
+        frontmatter.includes(phrase),
+        `frontmatter must include trigger phrase ${phrase}`
+      );
+    }
+  });
+
+  it("budget mode uses 3 sonnet reviewers and keeps the judge on opus", () => {
+    const budget = skillMd.slice(skillMd.indexOf("## Budget Mode (v3.7.0)"));
+    assert.match(
+      budget,
+      /\*\*Exactly 3 reviewers\*\*[\s\S]{0,200}`model: "sonnet"` explicit/,
+      "budget mode must pin exactly 3 reviewers on explicit sonnet"
+    );
+    assert.match(
+      budget,
+      /\*\*`model: "opus"`, exactly one pass\*\*/,
+      "budget mode must keep the Supreme Judge on opus, single pass"
+    );
+    assert.match(
+      budget,
+      /The judge is opus, domain-neutral, and singular|never downgraded to sonnet/,
+      "budget mode must state the judge is never downgraded"
+    );
+  });
+
+  it("Phases 8+10+11 collapse into ONE consolidated verifier", () => {
+    assert.match(
+      skillMd,
+      /\*\*ONE consolidated verifier\*\*[\s\S]{0,300}phase_8_10_11_verification\.md/,
+      "SKILL.md must define the consolidated verification agent + its state file"
+    );
+    assert.match(
+      promptTemplates,
+      /## Budget Mode: Consolidated Verification Prompt \(Phases 8\+10\+11, v3\.7\.0\)/,
+      "prompt-templates.md must carry the consolidated verifier prompt template"
+    );
+  });
+
+  it("budget mode runs exactly one debate round so NO-DEBATE stays honest", () => {
+    assert.match(
+      skillMd,
+      /\*\*Exactly 1 round\*\*[\s\S]{0,200}reviewer_<name>_phase_5_round1\.md/,
+      "budget mode must run a single real debate round with round-1 state files"
+    );
+    assert.match(
+      skillMd,
+      /must never trip the `\[NO-DEBATE\]` banner\s+unless the round genuinely failed/,
+      "budget mode must document the NO-DEBATE interaction"
+    );
+  });
+
+  it("defines the [BUDGET-MODE] banner and its stacking order", () => {
+    assert.match(
+      skillMd,
+      /> 💸 \*\*\[BUDGET-MODE\] — reduced-cost protocol\.\*\*/,
+      "SKILL.md must define the [BUDGET-MODE] markdown banner block"
+    );
+    assert.match(
+      skillMd,
+      /`\[NO-DEBATE\]` first[\s\S]{0,80}`COMPRESSED RUN`[\s\S]{0,80}`\[BUDGET-MODE\]`/,
+      "SKILL.md must define the three-banner stacking order"
+    );
+    assert.match(
+      promptTemplates,
+      /\[BUDGET-MODE\][\s\S]{0,200}blue\*\* banner/,
+      "prompt-templates.md must define the blue HTML banner for post-hoc HTML reports"
+    );
+  });
+
+  it("Phase 14.5 downgrades to an orchestrator check in budget mode (no agent)", () => {
+    assert.match(
+      skillMd,
+      /\*\*Budget mode \(v3\.7\.0\):\*\* no agent is spawned\.[\s\S]{0,400}\[JUDGE-UNVERIFIED\]/,
+      "Phase 14.5 must keep judge-hallucination protection without an agent spawn"
+    );
+  });
+
+  it("targets the measured cost drivers: orchestrator turn diet", () => {
+    assert.match(
+      skillMd,
+      /### Orchestrator turn diet \(targets the measured 69%\)/,
+      "budget mode must carry the orchestrator turn-diet section"
+    );
+    assert.match(
+      skillMd,
+      /≤25 orchestrator turns/,
+      "turn diet must set the ≤25 orchestrator-turn target"
+    );
+    assert.match(
+      skillMd,
+      /Recommend a fresh session when context is already heavy/,
+      "turn diet must include the fresh-session guidance"
+    );
+  });
+
+  it("markdown-only output: 15.2/15.3 deferred, not lost", () => {
+    assert.match(
+      skillMd,
+      /\*\*15\.1 markdown only\.\*\* Offer 15\.2\/15\.3 as a follow-up/,
+      "budget mode must produce 15.1 only and offer the rest post-hoc"
+    );
+  });
+
+  it("declares incompatibilities: multi-run, deep research, assessment mode", () => {
+    const budget = skillMd.slice(skillMd.indexOf("## Budget Mode (v3.7.0)"));
+    assert.match(budget, /\*\*Multi-run \(`--runs N > 1`\)\*\*: refuse/);
+    assert.match(budget, /\*\*Deep research mode\*\*: if both are requested, budget wins/);
+    assert.match(budget, /\*\*Assessment mode \(v3\.6\.0\)\*\*: incompatible/);
+  });
+
+  it("the explicit-model rule survives: budget mode never omits model:", () => {
+    assert.match(
+      skillMd,
+      /Budget mode never omits `model:`/,
+      "budget mode must preserve the v2.14 anti-fallthrough rule"
+    );
+    assert.match(
+      skillMd,
+      /\*\*Explicit model, always \(v2\.14, amended v3\.7\.0\):\*\*/,
+      "the Implementation Notes force-opus rule must be reworded to explicit-model"
+    );
+  });
+
+  it("the [BUDGET-MODE] fixture carries the banner and Medium confidence", () => {
+    const fixture = readFileSync(
+      resolve(ROOT, "tests/fixtures/sample-report-budget-mode.md"),
+      "utf-8"
+    );
+    assert.match(
+      fixture,
+      /^>\s*💸\s*\*\*\[BUDGET-MODE\]/m,
+      "the budget-mode fixture must carry the banner as its first block"
+    );
+    assert.match(
+      fixture,
+      /\*\*Confidence:\*\*\s*Medium/,
+      "the budget-mode fixture must demonstrate the Medium-confidence cap"
+    );
+  });
+});
+
 // Export utilities for other test files
 export { makeAssertionChecker, runAssertions };

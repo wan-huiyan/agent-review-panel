@@ -1,8 +1,8 @@
 {
   "skill_name": "agent-review-panel",
-  "version": "3.6.0",
+  "version": "3.7.0",
   "created_by": "manual",
-  "updated": "2026-06-06",
+  "updated": "2026-07-16",
   "triggers": [
     {
       "id": "pos-1",
@@ -409,6 +409,20 @@
       "should_trigger": true,
       "category": "edge-v29",
       "notes": "v2.9: Explicit preference for specialist agents over generic personas"
+    },
+    {
+      "id": "pos-budget-1",
+      "prompt": "Run a budget review panel on src/auth/middleware.ts before I merge.",
+      "should_trigger": true,
+      "category": "positive",
+      "notes": "v3.7.0 budget mode trigger: 'budget review'"
+    },
+    {
+      "id": "pos-budget-2",
+      "prompt": "I want a cheap review of this migration plan — budget mode, multiple perspectives is fine but keep the cost down.",
+      "should_trigger": true,
+      "category": "positive",
+      "notes": "v3.7.0 budget mode trigger: 'cheap review' + 'budget mode'"
     }
   ],
   "test_cases": [
