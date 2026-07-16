@@ -2,6 +2,18 @@
 
 All notable changes to Agent Review Panel.
 
+## [3.7.1] — 2026-07-16 — Budget mode discoverability (broader triggers + docs)
+
+Makes budget mode easier to reach without weakening the explicit-opt-in guarantee:
+
+- **New named trigger phrases** in the SKILL.md frontmatter: "budget panel", "affordable review", "token-efficient review", "frugal review", "lite panel" (joining "budget review", "budget mode", "cheap review", "economy review", "low-cost panel", and the `budget` arg).
+- **Cost-constraint trigger**: any panel request that carries an explicit cost/token concern ("keep the cost down", "without burning tokens", "don't spend too much", "watch the token spend") now selects budget mode — the stated cost constraint IS the opt-in. The orchestrator confirms in one line ("Running in budget mode — say 'full panel' to override") and proceeds. A bare panel request with no cost language still never selects budget mode.
+- **SKILL.md Budget Mode section** now opens with the two ways in, plus a "why opt-in, not default" rationale (sonnet reviewers < opus on subtle findings; 1 debate round < adaptive multi-round; 1 consolidated verifier < 3 dedicated passes — the redundancy that has caught judge-fabricated P0s; degraded rigor must be chosen and bannered, per the `[NO-DEBATE]` principle).
+- **README**: "How to trigger it" block + "Why isn't budget the default?" paragraph under *Where the money actually goes*; Modes-table row updated.
+- **Eval suite**: +2 trigger cases (`pos-budget-3` cost-constraint phrasing, `pos-budget-4` "token-efficient review").
+
+No protocol changes — the budget-mode execution profile is exactly as shipped in 3.7.0.
+
 ## [3.7.0] — 2026-07-16 — Budget mode (measured-cost reduction profile)
 
 Adds an explicit opt-in **budget mode** ("budget review", "cheap review", or `budget` to `/agent-review-panel`) that runs the same adversarial protocol shape at ~20–25% of full-run cost. Unlike generic "use cheaper models" advice, every cut targets a **measured** cost driver: a 2026-07-16 token audit of a real full-protocol run (2026-07-02, all phases + debate, $162) found the cost was NOT in the reviewer fan-out (~$12, 7%) but in the **orchestrator main loop ($111, 69%** — 157 turns re-reading a 270k→630k-token context, 58.7M cumulative cache-read tokens), duplicate judge passes (+P14.5 agent, $18), and the HTML report ($7 + main-loop driving).

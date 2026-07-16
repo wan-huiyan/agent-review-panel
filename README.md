@@ -324,7 +324,7 @@ All modes are LLM-interpreted phrases — the skill's description matches them a
 | **Trace tier** | "use Thorough trace" / "use Exhaustive trace" | Data Flow Trace tier (Standard default / Thorough top-3 paths / Exhaustive all paths) |
 | **Custom personas** | "include a Security Auditor and a Cost Modeler" | Overrides auto-persona detection; panel size still 4–6 |
 | **Assessment** | auto-detected for subjective-quality deliverables (or "assess / score this report") | Quality *discrimination*, not defect-finding: subtract-points + veto, the swap test, an out-of-band currency check, and the **control-validation gate** (drop personas that can't beat a no-input control) |
-| **Budget** (v3.7) | `/roundtable:agent-review-panel budget` or "budget review of …" (explicit opt-in, never auto) | Same adversarial shape at **~20–25% of full-run cost**: orchestrator turn diet, 3 sonnet reviewers, 1 debate round, consolidated verification, single opus judge, markdown-only output, `[BUDGET-MODE]` banner |
+| **Budget** (v3.7) | `/roundtable:agent-review-panel budget`, "budget review of …", "token-efficient review", or any panel request + a cost constraint ("keep the cost down") — explicit opt-in, never auto | Same adversarial shape at **~20–25% of full-run cost**: orchestrator turn diet, 3 sonnet reviewers, 1 debate round, consolidated verification, single opus judge, markdown-only output, `[BUDGET-MODE]` banner |
 
 ## Cost & Performance
 
@@ -352,6 +352,14 @@ A [2026-07-16 token audit of a real full-protocol run](docs/analysis/2026-07-16-
 | HTML report | 4% |
 
 **Budget mode** (v3.7, explicit opt-in: "budget review") cuts in that measured order — orchestrator turn diet first (batched launches, persistent reviewers, ≤50-word agent returns, ≤25-turn target, fresh-session guidance), then single-judge, markdown-only output, one consolidated verifier, and only *then* model tiering (sonnet reviewers, opus judge — the judge is never downgraded). Debate still runs (1 round), so the `[NO-DEBATE]` guarantee stays honest, and every budget report opens with a `[BUDGET-MODE]` banner. Estimated: **~$25–40 for a review that costs ~$160 at full protocol**.
+
+**How to trigger it** (always explicit — never auto-selected):
+
+- **Slash command**: `/roundtable:agent-review-panel budget <target>`
+- **Named phrases**: "budget review", "budget mode", "budget panel", "cheap review", "economy review", "low-cost panel", "affordable review", "token-efficient review", "frugal review", "lite panel"
+- **Cost constraint on any panel request** (v3.7.1): "review panel on this, but keep the token cost down", "multi-agent review without burning tokens", "don't spend too much". Stating a cost constraint *is* the opt-in — the orchestrator confirms in one line and proceeds (say "full panel" to override).
+
+**Why isn't budget the default?** Because the savings are not free: sonnet reviewers surface fewer subtle findings than opus, one debate round replaces adaptive multi-round convergence, and one consolidated verifier replaces three dedicated verification passes — the redundancy that has caught real defects in this project's own history (including a judge-fabricated P0). Degraded rigor must be chosen and loudly bannered, never silently applied — the same principle behind the `[NO-DEBATE]` banner. Reach for budget mode on routine-but-nontrivial changes; keep the full panel for high-stakes reviews.
 
 ## Known Limitations
 
@@ -424,10 +432,10 @@ Both are activated by natural language or by `/roundtable:agent-review-panel` an
 
 ## Tests
 
-The test suite (484 tests) uses Node's built-in test runner — zero dependencies, requires Node ≥18:
+The test suite (486 tests) uses Node's built-in test runner — zero dependencies, requires Node ≥18:
 
 ```bash
-npm test                    # run all 484 tests
+npm test                    # run all 486 tests
 npm run test:triggers       # trigger classification
 npm run test:manifest       # manifest consistency + phase/opus enforcement
 npm run test:eval-suite     # eval suite integrity

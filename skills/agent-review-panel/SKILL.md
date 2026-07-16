@@ -29,13 +29,18 @@ description: >
   "exhaustive review", "trace everything", or "catch all bugs" — dedicates
   a pre-review phase to tracing data through critical paths and flagging
   composition/seam bugs. Supports "budget mode" when user says "budget
-  review", "budget mode", "cheap review", "economy review", "low-cost panel",
-  or passes "budget" to /agent-review-panel — same adversarial protocol at a
-  reduced-cost profile (3 sonnet reviewers, single debate round, consolidated
-  verification, opus judge, markdown-only output).
+  review", "budget mode", "budget panel", "cheap review", "economy review",
+  "low-cost panel", "affordable review", "token-efficient review", "frugal
+  review", "lite panel", or passes "budget" to /agent-review-panel — and
+  ALSO when any panel request carries a cost constraint, e.g. "review panel
+  but keep the cost down", "multi-agent review without burning tokens",
+  "panel review but don't spend too much", "review this cheaply with
+  multiple perspectives", "watch the token spend". Budget mode is the same
+  adversarial protocol at a reduced-cost profile (3 sonnet reviewers, single
+  debate round, consolidated verification, opus judge, markdown-only output).
 ---
 
-# Agent Review Panel v3.7.0
+# Agent Review Panel v3.7.1
 
 A multi-agent adversarial review system based on nine research foundations:
 ChatEval (ICLR 2024), AutoGen, Du et al. (ICML 2024), MachineSoM (ACL 2024),
@@ -1665,7 +1670,7 @@ Tell user:
 - Counts: consensus points, disagreements, action items, verification verdicts
 - Top P0 action item (if any)
 - Note: HTML report requires internet connection for Tailwind CSS, Chart.js, and Prism.js CDNs
-- HTML footer should read "Agent Review Panel v3.7.0" (MUST match the full semver from `plugin.json` — update this line whenever the version is bumped)
+- HTML footer should read "Agent Review Panel v3.7.1" (MUST match the full semver from `plugin.json` — update this line whenever the version is bumped)
 
 ---
 
@@ -1751,9 +1756,27 @@ that skips the `Debate` phase will (correctly) get the NO-DEBATE banner.
 
 ## Budget Mode (v3.7.0)
 
-**Explicit opt-in only — never auto-selected.** Trigger phrases: "budget
-review", "budget mode", "cheap review", "economy review", "low-cost panel",
-or `budget` passed to `/agent-review-panel`.
+**Explicit opt-in only — never auto-selected.** Two ways in:
+
+1. **Named trigger**: "budget review", "budget mode", "budget panel", "cheap
+   review", "economy review", "low-cost panel", "affordable review",
+   "token-efficient review", "frugal review", "lite panel", or `budget`
+   passed to `/agent-review-panel`.
+2. **Cost constraint attached to a panel request** (v3.7.1): any otherwise-full
+   panel request that carries an explicit cost/token concern — "keep the cost
+   down", "without burning tokens", "don't spend too much", "watch the token
+   spend", "cheaply". The user stating a cost constraint IS the opt-in;
+   confirm in one line ("Running in budget mode — say 'full panel' to
+   override") and proceed. A bare panel request with no cost language never
+   selects budget mode.
+
+Budget mode is opt-in rather than default because its savings are not free:
+sonnet reviewers surface fewer subtle findings than opus, one debate round
+replaces adaptive multi-round convergence, and one consolidated verifier
+replaces three dedicated verification passes — the redundancy that has caught
+real defects (including judge-fabricated P0s). Degraded rigor must be chosen
+and loudly bannered, never silently applied — the same principle behind
+`[NO-DEBATE]`.
 
 **Why it exists (measured, not guessed).** A 2026-07-16 token audit of a real
 full-protocol panel run (2026-07-02, production repo, all phases + debate)
