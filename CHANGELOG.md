@@ -2,6 +2,17 @@
 
 All notable changes to Agent Review Panel.
 
+## [3.8.0] — 2026-07-16 — Orchestrator Efficiency Discipline (turn diet by default, all modes)
+
+Promotes the quality-free portion of budget mode's turn diet to a **default for every mode** — full panel, deep, multi-run, assessment, and budget alike. The measured cost driver ($162 audit: orchestrator main loop = 69%, reviewer fan-out = 7%) is orchestration overhead, and none of these rules removes a review, debate round, or verification pass:
+
+- **New SKILL.md section `## Orchestrator Efficiency Discipline (v3.8.0 — all modes)`**: batched launches; **persistent reviewers** (spawn each persona once in Phase 3, drive Phases 4/5/7 via SendMessage to the same cached agent, fresh-spawn fallback reads prior state files); **≤50-word agent returns** (tightened from 100 words, SKILL.md + prompt-templates.md); no inter-phase narration (one line per transition); **≤40-turn full-panel target** (measured pre-discipline run: 157); fresh-session recommendation when the conversation already carries heavy context; orchestrator reads state files only for orchestrator-side logic (Phase 6 summarization, 12a dispute detection, judge ruling, 14.5/15.1 checks).
+- **Phases 3/4/5/7 rewritten** to drive the same persistent reviewer agents via batched SendMessage instead of fresh parallel spawns per phase.
+- **Budget mode's turn-diet section** now references the global discipline and keeps only its stricter deltas (≤25-turn target, strictest read rule).
+- Implementation Notes bullet added.
+
+Budget mode remains the explicit opt-in profile for the quality-*trading* cuts (3 sonnet reviewers, 1 debate round, consolidated verification, markdown-only output).
+
 ## [3.7.1] — 2026-07-16 — Budget mode discoverability (broader triggers + docs)
 
 Makes budget mode easier to reach without weakening the explicit-opt-in guarantee:

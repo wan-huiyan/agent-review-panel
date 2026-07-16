@@ -40,7 +40,7 @@ description: >
   debate round, consolidated verification, opus judge, markdown-only output).
 ---
 
-# Agent Review Panel v3.7.1
+# Agent Review Panel v3.8.0
 
 A multi-agent adversarial review system based on nine research foundations:
 ChatEval (ICLR 2024), AutoGen, Du et al. (ICML 2024), MachineSoM (ACL 2024),
@@ -773,32 +773,42 @@ and must not treat `echo`/comment/usage-blurb lines as configuration.
 Collect all N independent reviews.
 
 **Output (v3.1.0+):** Each reviewer subagent writes its full review to
-`state/reviewer_<name>_phase_3.md` and returns only the path + a 100-word
+`state/reviewer_<name>_phase_3.md` and returns only the path + a ≤50-word
 summary. The orchestrator does NOT hold verbatim reviews in its window.
+
+**Persistent reviewers (v3.8.0):** these Phase 3 spawns are the ONLY reviewer
+spawns of the run — Phases 4, 5, and 7 are driven by SendMessage to these same
+agents (see Orchestrator Efficiency Discipline). If SendMessage to an agent
+fails or is unavailable, fall back to a fresh spawn that reads that persona's
+prior state files from disk.
 
 ---
 
 ## Phase 4: Private Reflection
 
-Launch all reviewers **in parallel**, each receiving ONLY their own review.
-They re-read source, rate confidence per finding (High/Medium/Low), note new
-issues, identify most/least defensible findings. See `references/prompt-templates.md`.
+Send the Phase 4 prompt to each **persistent reviewer agent** via SendMessage
+(all sends batched in one message; fresh-spawn fallback reads the persona's
+Phase 3 state file). Each works from ONLY their own review. They re-read
+source, rate confidence per finding (High/Medium/Low), note new issues,
+identify most/least defensible findings. See `references/prompt-templates.md`.
 
 **Output (v3.1.0+):** Each reviewer's reflection is written to
-`state/reviewer_<name>_phase_4.md`. Subagent returns only path + 100-word
+`state/reviewer_<name>_phase_4.md`. Subagent returns only path + ≤50-word
 summary.
 
 ---
 
 ## Phase 5: Debate (Rounds 1-3, adaptive)
 
-Launch all reviewers **in parallel** each round. Each receives their own review
-+ reflection, all others' feedback, and unresolved points from previous round.
+Each round, send the debate prompt to every **persistent reviewer agent** via
+SendMessage (all sends batched in one message; fresh-spawn fallback reads the
+persona's prior state files). Each receives their own review + reflection,
+all others' feedback, and unresolved points from previous round.
 
 **Output (v3.1.0+):** Each reviewer's per-round debate response is written
 to `state/reviewer_<name>_phase_5_round<R>.md` (R = 1, 2, or 3). Round 1 is
 mandatory; rounds 2 and 3 follow the existing convergence-based skip rules.
-Subagent returns only path + 100-word summary.
+Subagent returns only path + ≤50-word summary.
 
 **Pre-promotion falsification check (v3.3.0).** Before any finding is promoted
 to — or kept at — P0 in any debate round, the reviewer must state the single
@@ -839,11 +849,13 @@ and route them to verification before any P0 promotion.
 
 ## Phase 7: Blind Final Assessment
 
-Launch all reviewers one final time in parallel. Each gives final score, top 3
-points, recommendation, one-line verdict. Others do NOT see these.
+Send the blind-final prompt to every **persistent reviewer agent** via
+SendMessage, one final time (batched; fresh-spawn fallback as above). Each
+gives final score, top 3 points, recommendation, one-line verdict. Others do
+NOT see these.
 
 **Output (v3.1.0+):** Each reviewer's blind final is written to
-`state/reviewer_<name>_phase_7.md`. Subagent returns only path + 100-word
+`state/reviewer_<name>_phase_7.md`. Subagent returns only path + ≤50-word
 summary of new findings.
 
 ---
@@ -862,7 +874,7 @@ See `references/prompt-templates.md` for full prompt.
   because they focus on the method, not the temporal arithmetic.
 
 **Output (v3.1.0+):** Subagent writes full output to `state/phase_8_audit.md`
-and returns only path + 100-word summary.
+and returns only path + ≤50-word summary.
 
 ---
 
@@ -883,7 +895,7 @@ Classifies each as [VERIFIED], [INACCURATE], [MISATTRIBUTED], [HALLUCINATED],
 or [UNVERIFIABLE]. Results feed into judge prompt.
 
 **Output (v3.1.0+):** Subagent writes full output to `state/phase_10_claim_verification.md`
-and returns only path + 100-word summary.
+and returns only path + ≤50-word summary.
 
 ---
 
@@ -983,7 +995,7 @@ Results feed into the Supreme Judge prompt. The judge MUST reference the
 verification table when ruling on disagreements.
 
 **Output (v3.1.0+):** Subagent writes full output to `state/phase_11_severity_verification.md`
-and returns only path + 100-word summary.
+and returns only path + ≤50-word summary.
 
 ---
 
@@ -1670,7 +1682,7 @@ Tell user:
 - Counts: consensus points, disagreements, action items, verification verdicts
 - Top P0 action item (if any)
 - Note: HTML report requires internet connection for Tailwind CSS, Chart.js, and Prism.js CDNs
-- HTML footer should read "Agent Review Panel v3.7.1" (MUST match the full semver from `plugin.json` — update this line whenever the version is bumped)
+- HTML footer should read "Agent Review Panel v3.8.0" (MUST match the full semver from `plugin.json` — update this line whenever the version is bumped)
 
 ---
 
@@ -1754,6 +1766,44 @@ that skips the `Debate` phase will (correctly) get the NO-DEBATE banner.
 
 ---
 
+## Orchestrator Efficiency Discipline (v3.8.0 — all modes)
+
+**Default for every mode — full panel, deep, multi-run, assessment, and
+budget alike.** A 2026-07-16 token audit of a real full-protocol run found
+**69% of total cost in the orchestrator main loop** (157 turns, each
+re-reading a context that grew 270k → 630k tokens) — not in the reviewer
+fan-out (7%). None of the rules below removes a review, debate round, or
+verification pass; they cut pure orchestration overhead, so they apply
+always, not just under a budget constraint.
+
+1. **Batch launches** — one message with multiple Agent calls (or multiple
+   SendMessage calls) per wave. Never launch wave members one turn at a time.
+2. **Persistent reviewers** — spawn each persona ONCE in Phase 3; drive
+   Phases 4, 5 (every round), and 7 via SendMessage to the same agent. Its
+   context is cached; a fresh spawn re-reads the work at full price.
+   Fallback: if SendMessage fails or is unavailable, fresh-spawn the persona
+   with instructions to read its own prior `state/` files from disk.
+3. **≤50-word agent returns** — every subagent returns a state-file path +
+   a ≤50-word summary, never verbatim content (tightened from 100 words in
+   v3.8.0).
+4. **No inter-phase narration** — at most one line per phase transition
+   ("Phase 5 round 1 done — 2 disputes remain"). No restating findings, no
+   progress essays; findings live in state files and the final report.
+5. **Turn budget** — target **≤40 orchestrator turns** for a full panel
+   (measured pre-discipline run: 157). Budget mode tightens this to ≤25.
+   Exceeding the target is not a failure, but each turn past it should be
+   doing orchestrator-only work no agent could do.
+6. **Fresh-session recommendation** — if the current conversation already
+   carries substantial prior context at panel start, say so before Phase 1:
+   in the measured run the panel *started* at a 270k-token baseline, so all
+   157 turns re-paid that baseline as cache reads — a fresh session cuts the
+   per-turn tax ~4× . Offer to proceed anyway.
+7. **Read state files only for orchestrator logic** — the orchestrator opens
+   a state file only where a phase requires orchestrator-side work on it
+   (Phase 6 round summarization, Phase 12a dispute detection, the Phase 14
+   judge ruling, Phase 14.5/15.1 checks). It never re-reads files that the
+   next agent can read from disk itself.
+
 ## Budget Mode (v3.7.0)
 
 **Explicit opt-in only — never auto-selected.** Two ways in:
@@ -1828,25 +1878,19 @@ a full run** with the adversarial core (debate + independent judge) intact.
 
 ### Orchestrator turn diet (targets the measured 69%)
 
-The dominant cost is not the agents — it is the orchestrator re-reading its
-own growing context every turn. In budget mode the orchestrator MUST:
+Since v3.8.0 the turn diet is NOT budget-specific — the full **Orchestrator
+Efficiency Discipline** (batched launches, persistent reviewers via
+SendMessage, ≤50-word returns, no inter-phase narration, fresh-session
+recommendation) applies to every mode. Budget mode tightens two knobs:
 
-1. **Batch launches** — one message with multiple Agent calls per wave
-   (Phases 3+4 wave, Phase 5 wave, Phase 7 wave).
-2. **Keep persistent reviewers** — spawn each persona once, drive Phases 5
-   and 7 via SendMessage to the same agent (its context is cached; fresh
-   spawns re-read the work at full price).
-3. **Accept ≤50-word agent returns** — agents return a file path + verdict
-   line only. The orchestrator reads NO state file except the judge ruling
-   and the consolidated verifier summary.
-4. **Not narrate between phases** — no restating findings, no progress
-   essays. Target **≤25 orchestrator turns** for the whole panel (measured
-   full run: 157).
-5. **Recommend a fresh session when context is already heavy.** If
-   substantial prior work is in the current conversation, say so: in the
-   measured run the panel *started* at a 270k-token baseline, so every one of
-   157 turns re-paid that baseline as cache reads — a fresh session cuts the
-   per-turn tax by ~4× at panel start. Offer to proceed anyway.
+1. **Turn budget ≤25** (vs ≤40 for a full panel; measured pre-discipline
+   run: 157) — achievable because budget mode also merges Phases 3+4 and
+   consolidates verification.
+2. **Strictest read rule** — the orchestrator reads NO state file except the
+   judge ruling and the consolidated verifier summary (the full-panel rule
+   additionally permits Phase 6 summarization and Phase 12a dispute
+   detection, which budget mode does more cheaply: its single debate round
+   summary is written by the orchestrator itself, ≤10 lines).
 
 ### `[BUDGET-MODE]` banner (Phase 15.1)
 
@@ -2022,7 +2066,7 @@ See `references/prompt-templates.md` for the full Phase 16 Merge Agent prompt.
 
 Subagent outputs for Phases 3, 4, 5, 7, 8, 10, 11, and 14 are written to disk
 under a `state/` subdirectory of the review output directory, then the
-subagent returns only the file path plus a 100-word summary. The orchestrator
+subagent returns only the file path plus a ≤50-word summary. The orchestrator
 reads files on demand rather than holding verbatim subagent outputs in its
 context window.
 
@@ -2096,6 +2140,12 @@ orchestrator window small.
   once in Run 1 (cached Data Flow Map), then Phases 3–15 repeat N times
   with rotated personas, then Phase 16 merges. Runs MAY execute in parallel
   (independent orchestrations) or sequentially.
+- **Orchestrator efficiency (v3.8.0):** the Orchestrator Efficiency
+  Discipline (batched launches, persistent reviewers via SendMessage with
+  fresh-spawn fallback, ≤50-word agent returns, no inter-phase narration,
+  ≤40-turn full-panel target, fresh-session recommendation) is the default
+  for ALL modes. It cuts the measured 69% orchestrator-main-loop cost driver
+  without removing any review, debate, or verification work.
 - **Explicit model, always (v2.14, amended v3.7.0):** ALWAYS pass `model:`
   explicitly when launching agents, even with `subagent_type`. VoltAgent
   agents may have sonnet/haiku defaults in their frontmatter; without

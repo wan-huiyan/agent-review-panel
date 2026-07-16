@@ -402,8 +402,8 @@ describe("v3.1.0 file-based state convention", () => {
     );
     assert.match(
       phase3,
-      /100[- ]word summary/i,
-      "Phase 3 prompt must request a 100-word summary in the chat return"
+      /≤50[- ]word summary/i,
+      "Phase 3 prompt must request a ≤50-word summary in the chat return (v3.8.0)"
     );
   });
 
@@ -1052,13 +1052,13 @@ describe("v3.7.0 budget mode", () => {
     );
     assert.match(
       skillMd,
-      /≤25 orchestrator turns/,
+      /Turn budget ≤25/,
       "turn diet must set the ≤25 orchestrator-turn target"
     );
     assert.match(
       skillMd,
-      /Recommend a fresh session when context is already heavy/,
-      "turn diet must include the fresh-session guidance"
+      /\*\*Fresh-session recommendation\*\*/,
+      "fresh-session guidance must exist (global efficiency discipline since v3.8.0)"
     );
   });
 
@@ -1110,3 +1110,114 @@ describe("v3.7.0 budget mode", () => {
 
 // Export utilities for other test files
 export { makeAssertionChecker, runAssertions };
+
+describe("v3.8.0 orchestrator efficiency discipline", () => {
+  const promptTemplates38 = readFileSync(
+    resolve(ROOT, "skills/agent-review-panel/references/prompt-templates.md"),
+    "utf-8"
+  );
+  const discipline = skillMd.slice(
+    skillMd.indexOf("## Orchestrator Efficiency Discipline (v3.8.0 — all modes)")
+  );
+
+  it("SKILL.md has the efficiency-discipline section and declares it default for every mode", () => {
+    assert.ok(
+      skillMd.includes("## Orchestrator Efficiency Discipline (v3.8.0 — all modes)"),
+      "efficiency-discipline section must exist"
+    );
+    assert.match(
+      discipline,
+      /\*\*Default for every mode — full panel, deep, multi-run, assessment, and\s*\nbudget alike\.\*\*/,
+      "section must declare itself the default for all modes"
+    );
+  });
+
+  it("mandates persistent reviewers with a fresh-spawn fallback", () => {
+    assert.match(
+      discipline,
+      /\*\*Persistent reviewers\*\* — spawn each persona ONCE in Phase 3/,
+      "persistent-reviewer rule must exist"
+    );
+    assert.match(
+      discipline,
+      /Fallback: if SendMessage fails or is unavailable, fresh-spawn/,
+      "fresh-spawn fallback must be documented"
+    );
+  });
+
+  it("Phases 4, 5, and 7 drive persistent reviewers via SendMessage", () => {
+    for (const anchor of [
+      "## Phase 4: Private Reflection",
+      "## Phase 5: Debate (Rounds 1-3, adaptive)",
+      "## Phase 7: Blind Final Assessment",
+    ]) {
+      const idx = skillMd.indexOf(anchor);
+      assert.ok(idx >= 0, `${anchor} must exist`);
+      const section = skillMd.slice(idx, idx + 800);
+      assert.match(
+        section,
+        /\*\*persistent reviewer agent/,
+        `${anchor} must drive persistent reviewer agents`
+      );
+      assert.ok(
+        section.includes("SendMessage"),
+        `${anchor} must mention SendMessage`
+      );
+    }
+  });
+
+  it("sets a ≤40-turn full-panel target against the measured 157-turn baseline", () => {
+    assert.match(
+      discipline,
+      /\*\*≤40 orchestrator turns\*\*[\s\S]{0,120}157/,
+      "≤40-turn target with 157 baseline must be stated"
+    );
+  });
+
+  it("no 100-word return protocol survives anywhere (tightened to ≤50 words)", () => {
+    assert.ok(
+      !skillMd.includes("100-word"),
+      "SKILL.md must not still promise 100-word summaries"
+    );
+    assert.ok(
+      !promptTemplates38.includes("100-word"),
+      "prompt-templates.md must not still promise 100-word summaries"
+    );
+    assert.ok(
+      promptTemplates38.includes("≤50-word summary"),
+      "prompt-templates.md must carry the ≤50-word return protocol"
+    );
+  });
+
+  it("forbids inter-phase narration", () => {
+    assert.match(
+      discipline,
+      /\*\*No inter-phase narration\*\* — at most one line per phase transition/,
+      "no-narration rule must exist"
+    );
+  });
+
+  it("recommends a fresh session when prior context is heavy", () => {
+    assert.match(
+      discipline,
+      /\*\*Fresh-session recommendation\*\*[\s\S]{0,300}270k-token baseline/,
+      "fresh-session rule with the measured 270k baseline must exist"
+    );
+  });
+
+  it("budget mode's turn-diet section defers to the global discipline and keeps ≤25 turns", () => {
+    const diet = skillMd.slice(
+      skillMd.indexOf("### Orchestrator turn diet (targets the measured 69%)")
+    );
+    assert.match(
+      diet,
+      /Since v3\.8\.0 the turn diet is NOT budget-specific/,
+      "budget turn diet must reference the global discipline"
+    );
+    assert.match(
+      diet,
+      /\*\*Turn budget ≤25\*\*/,
+      "budget mode must keep the stricter ≤25-turn target"
+    );
+  });
+});
