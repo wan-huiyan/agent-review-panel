@@ -361,6 +361,8 @@ A [2026-07-16 token audit of a real full-protocol run](docs/analysis/2026-07-16-
 
 **Why isn't budget the default?** Because the savings are not free: sonnet reviewers surface fewer subtle findings than opus, one debate round replaces adaptive multi-round convergence, and one consolidated verifier replaces three dedicated verification passes — the redundancy that has caught real defects in this project's own history (including a judge-fabricated P0). Degraded rigor must be chosen and loudly bannered, never silently applied — the same principle behind the `[NO-DEBATE]` banner. Reach for budget mode on routine-but-nontrivial changes; keep the full panel for high-stakes reviews.
 
+**The quality-free part IS the default (v3.8).** The turn diet — batched launches, persistent reviewer agents driven via SendMessage, ≤50-word agent returns, no inter-phase narration, a ≤40-turn orchestrator target (the measured pre-discipline run took 157), and a fresh-session recommendation — applies to **every** mode since v3.8.0, because none of it removes a review, debate round, or verification pass. It attacks the measured 69% cost driver directly, so even full-protocol runs should now cost a fraction of the audited baseline.
+
 ## Known Limitations
 
 - **Same base model.** All reviewers are Claude instances; unanimous agreement may reflect shared model biases. The correlated-bias warning flags this but cannot eliminate it. See [Why a panel](#why-a-panel-not-a-single-reviewer) for the honest framing.
@@ -432,10 +434,10 @@ Both are activated by natural language or by `/roundtable:agent-review-panel` an
 
 ## Tests
 
-The test suite (486 tests) uses Node's built-in test runner — zero dependencies, requires Node ≥18:
+The test suite (494 tests) uses Node's built-in test runner — zero dependencies, requires Node ≥18:
 
 ```bash
-npm test                    # run all 486 tests
+npm test                    # run all 494 tests
 npm run test:triggers       # trigger classification
 npm run test:manifest       # manifest consistency + phase/opus enforcement
 npm run test:eval-suite     # eval suite integrity
@@ -529,6 +531,7 @@ See [CHANGELOG.md](CHANGELOG.md) for detailed version history and [ROADMAP.md](R
 
 | Version | Highlights |
 |---|---|
+| **v3.8** | **Orchestrator Efficiency Discipline** — the quality-free part of the turn diet becomes the default for *every* mode: persistent reviewers via SendMessage, batched launches, ≤50-word agent returns, no inter-phase narration, ≤40-turn target (measured pre-discipline run: 157 turns = 69% of cost). No review, debate, or verification work removed |
 | **v3.7** | **Budget mode** — explicit opt-in reduced-cost profile (~20–25% of full-run cost), targeting *measured* cost drivers: orchestrator turn diet (the measured 69%), 3 sonnet reviewers + opus judge, single debate round, consolidated verification, markdown-only output, `[BUDGET-MODE]` banner |
 | **v3.6** | **Assessment mode** — quality *discrimination* for subjective deliverables (vs defect-finding): subtract-points + veto, swap test, out-of-band currency check, and the **control-validation gate** (drop personas that can't beat a no-input control) |
 | **v3.5** | Loud `[NO-DEBATE]` banner — a debate-less run announces itself (Phase 15.1 chokepoint + Phase 13.5 assertion) instead of passing silently |
