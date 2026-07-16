@@ -122,6 +122,16 @@ fi
 
 # --- 5. Version consistency across files -------------------------------------
 
+# Anchored version match (panel finding 2026-07-16): the previous bare
+# `grep -q "$CANON_VERSION"` treated dots as regex wildcards and matched
+# substrings, so 13.8.0, 3.8.0-rc1, and 3x8x0 all false-PASSED against 3.8.0.
+# Dots are escaped and the version must not extend into a longer version-ish
+# token on either side.
+version_match() {
+  local esc="${CANON_VERSION//./\\.}"
+  grep -qE "(^|[^0-9.])${esc}([^0-9A-Za-z.-]|\$)"
+}
+
 check_version_in() {
   local file="$1"
   local pattern="$2"
@@ -131,7 +141,7 @@ check_version_in() {
   if [ -z "$found" ]; then
     return
   fi
-  if echo "$found" | grep -q "$CANON_VERSION"; then
+  if echo "$found" | version_match; then
     pass "$label matches canonical version $CANON_VERSION"
   else
     fail "$label does NOT match canonical version $CANON_VERSION:"
@@ -146,7 +156,7 @@ check_version_in "skills/agent-review-panel/SKILL.md" '^# Agent Review Panel v' 
 # SKILL.md HTML footer instruction (v2.16.4+ requires full semver match)
 FOOTER_LINE=$(grep 'HTML footer should read "Agent Review Panel v' skills/agent-review-panel/SKILL.md || true)
 if [ -n "$FOOTER_LINE" ]; then
-  if echo "$FOOTER_LINE" | grep -q "$CANON_VERSION"; then
+  if echo "$FOOTER_LINE" | version_match; then
     pass "SKILL.md HTML footer instruction matches canonical version"
   else
     fail "SKILL.md HTML footer instruction does NOT match canonical version $CANON_VERSION:"

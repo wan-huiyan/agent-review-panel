@@ -23,3 +23,6 @@ jobs:
 
       - name: Run tests
         run: npm test
+
+      - name: Release-check (doc-drift gate)
+        run: bash scripts/release-check.sh
