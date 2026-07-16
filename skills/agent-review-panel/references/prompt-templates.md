@@ -386,6 +386,48 @@ For external claims, extend with Domain Type, Web Result, Source columns.
 **Output protocol (v3.1.0+):** Write your full severity assessment to `{state_dir}/phase_11_severity_verification.md`. Return ONLY the path + a 100-word summary of severity dampening decisions. Do NOT return verbatim severity text in chat.
 ```
 
+## Budget Mode: Consolidated Verification Prompt (Phases 8+10+11, v3.7.0)
+
+Budget mode replaces the three separate verification agents with ONE agent
+(`model: "sonnet"` explicit). Launch after Phase 7 with:
+
+```
+You are the Consolidated Verification Agent for a budget-mode review panel.
+You combine three verification jobs in one pass. Work from disk — read the
+state files listed below; do not ask for content in chat.
+
+Inputs:
+- The work under review: {file paths}
+- Reviewer state files: {state_dir}/reviewer_*_phase_3.md, reviewer_*_phase_5_round1.md, reviewer_*_phase_7.md
+
+Do these three jobs, in order:
+
+## Job 1 — Completeness sweep (Phase 8)
+Scan the work for significant issues NO reviewer raised. Focus on categories
+orthogonal to the panel's personas. List at most 5, each with file:line
+evidence. If nothing material, say so explicitly.
+
+## Job 2 — Citation check (Phase 10)
+For EVERY P0/P1 finding: open the cited file at the cited line and confirm
+the quoted code/text exists there. For P2+ findings: verify a 30% sample.
+Label each checked citation VALID / DRIFTED (content exists elsewhere — give
+the real line) / BROKEN (not found).
+
+## Job 3 — Severity re-read (Phase 11)
+For EVERY P0/P1 finding: read the actual code/text around the claim and judge
+whether severity is justified. Check especially whether an existing safety
+mechanism (guard, validation, idempotency, try/except) already covers the
+claimed failure — that is the #1 cause of overstated severity. Recommend
+CONFIRM / DOWNGRADE (with target severity) / NOT-A-BUG, one line of evidence
+each.
+
+**Output protocol:** Write the full assessment (three sections, one per job)
+to {state_dir}/phase_8_10_11_verification.md. Return ONLY the path + a
+≤50-word summary: counts per job (missed-issues found, citations
+VALID/DRIFTED/BROKEN, severities CONFIRMED/DOWNGRADED/NOT-A-BUG). Do NOT
+return verbatim findings in chat.
+```
+
 ## Phase 12a: Confidence-Based Tier Draft (Orchestrator Logic — no agent)
 
 No agent is launched. The orchestrator computes this draft by inspecting
@@ -1362,10 +1404,15 @@ them when rebuilding the structured dashboard:
 - **`⚠️ [NO-DEBATE] — adversarial debate (Phase 5) did not run.`** → **amber**
   banner (`background:#FEF3C7; color:#92400E; border:2px solid #D97706; border-radius:6px; padding:1rem 1.25rem; margin:1rem 0;`).
 
-If **both** blockquotes are present, render **NO-DEBATE first, then
-COMPRESSED**, both above the header bar. If the source report carries **neither**
-(a full run), render no banner — its absence is the green-light signal. Do NOT
-invent a banner the markdown report does not carry.
+- **`💸 [BUDGET-MODE] — reduced-cost protocol.`** → **blue** banner
+  (`background:#DBEAFE; color:#1E40AF; border:2px solid #2563EB; border-radius:6px; padding:1rem 1.25rem; margin:1rem 0;`).
+  (Budget-mode runs produce markdown-only output by default, so this spec
+  applies when a user requests the HTML report post-hoc — v3.7.0.)
+
+If **multiple** blockquotes are present, render **NO-DEBATE first, then
+COMPRESSED, then BUDGET-MODE**, all above the header bar. If the source
+report carries **none** (a full run), render no banner — its absence is the
+green-light signal. Do NOT invent a banner the markdown report does not carry.
 
 ### 1. Header Bar
 Dark background. Left: work title (bold) + date. Right: verdict badge (color-coded:

@@ -28,10 +28,14 @@ description: >
   tiers" (Standard/Thorough/Exhaustive) when user says "thorough review",
   "exhaustive review", "trace everything", or "catch all bugs" — dedicates
   a pre-review phase to tracing data through critical paths and flagging
-  composition/seam bugs.
+  composition/seam bugs. Supports "budget mode" when user says "budget
+  review", "budget mode", "cheap review", "economy review", "low-cost panel",
+  or passes "budget" to /agent-review-panel — same adversarial protocol at a
+  reduced-cost profile (3 sonnet reviewers, single debate round, consolidated
+  verification, opus judge, markdown-only output).
 ---
 
-# Agent Review Panel v3.6.0
+# Agent Review Panel v3.7.0
 
 A multi-agent adversarial review system based on nine research foundations:
 ChatEval (ICLR 2024), AutoGen, Du et al. (ICML 2024), MachineSoM (ACL 2024),
@@ -63,12 +67,17 @@ It expects the user to specify (or let it auto-detect) what to review.
 ## Dependencies
 
 This skill depends on the Agent tool to launch parallel subagent reviewers and
-requires bash for context gathering (grep, file reads). All agents MUST use
-`model: "opus"`. This includes VoltAgent specialist agents launched via
-`subagent_type` — always pass `model: "opus"` explicitly alongside
-`subagent_type` to override the agent's default model. Omitting it causes
-the launched agent to fall through to its own frontmatter-declared model
-(which may be sonnet or haiku), introducing cross-run reasoning variance.
+requires bash for context gathering (grep, file reads). Every agent launch
+MUST pass a `model:` parameter **explicitly** — never rely on defaults. In the
+full panel that model is `model: "opus"` for every agent. In **budget mode**
+(v3.7.0, see Budget Mode section) reviewers and the consolidated verifier use
+`model: "sonnet"` while the Supreme Judge stays on `model: "opus"` — the
+explicit-model rule is unchanged; only the chosen tier differs. This includes
+VoltAgent specialist agents launched via `subagent_type` — always pass the
+model explicitly alongside `subagent_type` to override the agent's default.
+Omitting it causes the launched agent to fall through to its own
+frontmatter-declared model (which may be sonnet or haiku), introducing
+cross-run reasoning variance.
 Knowledge mining reads from memory paths if they exist; if not available,
 it degrades gracefully — no hard dependency.
 
@@ -122,6 +131,12 @@ Phase 15:   Output Generation         → (parent) Three output files (all seque
 
 [Multi-Run mode (--runs N > 1): repeat Phases 2–15 with rotated personas, then:]
 Phase 16:   Merge                     → Deduplicate, score stability, produce merged report (v2.14)
+
+[Budget mode ("budget review", v3.7.0): same protocol shape at a reduced-cost
+profile — 3 sonnet reviewers, Phases 3+4 merged, exactly 1 debate round,
+Phases 8+10+11 as ONE consolidated verification agent, no 12b/13, opus judge,
+14.5 as an orchestrator grep-check, Phase 15.1 markdown output only.
+See the Budget Mode section.]
 ```
 
 ---
@@ -1221,6 +1236,12 @@ the paths to `{state_dir}/phase_14_judge_ruling.md`,
 `{state_dir}/phase_11_severity_verification.md`, and
 `{state_dir}/phase_8_audit.md`. The agent has grep / Read / Bash tools.
 
+**Budget mode (v3.7.0):** no agent is spawned. The orchestrator itself diffs
+the judge's P0/P1 list against the union of reviewer + consolidated-verifier
+P0/P1s, runs 1–2 direct grep/Read probes on any `[JUDGE-INTRODUCED]` finding,
+and demotes unverifiable ones to `[JUDGE-UNVERIFIED]` open questions. The
+protection is preserved; the agent spin-up is not.
+
 Steps:
 1. Classify each P0/P1 finding in the judge ruling as `[PANEL-RAISED]`
    (skip — covered by Phase 11) or `[JUDGE-INTRODUCED]` (verify here).
@@ -1338,6 +1359,12 @@ zero Phase-5 output, so a COMPRESSED block need not also enumerate "5" in its
 phases-skipped list when the NO-DEBATE banner is present. For full runs where
 debate ran, the NO-DEBATE block is absent; its absence is the green-light
 signal that adversarial debate occurred.
+
+**Budget-mode banner (v3.7.0).** When the run used budget mode, Phase 15.1
+MUST additionally render the `[BUDGET-MODE]` banner defined in the Budget
+Mode section. Stacking order when several apply: `[NO-DEBATE]` first, then
+`COMPRESSED RUN`, then `[BUDGET-MODE]`. A budget run that completed its
+single debate round gets ONLY the `[BUDGET-MODE]` banner.
 
 ```markdown
 # Review Panel Report
@@ -1638,7 +1665,7 @@ Tell user:
 - Counts: consensus points, disagreements, action items, verification verdicts
 - Top P0 action item (if any)
 - Note: HTML report requires internet connection for Tailwind CSS, Chart.js, and Prism.js CDNs
-- HTML footer should read "Agent Review Panel v3.6.0" (MUST match the full semver from `plugin.json` — update this line whenever the version is bumped)
+- HTML footer should read "Agent Review Panel v3.7.0" (MUST match the full semver from `plugin.json` — update this line whenever the version is bumped)
 
 ---
 
@@ -1677,6 +1704,7 @@ to debate-less fast modes. Pick the mode deliberately:
 | Fast eyes on a tiny PR | `code-review` / `single-agent-multi-persona-review` | no |
 | Independent parallel lenses, small PR, autonomous multi-PR run | `parallel-panel-streamlined-no-debate` | no (by design) |
 | **Adversarial tradeoff, high-stakes gating, debate would change the verdict** (security vs perf, "is this P0 real", merge go/no-go) | **this skill (full panel) — invoke as a skill, NOT a workflow** | **yes (Phase 5–7)** |
+| Adversarial coverage on a cost leash (routine-but-nontrivial changes, cost-sensitive or autonomous runs) | **this skill, budget mode** ("budget review") | yes (1 round) |
 
 **Why "invoke as a skill, not a workflow" matters.** Debate lives in this
 skill's Agent-tool orchestration. The Workflow / ultracode engine is a
@@ -1718,6 +1746,129 @@ Authoring an explicit `Debate` phase (the audit's one debating run used
 `phases [Review, Debate, Audit+Verify, Judge]`) is what makes the round-1
 state files exist — which in turn satisfies the NO-DEBATE check. A Workflow
 that skips the `Debate` phase will (correctly) get the NO-DEBATE banner.
+
+---
+
+## Budget Mode (v3.7.0)
+
+**Explicit opt-in only — never auto-selected.** Trigger phrases: "budget
+review", "budget mode", "cheap review", "economy review", "low-cost panel",
+or `budget` passed to `/agent-review-panel`.
+
+**Why it exists (measured, not guessed).** A 2026-07-16 token audit of a real
+full-protocol panel run (2026-07-02, production repo, all phases + debate)
+cost **$162**, split:
+
+| Cost driver | Share | Root cause |
+|---|---|---|
+| Orchestrator main loop | **$111 (69%)** | 157 orchestrator turns, each re-reading a context that grew 270k → 630k tokens (58.7M cumulative cache-read) |
+| Judge ran twice + P14.5 verifier agent | $18 (11%) | Duplicate judge passes + a full agent for the post-judge gate |
+| HTML report (P15.3) + driving it | ~$7 (4%) + main-loop share | 75k output tokens + orchestrator round-trips |
+| 4 reviewers, Phases 3–7 | ~$12 (7%) | The fan-out everyone assumes dominates — it doesn't |
+| 4 separate verification agents (P8/10/11 + ad-hoc) | ~$11 (7%) | One agent spin-up per verification concern |
+
+Budget mode targets the drivers in measured order. Target cost: **~20–25% of
+a full run** with the adversarial core (debate + independent judge) intact.
+
+### What changes
+
+| Phase | Full panel | Budget mode |
+|---|---|---|
+| 1 Setup | Up to 6 personas + signal specialists | **Exactly 3 reviewers**: 2 content-matched personas + Devil's Advocate. No signal-specialist additions. `model: "sonnet"` explicit. |
+| 2 Data Flow Trace | Standard/Thorough/Exhaustive | **Skipped by default** (header notes "Data flow trace: Skipped (budget mode)"). Run only if the user asks. |
+| 3+4 Review + Reflection | Two separate waves | **One wave** — each reviewer produces the independent review AND the self-reflection/confidence section in a single run, written to `state/reviewer_<name>_phase_3.md`. |
+| 5–6 Debate | 1–3 adaptive rounds + round summaries | **Exactly 1 round** (`reviewer_<name>_phase_5_round1.md` — so the NO-DEBATE check passes honestly). Orchestrator writes a ≤10-line round summary itself; no summarizer agent. |
+| 7 Blind Final | Separate wave | Same persistent reviewer agents, one SendMessage each. |
+| 8, 10, 11 Verification | 3 separate opus agents | **ONE consolidated verifier** (`model: "sonnet"`): completeness sweep + citation check on all P0/P1 (sample P2+) + severity re-read of every P0/P1. Writes `state/phase_8_10_11_verification.md`. |
+| 9 Verify Commands | Up to 5 commands | Unchanged (orchestrator bash — cheap, high value). |
+| 12 Tier Assignment | 12a + 12b advisor agent | **12a only** (orchestrator logic). No 12b agent. |
+| 13 Targeted Verification | Persona-matched agents per dispute | **Skipped.** Unresolved disputes go to the judge labeled `[UNVERIFIED]`. |
+| 13.5 Pre-Judge Gate | Orchestrator checks | Unchanged (it is orchestrator logic, and it is the debate-presence chokepoint). |
+| 14 Supreme Judge | Opus judge (never downgrade) | Unchanged — **`model: "opus"`, exactly one pass**. No advisory second judge. |
+| 14.5 Post-Judge Gate | Dedicated verifier agent | **Orchestrator check, no agent**: diff the judge's P0/P1 list against the union of reviewer + verifier P0/P1s. Any judge-introduced defect gets 1–2 direct grep/Read probes; unverifiable ones are demoted to `[JUDGE-UNVERIFIED]` open questions instead of accepted findings. |
+| 15 Output | 15.1 md + 15.2 process + 15.3 HTML | **15.1 markdown only.** Offer 15.2/15.3 as a follow-up (their agents read state files from disk, so generating them later loses nothing). |
+
+### What does NOT change
+
+- **Debate runs.** One real cross-examination round — budget mode is not a
+  no-debate mode, and a budget run must never trip the `[NO-DEBATE]` banner
+  unless the round genuinely failed (then both banners apply; NO-DEBATE first).
+- **The judge is opus, domain-neutral, and singular.** Judgment quality is the
+  product; the judge is never downgraded to sonnet.
+- **Judge-hallucination protection stays** (in the cheaper orchestrator form
+  above — the v2.16/PR-#38 lesson that judges can fabricate P0s still applies).
+- Live-State Claim Discipline, Context Gathering, Review Mode Detection, the
+  Phase 13.5 and Phase 15 verification gates: all unchanged.
+- **The explicit-model rule stays.** Budget mode never omits `model:` — it
+  passes `model: "sonnet"` (reviewers, verifier) or `model: "opus"` (judge)
+  explicitly. The v2.14 anti-fallthrough rule was about *silent* defaults.
+
+### Orchestrator turn diet (targets the measured 69%)
+
+The dominant cost is not the agents — it is the orchestrator re-reading its
+own growing context every turn. In budget mode the orchestrator MUST:
+
+1. **Batch launches** — one message with multiple Agent calls per wave
+   (Phases 3+4 wave, Phase 5 wave, Phase 7 wave).
+2. **Keep persistent reviewers** — spawn each persona once, drive Phases 5
+   and 7 via SendMessage to the same agent (its context is cached; fresh
+   spawns re-read the work at full price).
+3. **Accept ≤50-word agent returns** — agents return a file path + verdict
+   line only. The orchestrator reads NO state file except the judge ruling
+   and the consolidated verifier summary.
+4. **Not narrate between phases** — no restating findings, no progress
+   essays. Target **≤25 orchestrator turns** for the whole panel (measured
+   full run: 157).
+5. **Recommend a fresh session when context is already heavy.** If
+   substantial prior work is in the current conversation, say so: in the
+   measured run the panel *started* at a 270k-token baseline, so every one of
+   157 turns re-paid that baseline as cache reads — a fresh session cuts the
+   per-turn tax by ~4× at panel start. Offer to proceed anyway.
+
+### `[BUDGET-MODE]` banner (Phase 15.1)
+
+Every budget-mode report MUST open with this block (ordering when stacked:
+`[NO-DEBATE]` first if present, then `COMPRESSED RUN`, then `[BUDGET-MODE]`):
+
+```markdown
+> 💸 **[BUDGET-MODE] — reduced-cost protocol.**
+>
+> This panel ran budget mode: 3 reviewers (sonnet), a single debate round,
+> one consolidated verification pass, one opus judge pass, markdown-only
+> output. Coverage is real but narrower than a full panel — fewer personas,
+> no targeted verification agents, no data-flow trace. For a high-stakes or
+> adversarial-tradeoff decision, re-run the full panel.
+```
+
+Confidence rule: the report's `**Confidence:**` field may be **High only if
+the consolidated verification pass confirmed every P0/P1 finding**; otherwise
+cap it at Medium and say why. (If NO-DEBATE also applies, its Medium cap wins
+regardless.)
+
+### Incompatibilities
+
+- **Multi-run (`--runs N > 1`)**: refuse the combination — multi-run is a
+  maximum-coverage tool, budget mode is a minimum-cost tool. Ask the user to
+  pick one; if unreachable (autonomous run), run budget single-run and note
+  the downgrade in the report header.
+- **Deep research mode**: if both are requested, budget wins — skip web
+  research and note "Deep research: skipped (budget mode)" in the header.
+- **Assessment mode (v3.6.0)**: incompatible — the control-validation gate
+  and generated persona set require the full protocol. Run assessment mode
+  at full cost or don't run it.
+
+### State files (budget mode)
+
+```
+docs/reviews/<date>-<topic>/
+├── state/
+│   ├── reviewer_<name>_phase_3.md         # review + reflection (merged 3+4)
+│   ├── reviewer_<name>_phase_5_round1.md  # the single debate round
+│   ├── reviewer_<name>_phase_7.md         # blind final
+│   ├── phase_8_10_11_verification.md      # consolidated verifier
+│   └── phase_14_judge_ruling.md
+└── review_panel_report.md                 # Phase 15.1 (only output)
+```
 
 ---
 
@@ -1922,15 +2073,20 @@ orchestrator window small.
   once in Run 1 (cached Data Flow Map), then Phases 3–15 repeat N times
   with rotated personas, then Phase 16 merges. Runs MAY execute in parallel
   (independent orchestrations) or sequentially.
-- **Force opus (v2.14):** ALWAYS pass `model: "opus"` when launching agents,
-  even with `subagent_type`. VoltAgent agents may have sonnet/haiku defaults
-  in their frontmatter; without explicit override, reviewer reasoning depth
-  varies across runs. This was an invisible source of cross-run variance
-  in v2.9–v2.13.
+- **Explicit model, always (v2.14, amended v3.7.0):** ALWAYS pass `model:`
+  explicitly when launching agents, even with `subagent_type`. VoltAgent
+  agents may have sonnet/haiku defaults in their frontmatter; without
+  explicit override, reviewer reasoning depth varies across runs — an
+  invisible source of cross-run variance in v2.9–v2.13. Full panel passes
+  `model: "opus"` everywhere; budget mode passes `model: "sonnet"` for
+  reviewers/verifier and `model: "opus"` for the judge. The rule is about
+  never letting the model be chosen *silently*, not about opus per se.
 
 ## Edge Cases
 
 - **No content provided:** Ask user what to review. Do not launch a panel with empty input.
+- **Budget mode + multi-run requested together (v3.7.0):** Refuse the combination and ask the user to pick one; if the user is unreachable, run budget single-run and note the downgrade in the report header.
+- **Budget mode debate round fails (v3.7.0):** If the single Phase 5 round produces zero `reviewer_*_phase_5_round1.md` files after one retry, the NO-DEBATE machinery applies as usual — both banners render (NO-DEBATE first) and the Medium confidence cap wins.
 - **Very large files (>500 lines):** Use Phase 6 summaries with excerpts instead of full content in debate rounds. Cap at 20k lines total.
 - **Binary/image files:** Skip. Note in report: "Binary files excluded from review."
 - **Single tiny file (<20 lines):** Reduce to 2 reviewers (minimum). Full panel is overkill.
