@@ -261,7 +261,7 @@ Debate lives in the skill's Agent-tool orchestration. Running a review as a **Wo
 - **Targeted verification**: each unresolved dispute gets a tiered (Light / Standard / Deep) verification agent matched to the claim type
 - **Data Flow Trace** (code only, three tiers): a dedicated agent traces data through critical paths before reviewers begin, flagging composition/seam bugs
 - **Post-judge verification gate**: re-verifies any P0/P1 the judge introduced (vs. raised by panel) against ground truth; hallucinated findings are demoted and the verdict score is recomputed
-- **Force-opus**: every subagent launch passes `model: "opus"` explicitly to eliminate cross-run reasoning variance
+- **Explicit model, always**: every subagent launch passes `model:` explicitly to eliminate cross-run reasoning variance — `"opus"` everywhere in the full panel; `"sonnet"` reviewers/verifier + `"opus"` judge in budget mode
 
 **Anti-groupthink safeguards**
 - Blind final scoring, private reflection, calibrated skepticism levels (20–60%)
@@ -284,6 +284,7 @@ Debate lives in the skill's Agent-tool orchestration. Running a review as a **Wo
 - **Codebase state check** — detects worktree/branch divergence to prevent false "missing code" findings
 - **Tiered knowledge mining** (L0 index / L1 summary / L2 full) — scans index lines first, only reads full content for relevant items
 - **Deep research mode** — opt-in web research for domain best practices
+- **Budget mode** (v3.7) — explicit opt-in reduced-cost profile (~20–25% of full-run cost) whose every cut targets a *measured* cost driver: orchestrator turn diet (the measured 69%), phase consolidation, single opus judge, markdown-only output, sonnet reviewers. Reports open with a `[BUDGET-MODE]` banner. See [Where the money actually goes](#-where-the-money-actually-goes-measured--and-budget-mode)
 
 ## Usage Examples
 
@@ -323,6 +324,7 @@ All modes are LLM-interpreted phrases — the skill's description matches them a
 | **Trace tier** | "use Thorough trace" / "use Exhaustive trace" | Data Flow Trace tier (Standard default / Thorough top-3 paths / Exhaustive all paths) |
 | **Custom personas** | "include a Security Auditor and a Cost Modeler" | Overrides auto-persona detection; panel size still 4–6 |
 | **Assessment** | auto-detected for subjective-quality deliverables (or "assess / score this report") | Quality *discrimination*, not defect-finding: subtract-points + veto, the swap test, an out-of-band currency check, and the **control-validation gate** (drop personas that can't beat a no-input control) |
+| **Budget** (v3.7) | `/roundtable:agent-review-panel budget` or "budget review of …" (explicit opt-in, never auto) | Same adversarial shape at **~20–25% of full-run cost**: orchestrator turn diet, 3 sonnet reviewers, 1 debate round, consolidated verification, single opus judge, markdown-only output, `[BUDGET-MODE]` banner |
 
 ## Cost & Performance
 
@@ -333,14 +335,29 @@ All modes are LLM-interpreted phrases — the skill's description matches them a
 | Code (4-reviewer, auto Precise) | ~8–10 min | ~250k | ~$10 |
 | Code + Exhaustive Data Flow Trace | ~12–15 min | ~350k | ~$20 |
 | `--runs 3` multi-run union | 3× base | 3× base | 3× base |
+| **Budget mode (v3.7)** | ~base | — | **~20–25% of the equivalent full run** |
 
 Cost is driven by: reviewer count (4–6 auto-scales by signal density), content size, debate rounds, `deep` mode (adds web research), and `--runs N` (linear multiplier). Pricing assumes Anthropic's published Opus rate at time of run; check [Anthropic pricing](https://www.anthropic.com/pricing) for current numbers.
+
+### 💸 Where the money actually goes (measured) — and Budget mode
+
+A [2026-07-16 token audit of a real full-protocol run](docs/analysis/2026-07-16-panel-token-split-audit.md) ($162, all phases + debate) found the cost was **not** where intuition says:
+
+| Cost driver | Share |
+|---|---|
+| **Orchestrator main loop** (157 turns × a 270k→630k-token context) | **69%** |
+| Judge ran twice + post-judge verifier agent | 11% |
+| All 4 reviewers, phases 3–7 — *the fan-out everyone assumes dominates* | **7%** |
+| Separate verification agents | 7% |
+| HTML report | 4% |
+
+**Budget mode** (v3.7, explicit opt-in: "budget review") cuts in that measured order — orchestrator turn diet first (batched launches, persistent reviewers, ≤50-word agent returns, ≤25-turn target, fresh-session guidance), then single-judge, markdown-only output, one consolidated verifier, and only *then* model tiering (sonnet reviewers, opus judge — the judge is never downgraded). Debate still runs (1 round), so the `[NO-DEBATE]` guarantee stays honest, and every budget report opens with a `[BUDGET-MODE]` banner. Estimated: **~$25–40 for a review that costs ~$160 at full protocol**.
 
 ## Known Limitations
 
 - **Same base model.** All reviewers are Claude instances; unanimous agreement may reflect shared model biases. The correlated-bias warning flags this but cannot eliminate it. See [Why a panel](#why-a-panel-not-a-single-reviewer) for the honest framing.
 - **No runtime analysis.** The panel reviews static code and documents. It cannot evaluate runtime behavior, production data patterns, or performance under load.
-- **Token cost.** Multi-agent review costs more than single-agent. Use for high-stakes reviews, not routine checks.
+- **Token cost.** Multi-agent review costs more than single-agent. Use the full panel for high-stakes reviews; for routine-but-nontrivial changes, **budget mode** (v3.7) keeps the adversarial shape at ~20–25% of the cost — see [Where the money actually goes](#-where-the-money-actually-goes-measured--and-budget-mode).
 - **Temporal reasoning.** Despite explicit checks, temporal scope verification (e.g., "excludes Christmas" with multi-year data) remains the hardest class of bug for panels to catch reliably.
 - **Privacy & network.** Reviewed content is subject to Claude Code's data-handling policy. The deep-research mode and Phase 11 web-verification step make outbound HTTPS requests; both can be skipped if you stay in default mode and review proprietary code. The plugin itself sends no telemetry; all three output files are written locally and never transmitted by the plugin.
 - **Output location.** All three files are written to your Claude Code session's current working directory and overwrite any prior `review_panel_*` files there. Filenames are not configurable. Run one panel at a time per directory.

@@ -863,6 +863,39 @@ Rather than hand-design personas, we asked the three strongest models (by ground
 
 ---
 
+## Step 23: Budget Mode — Measure First, Then Cut (v3.7, 2026-07-16)
+
+### Motivation
+
+The recurring complaint about this skill is cost. The obvious fix — "run the reviewer fan-out on cheaper models" — was on the table, alongside external tools (context-compression proxies like Headroom). Before shipping either, we audited a real run: parsed the Claude Code transcripts (main session + every `subagents/agent-*.jsonl`, usage deduped by message id, agents labeled from `agent-*.meta.json`) of a full-protocol panel executed 2026-07-02 against a production repo — all phases, debate included, **$162**.
+
+### The measurement inverted the plan
+
+| Cost driver | Share |
+|---|---|
+| Orchestrator main loop (157 turns × a 270k→630k-token context, 58.7M cache-read) | **69%** |
+| Judge ran twice + a dedicated post-judge verifier agent | 11% |
+| All 4 reviewers, Phases 3–7 — *the part everyone assumed dominated* | **7%** |
+| Four separate verification agents | 7% |
+| HTML report | 4% |
+
+The v3.1 state-file discipline was already active, so the bloat wasn't verbatim report text in chat — it was structural: turn count × ever-growing context × main-loop price. Model-tiering the reviewers (the intuitive fix) would have saved ~$5 of $162. Full write-up: [`docs/analysis/2026-07-16-panel-token-split-audit.md`](docs/analysis/2026-07-16-panel-token-split-audit.md).
+
+### What Changed
+
+- **Budget mode** (explicit opt-in: "budget review" / `budget` arg), cutting in measured order: an **orchestrator turn diet** (batched launches, persistent reviewers via SendMessage, ≤50-word agent returns, no inter-phase narration, ≤25-turn target, fresh-session guidance); Phases 3+4 merged; exactly **1 debate round** (round-1 state files still written, so the `[NO-DEBATE]` guarantee stays honest); Phases 8+10+11 collapsed into **one consolidated sonnet verifier**; Phase 13 skipped; a **single opus judge**; Phase 14.5 downgraded to an orchestrator grep-check (judge-hallucination protection kept, agent spin-up removed); **markdown-only output** (15.2/15.3 offered post-hoc — their agents read state files from disk, so deferring loses nothing).
+- The v2.14 **force-opus rule reworded to explicit-model-always** — the rule was about silent fallthrough, never about opus per se. Budget mode passes `model: "sonnet"` / `model: "opus"` explicitly per role.
+- A `[BUDGET-MODE]` banner (stacking: NO-DEBATE → COMPRESSED → BUDGET-MODE) and a confidence rule (High only when the consolidated pass confirmed every P0/P1).
+- Target: **~20–25% of full-run cost** with the adversarial core — debate + independent judge — intact.
+
+### Lessons
+
+51. **Measure before optimizing a multi-agent system — the intuitive cost model was inverted.** Everyone (including this repo's own earlier analysis) assumed the N-reviewer fan-out dominated. It was 7%. The orchestrator's *own turns* were 69%, because the marginal cost of an orchestrator turn is context × cache-read price, and context only grows. One afternoon of transcript parsing redirected the entire design.
+52. **The cheapest agent is a turn the orchestrator never takes.** State-file discipline (v3.1) fixed *what* flows through the main loop; budget mode had to fix *how often* the loop spins and *how big* its context is when it does. Batching launches, persistent agents over re-spawns, and starting from a fresh session are worth more than any model swap.
+53. **Rules should encode their reason, not their instance.** "Always pass `model: "opus"`" was really "never let the model be chosen silently." Once budget mode needed sonnet reviewers, the honest fix was rewording the rule to its actual invariant (explicit-model-always) — not carving an exception into a rule whose letter no longer matched its intent.
+
+---
+
 ## File Inventory
 
 ```
@@ -904,9 +937,9 @@ Rather than hand-design personas, we asked the three strongest models (by ground
 ├── .github/workflows/
 │   └── test.yml                        # GitHub Actions — runs `npm test` on every push/PR
 ├── README.md                           # User-facing documentation (install via /plugin marketplace add)
-├── HOW_WE_BUILT_THIS.md                # This file (Steps 1–22 chronicling v1–v3.6; v3.1–v3.5 in CHANGELOG)
+├── HOW_WE_BUILT_THIS.md                # This file (Steps 1–23 chronicling v1–v3.7; v3.1–v3.5 in CHANGELOG)
 ├── ROADMAP.md                          # Unified research + trust roadmap (22+ papers, 14 projects)
-├── CHANGELOG.md                        # Top-level changelog (v1.0 → v3.6.0)
+├── CHANGELOG.md                        # Top-level changelog (v1.0 → v3.7.0)
 ├── package.json                        # Node.js test runner config (v3.0.0, name "roundtable")
 └── LICENSE                             # MIT
 ```
