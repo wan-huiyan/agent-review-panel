@@ -7,16 +7,16 @@ description: >
   "have agents debate this", "get different opinions on this code/plan/doc", "multiple reviewers",
   "independently evaluate", "thorough feedback from different angles", "stress-test this design", "red
   team this", "devil's advocate perspective", "fresh eyes on this", "a second/third opinion", "argue
-  pros and cons", "every angle covered", "critical look from security and performance angles", "high-
-  stakes", or /agent-review-panel. NOT for single-reviewer review, quick sanity checks, bug fixes,
-  deployment, existing PR comments, skill improvement, peer review, code explanation, or writing
-  tests. Modes, also /agent-review-panel arguments: deep research ("deep review", "thorough review",
-  "research review") researches domain best practices; multi-run union ("multi-run review", "run
-  twice", "run 3 times", "maximum coverage") repeats with rotated personas, merged by stability; data-
-  flow trace tiers ("exhaustive review", "trace everything", "catch all bugs") add a pre-review data-
-  path trace; budget ("budget mode", "budget review", "cheap review", "low-cost panel", "token-
-  efficient review", "keep the cost down", "without burning tokens") is the same protocol at reduced
-  cost. Uses specialist domain-expert reviewers.
+  pros and cons", "every angle covered", "critical look from security and performance angles",
+  "high-stakes", or /agent-review-panel. NOT for single-reviewer review, quick sanity checks, bug
+  fixes, deployment, existing PR comments, skill improvement, peer review, code explanation, or
+  writing tests. Modes, also /agent-review-panel arguments: deep research ("deep review", "thorough
+  review", "research review") researches domain best practices; multi-run union ("multi-run review",
+  "run twice", "run 3 times", "maximum coverage") repeats with rotated personas, merged by stability;
+  data-flow trace tiers ("exhaustive review", "trace everything", "catch all bugs") add a pre-review
+  data-path trace; budget ("budget mode", "budget review", "cheap review", "low-cost panel",
+  "token-efficient review", "keep the cost down", "without burning tokens") is the same protocol at
+  reduced cost. Uses specialist domain-expert reviewers.
 ---
 
 # Agent Review Panel v3.8.1

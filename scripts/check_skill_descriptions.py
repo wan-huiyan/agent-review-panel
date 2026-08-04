@@ -95,6 +95,7 @@ class Skill:
     disabled: bool
     triggers: list       # quoted phrases -- the skill's explicit trigger vocabulary
     lost_triggers: list  # those falling past the cut, invisible to the model
+    wrap_corruption: list  # hyphenated tokens split across folded-scalar lines
 
     @property
     def over(self) -> bool:
@@ -107,7 +108,15 @@ class Skill:
 
     @property
     def truncated_chars(self) -> int:
-        return max(0, self.desc_chars - MAX_DESC_CHARS)
+        """Characters the model never sees.
+
+        The harness keeps `full[:cap-1]` and appends an ellipsis, so the dead tail is
+        `desc_chars - (cap - 1)`, one MORE than the naive `desc_chars - cap`. Reporting
+        the naive figure undercounts every over-cap skill by exactly one character.
+        """
+        if not self.over:
+            return 0
+        return self.desc_chars - (MAX_DESC_CHARS - 1)
 
 
 def _split_frontmatter(text: str) -> str | None:
@@ -186,6 +195,141 @@ def extract_triggers(text: str) -> list[str]:
     return out
 
 
+# Words that turn a standalone trigger into a conditional one. If one of these appears
+# between a trigger phrase and its clause head AFTER a rewrite but not before, the trigger
+# now only matches users who already satisfy an extra precondition -- a narrowed surface.
+_RESTRICTORS = (
+    "whose", "provided that", "provided", "only if", "only when", "unless", "assuming",
+    "given that", "so long as", "as long as", "where the", "in which the", "if the", "if it",
+)
+
+
+def find_wrap_corruption(fm: str) -> list[str]:
+    """Detect hyphenated tokens split across lines of a folded/block YAML scalar.
+
+    `description: >` and `description: |` join their lines with a SPACE. So a line ending
+    in a hyphen silently becomes `high- stakes` in the text the harness injects. The usual
+    cause is re-wrapping with textwrap.wrap(), which breaks on hyphens by DEFAULT -- pass
+    break_on_hyphens=False. This corrupts exactly the hyphenated compounds that tend to be
+    trigger phrases ("token-efficient review", "high-stakes", "stress-test"), and no
+    length check can see it because the char count is unchanged.
+    """
+    hits = []
+    m = re.search(r"^(description|whenToUse|when_to_use):\s*([|>])", fm, re.M)
+    if not m:
+        return hits
+    lines = [l for l in fm[m.end():].splitlines() if l.strip()]
+    for i, line in enumerate(lines[:-1]):
+        stripped = line.strip()
+        if not stripped.endswith("-"):
+            continue
+        nxt = lines[i + 1].strip()
+        if nxt and nxt[0].isalnum():
+            tail = stripped.split()[-1] if stripped.split() else stripped
+            head = nxt.split()[0] if nxt.split() else nxt
+            hits.append(f"{tail} {head}")
+    return hits
+
+
+def _clause_around(text: str, phrase: str, window: int = 110) -> str:
+    """The sentence-ish span a phrase sits in -- enough context to see its condition."""
+    i = text.find(phrase)
+    if i == -1:
+        return ""
+    start = max(0, i - window)
+    for sep in (". ", "; ", " -- ", " — "):
+        j = text.rfind(sep, start, i)
+        if j != -1:
+            start = max(start, j + len(sep))
+    end = min(len(text), i + len(phrase) + window)
+    for sep in (". ", "; ", " -- ", " — "):
+        j = text.find(sep, i + len(phrase), end)
+        if j != -1:
+            end = min(end, j)
+    return text[start:end].strip()
+
+
+def compare_descriptions(old: str, new: str) -> dict:
+    """Diff two descriptions at the level of TRIGGER SURFACE, not word overlap.
+
+    Word-overlap scoring is structurally blind to the most damaging trim regression:
+    restructuring `trigger on X -- and separately, watch for Y` into `trigger on X WHOSE Y`
+    preserves the exact same word set, so any bag-of-words metric scores it identically,
+    while the trigger now only fires for users who have already diagnosed Y.
+
+    This compares each trigger phrase's surrounding clause instead, and flags:
+      dropped    -- phrase present before, gone after (or pushed past the cut)
+      narrowed   -- a restrictor word appeared in the phrase's clause that was not there before
+      reworded   -- the clause changed materially but no restrictor was introduced
+    All three are REVIEWER FLAGS, not verdicts: `narrowed` in particular needs a human read.
+    """
+    old_vis = old if len(old) <= MAX_DESC_CHARS else old[:MAX_DESC_CHARS - 1]
+    new_vis = new if len(new) <= MAX_DESC_CHARS else new[:MAX_DESC_CHARS - 1]
+
+    out = {"dropped": [], "narrowed": [], "reworded": [], "rephrased": [],
+           "added": [], "kept": 0}
+
+    old_tr = extract_triggers(old_vis)
+    new_tr = extract_triggers(new_vis)
+
+    # Pair each old trigger with its new counterpart. Exact match first, then a
+    # content-word overlap match -- otherwise a pure rephrasing ("I want thorough
+    # feedback from different angles" -> "thorough feedback from different angles")
+    # reports as one DROPPED plus one ADDED, and the noise buries the real losses.
+    def key(s: str) -> set:
+        filler = {"i", "want", "a", "an", "the", "this", "that", "get", "give", "me",
+                  "to", "of", "on", "for", "with", "from", "and", "or", "it", "my",
+                  "can", "you", "please", "some", "do", "have"}
+        return {w for w in re.findall(r"[a-z0-9]+", s.lower()) if w not in filler}
+
+    unmatched_new = list(new_tr)
+    pairs, dropped = [], []
+    new_exact = {t.lower(): t for t in new_tr}
+
+    for t in old_tr:
+        if t.lower() in new_exact:
+            m = new_exact[t.lower()]
+            pairs.append((t, m, True))
+            if m in unmatched_new:
+                unmatched_new.remove(m)
+            continue
+        ok = key(t)
+        best, best_score = None, 0.0
+        for c in unmatched_new:
+            ck = key(c)
+            if not ok or not ck:
+                continue
+            score = len(ok & ck) / len(ok | ck)
+            if score > best_score:
+                best, best_score = c, score
+        if best is not None and best_score >= 0.5:
+            pairs.append((t, best, False))
+            unmatched_new.remove(best)
+        else:
+            dropped.append(t)
+
+    out["dropped"] = dropped
+    out["added"] = unmatched_new
+
+    for t, m, exact in pairs:
+        if not exact:
+            out["rephrased"].append({"trigger": t, "now": m})
+            continue
+        before, after = _clause_around(old_vis, t), _clause_around(new_vis, t)
+        if before == after:
+            out["kept"] += 1
+            continue
+        gained = [w for w in _RESTRICTORS
+                  if w in after.lower() and w not in before.lower()]
+        if gained:
+            out["narrowed"].append({"trigger": t, "gained": gained,
+                                    "before": before, "after": after})
+        else:
+            out["reworded"].append({"trigger": t, "before": before, "after": after})
+
+    return out
+
+
 def parse_skill(path: str) -> Skill | None:
     try:
         with open(path, encoding="utf-8", errors="replace") as fh:
@@ -212,13 +356,17 @@ def parse_skill(path: str) -> Skill | None:
              else len(name) + ENTRY_OVERHEAD + min(len(full), MAX_DESC_CHARS))
 
     triggers = extract_triggers(full)
-    # The harness keeps full[:cap-1] and appends an ellipsis (l7_ in the binary).
-    kept = full[:MAX_DESC_CHARS - 1]
+    # The harness only truncates when the description EXCEEDS the cap; at or under it the
+    # whole string is shown (l7_ in the binary is `len > cap ? slice(0, cap-1) + "…" : t`).
+    # Slicing unconditionally would falsely report the final characters of an exactly-at-cap
+    # description as lost.
+    kept = full if len(full) <= MAX_DESC_CHARS else full[:MAX_DESC_CHARS - 1]
     lost = [] if disabled else [t for t in triggers if t not in kept]
 
     return Skill(path=path, name=name, desc_chars=len(full),
                  entry_chars=entry, disabled=disabled,
-                 triggers=triggers, lost_triggers=lost)
+                 triggers=triggers, lost_triggers=lost,
+                 wrap_corruption=find_wrap_corruption(fm))
 
 
 def collect(roots: list[str]) -> list[Skill]:
@@ -276,6 +424,19 @@ def report(skills: list[Skill], context: int, use_color: bool,
                     print(f"    {'':>6}         {paint('· invisible: ' + t, yellow)}")
         print()
 
+    corrupt = [s for s in live if s.wrap_corruption]
+    if corrupt:
+        n = sum(len(s.wrap_corruption) for s in corrupt)
+        print(paint(f"  BROKEN BY LINE-WRAP ({n}) — a folded/block scalar joins lines with a "
+                    f"SPACE, so these tokens are corrupt in the injected text", red))
+        for s in corrupt:
+            for h in s.wrap_corruption:
+                print(f"    {s.name}:  {paint(h, yellow)}")
+        cause = ("Cause: textwrap.wrap() breaks on hyphens by default — "
+                 "pass break_on_hyphens=False.")
+        print("  " + paint(cause, dim))
+        print()
+
     lost_total = sum(len(s.lost_triggers) for s in over)
     if lost_total:
         print(paint(f"  {lost_total} trigger phrase"
@@ -320,7 +481,87 @@ def report(skills: list[Skill], context: int, use_color: bool,
                   f"{paint('restores', green)} the {lost_total} lost above — "
                   f"re-run until this section is empty.")
 
-    return 1 if over else 0
+    return 1 if (over or corrupt) else 0
+
+
+def _load_description(spec: str) -> str | None:
+    """Read a description from a file path or a `git-ref:path` spec."""
+    text = None
+    if ":" in spec and not os.path.exists(spec):
+        ref, _, path = spec.partition(":")
+        import subprocess
+        r = subprocess.run(["git", "show", f"{ref}:{path}"],
+                           capture_output=True, text=True)
+        if r.returncode == 0:
+            text = r.stdout
+    if text is None:
+        try:
+            text = open(spec, encoding="utf-8", errors="replace").read()
+        except OSError:
+            return None
+    fm = _split_frontmatter(text)
+    if fm is None:
+        return None
+    desc = _scalar(fm, "description")
+    when = _scalar(fm, "whenToUse") or _scalar(fm, "when_to_use")
+    return f"{desc} - {when}" if when else desc
+
+
+def _run_compare(old_spec: str, new_spec: str, as_json: bool, color: bool) -> int:
+    old, new = _load_description(old_spec), _load_description(new_spec)
+    for spec, val in ((old_spec, old), (new_spec, new)):
+        if val is None:
+            print(f"error: could not read a description from {spec}", file=sys.stderr)
+            return 2
+
+    d = compare_descriptions(old, new)
+    if as_json:
+        print(json.dumps({"old_chars": len(old), "new_chars": len(new), **d}, indent=2))
+        return 1 if (d["dropped"] or d["narrowed"]) else 0
+
+    def paint(s, c):
+        return f"\033[{c}m{s}\033[0m" if color else s
+
+    print(f"trigger-surface diff  ·  {len(old):,} → {len(new):,} chars  ·  "
+          f"{d['kept']} triggers unchanged\n")
+
+    if d["dropped"]:
+        print(paint(f"  DROPPED ({len(d['dropped'])}) — gone from the visible description", "31"))
+        for t in d["dropped"]:
+            print(f"    · {t}")
+        print()
+    if d["narrowed"]:
+        print(paint(f"  NARROWED ({len(d['narrowed'])}) — a precondition appeared; the trigger "
+                    f"now fires for fewer users", "31"))
+        for n in d["narrowed"]:
+            print(f"    · {n['trigger']}   {paint('gained: ' + ', '.join(n['gained']), '33')}")
+            print(f"        before: {n['before'][:150]}")
+            print(f"        after:  {n['after'][:150]}")
+        print()
+    if d["rephrased"]:
+        print(f"  REPHRASED ({len(d['rephrased'])}) — same concept, different wording (usually fine)")
+        for n in d["rephrased"][:8]:
+            print(f"    · {n['trigger']}  →  {n['now']}")
+        if len(d["rephrased"]) > 8:
+            print(f"    … and {len(d['rephrased']) - 8} more")
+        print()
+    if d["reworded"]:
+        print(paint(f"  REWORDED ({len(d['reworded'])}) — clause changed, no precondition added; "
+                    f"read to confirm meaning held", "33"))
+        for n in d["reworded"][:8]:
+            print(f"    · {n['trigger']}")
+        if len(d["reworded"]) > 8:
+            print(f"    … and {len(d['reworded']) - 8} more")
+        print()
+    if d["added"]:
+        print(f"  ADDED ({len(d['added'])}): " + ", ".join(d["added"][:8]))
+        print()
+
+    if not d["dropped"] and not d["narrowed"]:
+        print(paint("  No trigger dropped or narrowed.", "32"))
+    print("\n  NOTE: word-overlap/coverage scoring cannot see NARROWED or REWORDED — the word\n"
+          "  set is unchanged. Those rows need a human read; do not clear them with a metric.")
+    return 1 if (d["dropped"] or d["narrowed"]) else 0
 
 
 def main() -> int:
@@ -339,11 +580,19 @@ def main() -> int:
                     help=f"override the per-skill cap (default: {MAX_DESC_CHARS})")
     ap.add_argument("--triggers", action="store_true",
                     help="list the quoted trigger phrases lost to truncation")
+    ap.add_argument("--compare", nargs=2, metavar=("OLD", "NEW"),
+                    help="compare two SKILL.md revisions at the trigger-surface level; "
+                         "flags dropped/narrowed/reworded triggers that word-overlap "
+                         "scoring cannot see. Use OLD=git-ref:path or a file path.")
     ap.add_argument("--json", action="store_true", help="machine-readable output")
     ap.add_argument("--no-color", action="store_true", help="disable ANSI color")
     args = ap.parse_args()
 
     MAX_DESC_CHARS = args.max_chars
+
+    if args.compare:
+        return _run_compare(args.compare[0], args.compare[1], args.json,
+                            not args.no_color and sys.stdout.isatty())
 
     paths = args.paths or ["."]
 
@@ -373,11 +622,12 @@ def main() -> int:
             "counts": {"total": len(skills), "model_invocable": len(live),
                        "disabled": len(skills) - len(live),
                        "over_cap": sum(1 for s in live if s.over),
+                       "wrap_corruption": sum(len(s.wrap_corruption) for s in live),
                        "lost_triggers": sum(len(s.lost_triggers) for s in live)},
             "skills": [asdict(s) | {"over": s.over, "warn": s.warn}
                        for s in sorted(skills, key=lambda s: -s.desc_chars)],
         }, indent=2))
-        return 1 if any(s.over for s in skills) else 0
+        return 1 if any(s.over or s.wrap_corruption for s in skills) else 0
 
     use_color = not args.no_color and sys.stdout.isatty() and not os.environ.get("NO_COLOR")
     return report(skills, args.context, use_color, show_triggers=args.triggers)
