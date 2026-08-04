@@ -1,6 +1,6 @@
 {
   "skill_name": "agent-review-panel",
-  "version": "3.8.0",
+  "version": "3.8.1",
   "created_by": "manual",
   "updated": "2026-07-16",
   "triggers": [
@@ -20,7 +20,7 @@
     },
     {
       "id": "pos-3",
-      "prompt": "Have agents debate whether this architecture is sound — I'm worried about the caching layer",
+      "prompt": "Have agents debate whether this architecture is sound \u2014 I'm worried about the caching layer",
       "should_trigger": true,
       "category": "positive",
       "notes": "Direct trigger: have agents debate"
@@ -48,7 +48,7 @@
     },
     {
       "id": "pos-7",
-      "prompt": "Do a deep review of the billing module — make sure to research best practices",
+      "prompt": "Do a deep review of the billing module \u2014 make sure to research best practices",
       "should_trigger": true,
       "category": "positive",
       "notes": "Direct trigger: deep review (enables web research mode)"
@@ -76,7 +76,7 @@
     },
     {
       "id": "pos-11",
-      "prompt": "I need fresh eyes on this code — can you have multiple agents look at it independently?",
+      "prompt": "I need fresh eyes on this code \u2014 can you have multiple agents look at it independently?",
       "should_trigger": true,
       "category": "positive",
       "notes": "Natural language: fresh eyes + multiple agents + independently"
@@ -90,14 +90,14 @@
     },
     {
       "id": "pos-13",
-      "prompt": "I want agents to argue about whether this is the right approach — pros and cons from different roles",
+      "prompt": "I want agents to argue about whether this is the right approach \u2014 pros and cons from different roles",
       "should_trigger": true,
       "category": "positive",
       "notes": "Natural language: agents argue + different roles"
     },
     {
       "id": "pos-14",
-      "prompt": "panel review this infrastructure change — it touches DNS, load balancing, and TLS",
+      "prompt": "panel review this infrastructure change \u2014 it touches DNS, load balancing, and TLS",
       "should_trigger": true,
       "category": "positive",
       "notes": "Direct trigger: panel review"
@@ -118,7 +118,7 @@
     },
     {
       "id": "pos-17",
-      "prompt": "Launch a review panel on the files I just changed — here's the diff",
+      "prompt": "Launch a review panel on the files I just changed \u2014 here's the diff",
       "should_trigger": true,
       "category": "positive",
       "notes": "Direct trigger with context: review panel + diff"
@@ -132,7 +132,7 @@
     },
     {
       "id": "pos-19",
-      "prompt": "Run the review panel 3 times and merge the results — I want maximum coverage on this deployment",
+      "prompt": "Run the review panel 3 times and merge the results \u2014 I want maximum coverage on this deployment",
       "should_trigger": true,
       "category": "positive-v214",
       "notes": "v2.14 multi-run union mode: explicit --runs 3 via natural language + maximum coverage"
@@ -146,14 +146,14 @@
     },
     {
       "id": "pos-21",
-      "prompt": "Exhaustive review of this data pipeline — trace every data path and catch all bugs",
+      "prompt": "Exhaustive review of this data pipeline \u2014 trace every data path and catch all bugs",
       "should_trigger": true,
       "category": "positive-v214",
       "notes": "v2.14 data flow trace exhaustive tier: exhaustive + trace every path + catch all bugs"
     },
     {
       "id": "pos-22",
-      "prompt": "This is high-stakes — I want a thorough review panel that traces the data flow across all our transforms",
+      "prompt": "This is high-stakes \u2014 I want a thorough review panel that traces the data flow across all our transforms",
       "should_trigger": true,
       "category": "positive-v214",
       "notes": "v2.14 data flow trace thorough tier + multi-perspective signal"
@@ -174,7 +174,7 @@
     },
     {
       "id": "pos-23",
-      "prompt": "Do a review panel with the new expandable HTML cards — I want to see the full narrative and code evidence for every finding",
+      "prompt": "Do a review panel with the new expandable HTML cards \u2014 I want to see the full narrative and code evidence for every finding",
       "should_trigger": true,
       "category": "positive-v215",
       "notes": "v2.15 expandable issue cards: review panel + explicit deep-detail request"
@@ -198,7 +198,7 @@
       "prompt": "Review this function for bugs, it's returning null unexpectedly",
       "should_trigger": false,
       "category": "negative",
-      "notes": "Single-agent code review — no multi-agent signal"
+      "notes": "Single-agent code review \u2014 no multi-agent signal"
     },
     {
       "id": "neg-2",
@@ -209,17 +209,17 @@
     },
     {
       "id": "neg-3",
-      "prompt": "Fix the failing test in auth.test.ts — it started failing after the refactor",
+      "prompt": "Fix the failing test in auth.test.ts \u2014 it started failing after the refactor",
       "should_trigger": false,
       "category": "negative",
       "notes": "Bug fix, not review"
     },
     {
       "id": "neg-4",
-      "prompt": "Make this skill better — optimize the trigger accuracy",
+      "prompt": "Make this skill better \u2014 optimize the trigger accuracy",
       "should_trigger": false,
       "category": "negative",
-      "notes": "Skill improvement — should trigger schliff, not agent-review-panel"
+      "notes": "Skill improvement \u2014 should trigger schliff, not agent-review-panel"
     },
     {
       "id": "neg-5",
@@ -247,11 +247,11 @@
       "prompt": "Can you review this essay I wrote for my application?",
       "should_trigger": false,
       "category": "negative",
-      "notes": "'Review' keyword but wrong domain entirely — not code/plan/docs"
+      "notes": "'Review' keyword but wrong domain entirely \u2014 not code/plan/docs"
     },
     {
       "id": "neg-9",
-      "prompt": "Look at this code and tell me what it does — I inherited it and have no docs",
+      "prompt": "Look at this code and tell me what it does \u2014 I inherited it and have no docs",
       "should_trigger": false,
       "category": "negative",
       "notes": "Code explanation, not adversarial review"
@@ -282,7 +282,7 @@
       "prompt": "Create a new skill that reviews PRs automatically",
       "should_trigger": false,
       "category": "negative",
-      "notes": "Skill creation — 'review' is a red herring in the skill name"
+      "notes": "Skill creation \u2014 'review' is a red herring in the skill name"
     },
     {
       "id": "neg-14",
@@ -293,10 +293,10 @@
     },
     {
       "id": "edge-1",
-      "prompt": "Review this thoroughly — I want to make sure nothing is missed",
+      "prompt": "Review this thoroughly \u2014 I want to make sure nothing is missed",
       "should_trigger": true,
       "category": "edge",
-      "notes": "'Thoroughly' suggests wanting more than a quick glance — borderline panel"
+      "notes": "'Thoroughly' suggests wanting more than a quick glance \u2014 borderline panel"
     },
     {
       "id": "edge-2",
@@ -307,7 +307,7 @@
     },
     {
       "id": "edge-3",
-      "prompt": "I need multiple reviewers on this before merging — it's a critical path change",
+      "prompt": "I need multiple reviewers on this before merging \u2014 it's a critical path change",
       "should_trigger": true,
       "category": "edge",
       "notes": "'Multiple reviewers' implies multi-agent, even without 'panel'"
@@ -324,11 +324,11 @@
       "prompt": "Can you take a critical look at this from a security and performance angle?",
       "should_trigger": true,
       "category": "edge",
-      "notes": "Requesting specific angles/perspectives — implies multi-persona"
+      "notes": "Requesting specific angles/perspectives \u2014 implies multi-persona"
     },
     {
       "id": "edge-6",
-      "prompt": "Review this code — just a quick sanity check before I push",
+      "prompt": "Review this code \u2014 just a quick sanity check before I push",
       "should_trigger": false,
       "category": "edge",
       "notes": "'Quick sanity check' signals single-agent, not a full panel"
@@ -342,14 +342,14 @@
     },
     {
       "id": "edge-8",
-      "prompt": "Give me your honest opinion — is this plan solid or am I missing something?",
+      "prompt": "Give me your honest opinion \u2014 is this plan solid or am I missing something?",
       "should_trigger": false,
       "category": "edge",
       "notes": "Single opinion request, not multi-perspective"
     },
     {
       "id": "edge-9",
-      "prompt": "This is high-stakes — I want every angle covered before we commit to this architecture",
+      "prompt": "This is high-stakes \u2014 I want every angle covered before we commit to this architecture",
       "should_trigger": true,
       "category": "edge",
       "notes": "'Every angle' + high stakes signals desire for comprehensive multi-perspective review"
@@ -363,7 +363,7 @@
     },
     {
       "id": "v29-pos-1",
-      "prompt": "Review panel this test plan — use voltagent specialist agents if available for deeper domain coverage",
+      "prompt": "Review panel this test plan \u2014 use voltagent specialist agents if available for deeper domain coverage",
       "should_trigger": true,
       "category": "positive-v29",
       "notes": "v2.9: Explicit request for VoltAgent specialist agents in review panel"
@@ -377,7 +377,7 @@
     },
     {
       "id": "v29-pos-3",
-      "prompt": "I want a review panel on this ML pipeline — make sure the data science reviewers really know their stuff",
+      "prompt": "I want a review panel on this ML pipeline \u2014 make sure the data science reviewers really know their stuff",
       "should_trigger": true,
       "category": "positive-v29",
       "notes": "v2.9: ML signal should map to voltagent-data-ai:data-scientist"
@@ -387,7 +387,7 @@
       "prompt": "Install voltagent-qa-sec for me",
       "should_trigger": false,
       "category": "negative-v29",
-      "notes": "v2.9: Installation request is not a review — VoltAgent keyword is a red herring"
+      "notes": "v2.9: Installation request is not a review \u2014 VoltAgent keyword is a red herring"
     },
     {
       "id": "v29-neg-2",
@@ -401,11 +401,11 @@
       "prompt": "Can I get QA, data science, and DevOps perspectives on this deployment plan?",
       "should_trigger": true,
       "category": "edge-v29",
-      "notes": "v2.9: Requesting 3 domain perspectives without saying 'panel' — should trigger and use VoltAgent mapping"
+      "notes": "v2.9: Requesting 3 domain perspectives without saying 'panel' \u2014 should trigger and use VoltAgent mapping"
     },
     {
       "id": "v29-edge-2",
-      "prompt": "Review this with specialist subagents — I want real domain expertise, not generic personas",
+      "prompt": "Review this with specialist subagents \u2014 I want real domain expertise, not generic personas",
       "should_trigger": true,
       "category": "edge-v29",
       "notes": "v2.9: Explicit preference for specialist agents over generic personas"
@@ -419,14 +419,14 @@
     },
     {
       "id": "pos-budget-2",
-      "prompt": "I want a cheap review of this migration plan — budget mode, multiple perspectives is fine but keep the cost down.",
+      "prompt": "I want a cheap review of this migration plan \u2014 budget mode, multiple perspectives is fine but keep the cost down.",
       "should_trigger": true,
       "category": "positive",
       "notes": "v3.7.0 budget mode trigger: 'cheap review' + 'budget mode'"
     },
     {
       "id": "pos-budget-3",
-      "prompt": "Get a review panel on this refactor, but keep the token cost down — last run was expensive.",
+      "prompt": "Get a review panel on this refactor, but keep the token cost down \u2014 last run was expensive.",
       "should_trigger": true,
       "category": "positive",
       "notes": "v3.7.1 budget mode trigger: cost constraint attached to a panel request (no named 'budget' phrase)"
@@ -501,7 +501,7 @@
     },
     {
       "id": "tc-3",
-      "prompt": "Deep review of this data pipeline — I want you to research best practices first",
+      "prompt": "Deep review of this data pipeline \u2014 I want you to research best practices first",
       "input_files": [],
       "assertions": [
         {
@@ -523,7 +523,7 @@
     },
     {
       "id": "tc-4",
-      "prompt": "Red team this payment processing module — assume an attacker is trying to exploit it",
+      "prompt": "Red team this payment processing module \u2014 assume an attacker is trying to exploit it",
       "input_files": [],
       "assertions": [
         {
@@ -567,7 +567,7 @@
     },
     {
       "id": "tc-6",
-      "prompt": "I want multiple independent reviews of this refactor — don't let them influence each other initially",
+      "prompt": "I want multiple independent reviews of this refactor \u2014 don't let them influence each other initially",
       "input_files": [],
       "assertions": [
         {
@@ -584,7 +584,7 @@
     },
     {
       "id": "tc-7",
-      "prompt": "Panel review this — but focus on whether it's maintainable long-term, not just correctness",
+      "prompt": "Panel review this \u2014 but focus on whether it's maintainable long-term, not just correctness",
       "input_files": [],
       "assertions": [
         {
@@ -601,7 +601,7 @@
     },
     {
       "id": "tc-v29-1",
-      "prompt": "Review panel this Flask webapp test plan — I have voltagent-qa-sec and voltagent-data-ai installed. Use specialist agents.",
+      "prompt": "Review panel this Flask webapp test plan \u2014 I have voltagent-qa-sec and voltagent-data-ai installed. Use specialist agents.",
       "input_files": [],
       "assertions": [
         {
@@ -650,7 +650,7 @@
     },
     {
       "id": "tc-v29-3",
-      "prompt": "Review this Python data science code. Use VoltAgent specialist agents — I want a data scientist reviewer, a code quality reviewer, and a DevOps reviewer.",
+      "prompt": "Review this Python data science code. Use VoltAgent specialist agents \u2014 I want a data scientist reviewer, a code quality reviewer, and a DevOps reviewer.",
       "input_files": [],
       "assertions": [
         {
@@ -672,7 +672,7 @@
     },
     {
       "id": "tc-v33-1",
-      "prompt": "Review panel on these two Cloud Run deploy scripts — your-project deploy.sh and deploy_emea.sh. They print different gcloud commands for granting users access; is the access model divergent?",
+      "prompt": "Review panel on these two Cloud Run deploy scripts \u2014 your-project deploy.sh and deploy_emea.sh. They print different gcloud commands for granting users access; is the access model divergent?",
       "input_files": [],
       "assertions": [
         {
@@ -714,7 +714,7 @@
     },
     {
       "id": "ec-2",
-      "prompt": "Do a review panel on this 50,000 line monolith — all of it",
+      "prompt": "Do a review panel on this 50,000 line monolith \u2014 all of it",
       "category": "scale_extreme",
       "expected_behavior": "Acknowledge scale, may suggest scoping to specific areas",
       "assertions": [
@@ -746,14 +746,14 @@
       "assertions": [
         {
           "type": "pattern",
-          "value": "(?i)(spanish|español|language|english)",
+          "value": "(?i)(spanish|espa\u00f1ol|language|english)",
           "description": "Addresses the language request"
         }
       ]
     },
     {
       "id": "ec-5",
-      "prompt": "Review panel this — but I want you to be extra harsh, like a FAANG interview",
+      "prompt": "Review panel this \u2014 but I want you to be extra harsh, like a FAANG interview",
       "category": "tone_request",
       "expected_behavior": "Adjust review intensity while maintaining structure",
       "assertions": [
@@ -792,7 +792,7 @@
     },
     {
       "id": "ec-8",
-      "prompt": "Do a review panel on this, but I disagree with the last panel's verdict — re-review with fresh perspectives",
+      "prompt": "Do a review panel on this, but I disagree with the last panel's verdict \u2014 re-review with fresh perspectives",
       "category": "re_review",
       "expected_behavior": "Launch new panel without anchoring to previous verdict",
       "assertions": [
@@ -805,7 +805,7 @@
     },
     {
       "id": "ec-v29-1",
-      "prompt": "Review panel this — only use VoltAgent agents, don't use any generic personas",
+      "prompt": "Review panel this \u2014 only use VoltAgent agents, don't use any generic personas",
       "category": "v29_voltagent_only",
       "expected_behavior": "Use VoltAgent agents where available but explain Devil's Advocate stays generic intentionally",
       "assertions": [
@@ -823,7 +823,7 @@
     },
     {
       "id": "ec-v29-2",
-      "prompt": "Review panel this React component — I have voltagent-lang installed but not voltagent-qa-sec",
+      "prompt": "Review panel this React component \u2014 I have voltagent-lang installed but not voltagent-qa-sec",
       "category": "v29_partial_install",
       "expected_behavior": "Use voltagent-lang:react-specialist for signal-detected reviewer, suggest installing voltagent-qa-sec for core personas, graceful fallback for unavailable agents",
       "assertions": [
@@ -843,7 +843,7 @@
       "id": "ec-v29-3",
       "prompt": "Do a review panel with VoltAgent agents on this Go microservice that uses gRPC and PostgreSQL",
       "category": "v29_multi_signal",
-      "expected_behavior": "Maps multiple signals: Go → voltagent-lang:golang-pro, PostgreSQL → voltagent-data-ai:postgres-pro, microservices → voltagent-core-dev:microservices-architect",
+      "expected_behavior": "Maps multiple signals: Go \u2192 voltagent-lang:golang-pro, PostgreSQL \u2192 voltagent-data-ai:postgres-pro, microservices \u2192 voltagent-core-dev:microservices-architect",
       "assertions": [
         {
           "type": "pattern",

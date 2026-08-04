@@ -2,6 +2,55 @@
 
 All notable changes to Agent Review Panel.
 
+## [3.8.1] — 2026-08-04 — Trigger recovery: the frontmatter description was over the listing cap
+
+**25 of the skill's 51 trigger phrases could not fire.** Claude Code caps each skill's listing entry at
+`skillListingMaxDescChars` (default 1536) and truncates the overflow — it keeps `full[:1535]` and appends an
+ellipsis, with no intelligence about sentence or phrase boundaries. The description had grown to **2,703
+chars**, so everything from *"multi-run union mode"* onward was invisible to the model. Nothing warned: the
+skill still listed, still ran when named, still passed every test.
+
+Casualties (all documented in SKILL.md, none reachable):
+
+| Mode | Triggers lost |
+|---|---|
+| **budget** | *all 11* — `"budget mode"`, `"budget review"`, `"budget panel"`, `"cheap review"`, `"economy review"`, `"low-cost panel"`, `"affordable review"`, `"token-efficient review"`, `"frugal review"`, `"lite panel"`, + the cost-constraint phrasings |
+| **multi-run union** | `"multi-run review"`, `"run twice"`, `"run 3 times"`, `"run N times and merge"`, `"maximum coverage review"` |
+| **data-flow trace tiers** | `"exhaustive review"`, `"trace everything"`, `"catch all bugs"` |
+
+**How it happened** (reconstructed from git):
+
+| Commit | Description | Status |
+|---|---:|---|
+| `b97db47` — schliff quality pass (75→86) | 1,501 | ok, 35 chars under the cap |
+| `7464383` — v2.14 Data Flow Trace + Multi-Run Union | 2,004 | **cap breached** |
+| `c385cee` — v3.7.0 budget mode | 2,326 | already invisible on arrival |
+| `92f3ba3` — v3.7.1 *"broaden budget-mode triggers"* | 2,703 | every added trigger landed past the cut |
+
+The irony is exact: **v3.7.1 existed solely to make budget mode more discoverable**, and every phrase it added
+was born dead. The v2.14 breach is the root cause; the two releases after it were building on top of a cliff.
+
+**Fixed:**
+
+- Description rewritten to **1,505 chars** (listing entry 1,527 — 9 under the cap) with **zero** trigger
+  phrases past the cut. Synonym runs are compressed rather than deleted (the model generalizes from
+  `"cheap review"` to `"frugal review"`; it cannot generalize from a phrase it never sees), and the
+  natural-language triggers, the NOT-for list, and every mode name are preserved.
+- Measured against the eval suite's 39 positive prompts (word-overlap coverage vs. what the model *actually
+  saw* before): **13 better, 25 unchanged, 1 marginally lower**; mean coverage **49.5% → 56.9%**, and
+  positive-vs-negative separation **+26.0 → +32.0 pts**, so precision against the 23 negative prompts held.
+- **`scripts/check_skill_descriptions.py`** (vendored from
+  [context-police](https://github.com/wan-huiyan/context-police)) + **`tests/description-cap.test.mjs`** now
+  gate this in CI, including an assertion that no quoted trigger phrase sits past the truncation point.
+  Verified to fail on the shipped v3.8.0 description and pass on this one.
+
+No protocol, persona, or output changes — this is purely the frontmatter description plus its CI gate.
+
+> **Note on body-size linters:** `schliff score` measures SKILL.md *body* size, which lazy-loads only when the
+> skill fires. The description is resident every turn and is a different budget entirely. Commit `b97db47`
+> used schliff and landed at 1,501 chars; the very next feature commit blew past the cap and schliff never
+> complained, because it does not measure descriptions. Run both checks.
+
 ## [3.8.0] — 2026-07-16 — Orchestrator Efficiency Discipline (turn diet by default, all modes)
 
 Promotes the quality-free portion of budget mode's turn diet to a **default for every mode** — full panel, deep, multi-run, assessment, and budget alike. The measured cost driver ($162 audit: orchestrator main loop = 69%, reviewer fan-out = 7%) is orchestration overhead, and none of these rules removes a review, debate round, or verification pass:
