@@ -2,6 +2,41 @@
 
 All notable changes to Agent Review Panel.
 
+## [3.8.2] — 2026-08-05 — Accuracy: the v3.8.1 coverage table did not reproduce
+
+The v3.8.1 entry cited coverage figures with no command and no named harness. They came from an
+uncommitted one-off and do not reproduce against `scripts/score_trigger_coverage.py`, which now
+ships in this repo.
+
+| metric | v3.8.1 claimed | committed harness |
+|---|---|---|
+| per-prompt | 13 better / 25 unchanged / 1 marginally lower | **12 better / 27 same / 0 worse** |
+| positive mean coverage | 49.5% → 56.9% | **0.4950 → 0.5673** |
+| separation | +26.0 → +32.0 pts | **+0.2605 → +0.3183** |
+| negative mean coverage | not stated | 0.2345 → 0.2490 |
+
+The direction and magnitude survive; the decimals and the per-prompt split did not, and the
+"1 marginally lower" row does not exist. Both the v3.8.1 CHANGELOG bullet and the ROADMAP row are
+corrected in place with an erratum rather than silently overwritten. Refs in the reproduce command
+are pinned to commits, because `main` is now the post-trim state and `--old main:` prints a table
+of zero deltas.
+
+Also in this release:
+
+- **`tests/golden/sample-report-budget-mode.golden.json` is now committed.** The fixture
+  `sample-report-budget-mode.md` was tracked but its golden snapshot was not, so
+  `tests/golden-file.test.mjs` took its `golden file missing` branch on every fresh clone — which
+  writes the file and then `assert.ok(true)`. That fixture has never actually been guarded.
+  Verified by negative control: with the snapshot committed, renaming a section heading in the
+  fixture turns the suite red (495/499); before, the same edit was 499/499 green.
+- **`scripts/check_skill_descriptions.py` re-vendored** from `context-police@eedad0f` (version
+  2.2.1). Its `find_wrap_corruption()` no longer reports a bogus `BROKEN BY LINE-WRAP` on skills
+  written `description: >-` (11 → 7 hits across `~/.claude/plugins/cache`; all four dropped are
+  false positives). The cap arithmetic is unchanged from v2.2.0, so no char figure in this
+  changelog moves.
+
+No protocol, persona, or output changes. Test suite 499/499.
+
 ## [3.8.1] — 2026-08-04 — Trigger recovery: the frontmatter description was over the listing cap
 
 **25 of the skill's 51 trigger phrases could not fire.** Claude Code caps each skill's listing entry at
@@ -37,8 +72,24 @@ was born dead. The v2.14 breach is the root cause; the two releases after it wer
   `"cheap review"` to `"frugal review"`; it cannot generalize from a phrase it never sees), and the
   natural-language triggers, the NOT-for list, and every mode name are preserved.
 - Measured against the eval suite's 39 positive prompts (word-overlap coverage vs. what the model *actually
-  saw* before): **13 better, 25 unchanged, 1 marginally lower**; mean coverage **49.5% → 56.9%**, and
-  positive-vs-negative separation **+26.0 → +32.0 pts**, so precision against the 23 negative prompts held.
+  saw* before): **12 better, 27 unchanged, 0 worse**; mean coverage **0.4950 → 0.5673**, and
+  positive-vs-negative separation **+0.2605 → +0.3183**, so precision against the 23 negative prompts held
+  (negative mean 0.2345 → 0.2490). Reproduce:
+
+  ```
+  python3 scripts/score_trigger_coverage.py \
+      --old  616fb54~1:skills/agent-review-panel/SKILL.md \
+      --new  616fb54:skills/agent-review-panel/SKILL.md \
+      --eval skills/agent-review-panel/eval-suite.json
+  ```
+
+  > **Corrected 2026-08-05.** This bullet originally read "13 better, 25 unchanged, 1 marginally
+  > lower; mean coverage 49.5% → 56.9%, separation +26.0 → +32.0 pts", with no command and no
+  > named harness. Those figures came from an uncommitted one-off and do not reproduce: the
+  > committed `scripts/score_trigger_coverage.py` reports **12 / 27 / 0**, and in particular the
+  > "1 marginally lower" row does not exist. The direction and magnitude survive; the decimals and
+  > the per-prompt split did not. Refs are pinned to commits rather than `main`, because `main`
+  > now *is* the post-trim state and `--old main:` would print a table of zero deltas.
 - **`scripts/check_skill_descriptions.py`** (vendored from
   [context-police](https://github.com/wan-huiyan/context-police)) + **`tests/description-cap.test.mjs`** now
   gate this in CI, including an assertion that no quoted trigger phrase sits past the truncation point.
