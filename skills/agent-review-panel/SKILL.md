@@ -1,46 +1,25 @@
 ---
 name: agent-review-panel
 description: >
-  Orchestrate a multi-agent adversarial review panel where several Claude Code
-  subagents with different perspectives independently review a piece of work,
-  debate with each other, reach (or fail to reach) consensus, then a supreme
-  judge renders the final verdict. Use this skill whenever the user asks for a
-  "review panel", "multi-agent review", "adversarial review", "have agents
-  debate this", "review with multiple perspectives", "panel review", "get
-  different opinions on this code/plan/doc", or invokes /agent-review-panel.
-  Also trigger when a user says things like "I want thorough feedback from
-  different angles", "stress-test this design", "red team this", "get a second
-  (third, fourth) opinion", "fresh eyes on this", "multiple reviewers",
-  "devil's advocate perspective", "every angle covered", "I want agents to
-  argue pros and cons", "independently evaluate", "critical look from security
-  and performance angles", "high-stakes — cover every angle", or "debate the
-  pros and cons". This skill is specifically about launching multiple reviewer
-  agents with distinct personas who discuss and debate — NOT for single-reviewer
-  code review, quick sanity checks, bug fixes, deployment tasks, addressing
-  existing PR comments, skill improvement, peer review, code explanation, or
-  writing tests. Supports "deep research mode" when user says "deep review",
-  "thorough review", "research review", or passes "deep" to
-  /agent-review-panel — adds web research for domain best practices before
-  launching reviewers. Supports "multi-run union mode" when user says
-  "multi-run review", "run N times and merge", "run twice", "run 3 times",
-  or "maximum coverage review" — repeats the panel with rotated persona sets
-  and merges results with stability scoring. Supports "data flow trace
-  tiers" (Standard/Thorough/Exhaustive) when user says "thorough review",
-  "exhaustive review", "trace everything", or "catch all bugs" — dedicates
-  a pre-review phase to tracing data through critical paths and flagging
-  composition/seam bugs. Supports "budget mode" when user says "budget
-  review", "budget mode", "budget panel", "cheap review", "economy review",
-  "low-cost panel", "affordable review", "token-efficient review", "frugal
-  review", "lite panel", or passes "budget" to /agent-review-panel — and
-  ALSO when any panel request carries a cost constraint, e.g. "review panel
-  but keep the cost down", "multi-agent review without burning tokens",
-  "panel review but don't spend too much", "review this cheaply with
-  multiple perspectives", "watch the token spend". Budget mode is the same
-  adversarial protocol at a reduced-cost profile (3 sonnet reviewers, single
-  debate round, consolidated verification, opus judge, markdown-only output).
+  Orchestrate a multi-agent adversarial review panel: subagents with different perspectives
+  independently review, debate and discuss, reach or fail consensus, then a supreme judge renders the
+  verdict. Trigger on "review panel", "multi-agent review", "adversarial review", "panel review",
+  "have agents debate this", "get different opinions on this code/plan/doc", "multiple reviewers",
+  "independently evaluate", "thorough feedback from different angles", "stress-test this design", "red
+  team this", "devil's advocate perspective", "fresh eyes on this", "a second/third opinion", "argue
+  pros and cons", "every angle covered", "critical look from security and performance angles",
+  "high-stakes", or /agent-review-panel. NOT for single-reviewer review, quick sanity checks, bug
+  fixes, deployment, existing PR comments, skill improvement, peer review, code explanation, or
+  writing tests. Modes, also /agent-review-panel arguments: deep research ("deep review", "thorough
+  review", "research review") researches domain best practices; multi-run union ("multi-run review",
+  "run twice", "run 3 times", "maximum coverage") repeats with rotated personas, merged by stability;
+  data-flow trace tiers ("exhaustive review", "trace everything", "catch all bugs") add a pre-review
+  data-path trace; budget ("budget mode", "budget review", "cheap review", "low-cost panel",
+  "token-efficient review", "keep the cost down", "without burning tokens") is the same protocol at
+  reduced cost. Uses specialist domain-expert reviewers.
 ---
 
-# Agent Review Panel v3.8.0
+# Agent Review Panel v3.8.1
 
 A multi-agent adversarial review system based on nine research foundations:
 ChatEval (ICLR 2024), AutoGen, Du et al. (ICML 2024), MachineSoM (ACL 2024),
@@ -1682,7 +1661,7 @@ Tell user:
 - Counts: consensus points, disagreements, action items, verification verdicts
 - Top P0 action item (if any)
 - Note: HTML report requires internet connection for Tailwind CSS, Chart.js, and Prism.js CDNs
-- HTML footer should read "Agent Review Panel v3.8.0" (MUST match the full semver from `plugin.json` — update this line whenever the version is bumped)
+- HTML footer should read "Agent Review Panel v3.8.1" (MUST match the full semver from `plugin.json` — update this line whenever the version is bumped)
 
 ---
 
