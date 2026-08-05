@@ -1,8 +1,30 @@
 #!/usr/bin/env python3
 """Gate SKILL.md frontmatter descriptions against Claude Code's skill-listing cap.
 
-    Vendored from wan-huiyan/context-police (scripts/check_skill_descriptions.py).
-    Keep in sync with upstream rather than editing locally.
+--8<-- vendoring note (local addition; stripped before the parity hash) --8<--
+Vendored from wan-huiyan/context-police, scripts/check_skill_descriptions.py.
+Do not edit locally -- fix it upstream and re-vendor, so every repo's gate agrees.
+
+PROVENANCE, exactly:
+    upstream commit  eedad0f  (on context-police main)
+    upstream version 2.2.1    -- a plugin.json/marketplace version, NOT a git tag.
+                                 Upstream's newest tag is v2.0.0; there is no v2.2.x tag.
+    upstream sha256  f210ccd2feb4a3f76289e078bdc5621919ca657026f3d86cc5d7cb1201985fb0
+    re-vendored      2026-08-05
+
+    This file is byte-identical to that upstream revision apart from this note.
+
+WHAT CHANGED SINCE THE PREVIOUSLY VENDORED v2.2.0 (commit 4dc1a62):
+    Only find_wrap_corruption(). It now matches the WHOLE block header including a
+    chomping or explicit-indent indicator (`>-`, `|+`, `|2`), and stops at the end of
+    the block body instead of running on into the next frontmatter key. Without that,
+    a description written `description: >-` leaves the `-` behind as a phantom
+    one-character line, the hyphen test fires on it, and the gate reports a bogus
+    BROKEN BY LINE-WRAP on a clean skill.
+
+    The cap arithmetic did NOT change. `desc_chars - (MAX_DESC_CHARS - 1)` was already
+    in v2.2.0, so re-vendoring moves no "N chars discarded" figure.
+--8<-- end vendoring note --8<--
 
 WHY THIS EXISTS
     Claude Code injects every model-invocable skill's name + description into
@@ -215,10 +237,21 @@ def find_wrap_corruption(fm: str) -> list[str]:
     length check can see it because the char count is unchanged.
     """
     hits = []
-    m = re.search(r"^(description|whenToUse|when_to_use):\s*([|>])", fm, re.M)
+    # Match the WHOLE block header, including any chomping (`>-`, `|+`) or explicit-indent
+    # (`|2`) indicator. Stopping the match at the `|`/`>` leaves the chomping character
+    # behind as a phantom one-character line `-`, which then trips the hyphen test below
+    # and reports a bogus hit on every skill written with the very common `description: >-`.
+    m = re.search(r"^(description|whenToUse|when_to_use):[ \t]*[|>][-+]?\d*[ \t]*$", fm, re.M)
     if not m:
         return hits
-    lines = [l for l in fm[m.end():].splitlines() if l.strip()]
+    # Stay inside the block body: stop at the first non-indented line, which is the next key.
+    body = []
+    for line in fm[m.end():].splitlines():
+        if line.strip() and not line[:1].isspace():
+            break
+        if line.strip():
+            body.append(line)
+    lines = body
     for i, line in enumerate(lines[:-1]):
         stripped = line.strip()
         if not stripped.endswith("-"):
