@@ -6,24 +6,40 @@ Vendored from wan-huiyan/context-police, scripts/check_skill_descriptions.py.
 Do not edit locally -- fix it upstream and re-vendor, so every repo's gate agrees.
 
 PROVENANCE, exactly:
-    upstream commit  eedad0f  (on context-police main)
-    upstream version 2.2.1    -- a plugin.json/marketplace version, NOT a git tag.
-                                 Upstream's newest tag is v2.0.0; there is no v2.2.x tag.
-    upstream sha256  f210ccd2feb4a3f76289e078bdc5621919ca657026f3d86cc5d7cb1201985fb0
+    upstream commit  c413fd4  (on context-police main)
+    upstream version 2.3.0    -- a plugin.json/marketplace version, NOT a git tag.
+                                 Upstream's newest tag is v2.0.0; there is no v2.x.y tag
+                                 for any of 2.2.0 / 2.2.1 / 2.2.2 / 2.3.0.
+    upstream sha256  f72dcfabcca18c6936153c6d5c117f0f982ae649ea468b11a52d2b57e99d079c
     re-vendored      2026-08-05
 
-    This file is byte-identical to that upstream revision apart from this note.
+    This file is byte-identical to that upstream revision apart from this note, which
+    sits between the --8<-- markers so a parity test can strip it and hash the rest.
+    Pin that digest. Do NOT guard this file with a feature-presence grep: a test named
+    "not a stale fork" that asserted find_wrap_corruption/compare_descriptions/
+    `MAX_DESC_CHARS - 1)` were present stayed GREEN on a copy that genuinely was one,
+    because the drift was inside a function whose name never changed.
 
-WHAT CHANGED SINCE THE PREVIOUSLY VENDORED v2.2.0 (commit 4dc1a62):
-    Only find_wrap_corruption(). It now matches the WHOLE block header including a
-    chomping or explicit-indent indicator (`>-`, `|+`, `|2`), and stops at the end of
-    the block body instead of running on into the next frontmatter key. Without that,
-    a description written `description: >-` leaves the `-` behind as a phantom
-    one-character line, the hyphen test fires on it, and the gate reports a bogus
-    BROKEN BY LINE-WRAP on a clean skill.
+WHAT CHANGED IN v2.3.0 (from v2.2.1, commit eedad0f):
+    1. Wrap corruption is now scored over EVERY skill, disabled included, and fails the
+       build. It was scoped to the model-invocable subset, so a hyphen break inside a
+       `disable-model-invocation: true` skill was neither printed nor failed. In a repo
+       where 74 of 94 skills are disabled that made CI blind to most of it -- which is
+       why four real corruptions there had to be found via --json. Disabled hits print
+       in their own group.
 
-    The cap arithmetic did NOT change. `desc_chars - (MAX_DESC_CHARS - 1)` was already
-    in v2.2.0, so re-vendoring moves no "N chars discarded" figure.
+       IF THIS TURNS YOUR CI RED, the corruption was always there and was being hidden.
+       Fix the description; do not re-scope the check.
+
+    2. New NO HEADROOM tier (MIN_HEADROOM = 40), separate from APPROACHING CAP. Exit
+       code unchanged -- under the cap is not a failure, however tight.
+
+    3. --json gains min_headroom, counts.critical_headroom, and per-skill
+       critical / headroom. counts.wrap_corruption now spans all skills, matching the
+       text report.
+
+    The cap arithmetic has not changed since v2.2.0: `desc_chars - (MAX_DESC_CHARS - 1)`.
+    No "N chars discarded" figure moves.
 --8<-- end vendoring note --8<--
 
 WHY THIS EXISTS
@@ -107,6 +123,12 @@ BARE_OVERHEAD = 2
 # gets flagged while it is still cheap to fix.
 WARN_FRACTION = 0.75
 
+# The floor implied by the trimming procedure's "leave 30-50 chars of headroom". A
+# description under this is reported separately from the broad WARN_FRACTION bucket:
+# 0.75 of 1536 is 1,152, so that bucket spans everything from 340 chars of slack down
+# to 1, and the genuinely urgent cases disappear into it.
+MIN_HEADROOM = 40
+
 
 @dataclass
 class Skill:
@@ -127,6 +149,22 @@ class Skill:
     def warn(self) -> bool:
         return (not self.disabled and not self.over
                 and self.desc_chars > MAX_DESC_CHARS * WARN_FRACTION)
+
+    @property
+    def headroom(self) -> int:
+        """Characters that can still be added before the description is truncated."""
+        return MAX_DESC_CHARS - self.desc_chars
+
+    @property
+    def critical(self) -> bool:
+        """Under the cap, but too close to survive the next edit.
+
+        WARN_FRACTION alone lumps a description with 3 chars of headroom in with one
+        that has 340 -- same colour, same bucket, no ordering. This repo's own skill sat
+        at cap-3 inside that bucket while publishing "leave 30-50 chars of headroom",
+        and nothing distinguished it. MIN_HEADROOM is the floor that rule implies.
+        """
+        return not self.disabled and not self.over and self.headroom < MIN_HEADROOM
 
     @property
     def truncated_chars(self) -> int:
@@ -457,14 +495,25 @@ def report(skills: list[Skill], context: int, use_color: bool,
                     print(f"    {'':>6}         {paint('· invisible: ' + t, yellow)}")
         print()
 
-    corrupt = [s for s in live if s.wrap_corruption]
+    # Wrap corruption is scored over EVERY skill, disabled included. The cap check
+    # legitimately skips disabled skills -- they consume no listing budget. Corruption is
+    # different: it is a text-integrity defect, the description is still read when the
+    # skill is invoked by name, and it ships corrupt the moment the skill is re-enabled.
+    # Scoping this to `live` is why four real corruptions in agent-traffic-control sat
+    # unseen -- all four were in manual-only skills, so CI never looked at them.
+    corrupt = [s for s in skills if s.wrap_corruption]
     if corrupt:
         n = sum(len(s.wrap_corruption) for s in corrupt)
         print(paint(f"  BROKEN BY LINE-WRAP ({n}) — a folded/block scalar joins lines with a "
                     f"SPACE, so these tokens are corrupt in the injected text", red))
-        for s in corrupt:
-            for h in s.wrap_corruption:
-                print(f"    {s.name}:  {paint(h, yellow)}")
+        for label, group in (("model-invocable", [s for s in corrupt if not s.disabled]),
+                             ("disabled", [s for s in corrupt if s.disabled])):
+            if not group:
+                continue
+            print(f"    {paint(label + ':', dim)}")
+            for s in group:
+                for h in s.wrap_corruption:
+                    print(f"      {s.name}:  {paint(h, yellow)}")
         cause = ("Cause: textwrap.wrap() breaks on hyphens by default — "
                  "pass break_on_hyphens=False.")
         print("  " + paint(cause, dim))
@@ -479,11 +528,20 @@ def report(skills: list[Skill], context: int, use_color: bool,
             print(f"  {paint('Re-run with --triggers to list them.', dim)}")
         print()
 
-    if warn:
-        print(paint(f"  APPROACHING CAP ({len(warn)}) — over "
+    critical = sorted((s for s in warn if s.critical), key=lambda s: s.headroom)
+    if critical:
+        print(paint(f"  NO HEADROOM ({len(critical)}) — under {MIN_HEADROOM} chars to spare; "
+                    f"the next edit truncates trigger text", red))
+        for s in critical:
+            print(f"    {s.headroom:>4} left  ({s.desc_chars:>5,} chars)  {s.name}")
+        print()
+
+    rest = [s for s in warn if not s.critical]
+    if rest:
+        print(paint(f"  APPROACHING CAP ({len(rest)}) — over "
                     f"{int(WARN_FRACTION * 100)}% of the limit", yellow))
-        for s in warn:
-            print(f"    {s.desc_chars:>6,} chars  {s.name}")
+        for s in rest:
+            print(f"    {s.desc_chars:>6,} chars  {s.name}  ({s.headroom} left)")
         print()
 
     total = sum(s.entry_chars for s in live) + max(0, len(live) - 1)
@@ -655,9 +713,15 @@ def main() -> int:
             "counts": {"total": len(skills), "model_invocable": len(live),
                        "disabled": len(skills) - len(live),
                        "over_cap": sum(1 for s in live if s.over),
-                       "wrap_corruption": sum(len(s.wrap_corruption) for s in live),
+                       # Counted over ALL skills, disabled included -- corruption is a
+                       # text-integrity defect, not a listing-budget one, and matching
+                       # the text report's exit code keeps the two forms consistent.
+                       "wrap_corruption": sum(len(s.wrap_corruption) for s in skills),
+                       "critical_headroom": sum(1 for s in live if s.critical),
                        "lost_triggers": sum(len(s.lost_triggers) for s in live)},
-            "skills": [asdict(s) | {"over": s.over, "warn": s.warn}
+            "min_headroom": MIN_HEADROOM,
+            "skills": [asdict(s) | {"over": s.over, "warn": s.warn,
+                                    "critical": s.critical, "headroom": s.headroom}
                        for s in sorted(skills, key=lambda s: -s.desc_chars)],
         }, indent=2))
         return 1 if any(s.over or s.wrap_corruption for s in skills) else 0

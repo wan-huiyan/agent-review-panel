@@ -2,6 +2,25 @@
 
 All notable changes to Agent Review Panel.
 
+## [3.8.3] — 2026-08-05 — Vendored gate re-pinned at context-police v2.3.0
+
+`scripts/check_skill_descriptions.py` re-vendored from `context-police@c413fd4`, which closes two
+gaps in the gate's own guarantees:
+
+- **Wrap corruption is now scored over every skill, disabled included, and fails the build.** It
+  was scoped to the model-invocable subset, so a hyphen break inside a
+  `disable-model-invocation: true` skill was neither printed nor failed. This repo has no disabled
+  skills, so nothing changes here — but the check is now honest about what it covers.
+- **New `NO HEADROOM` tier** (under 40 chars to spare), separate from `APPROACHING CAP`, which
+  spanned everything above 1,152 chars in one undifferentiated bucket. This skill's description
+  sits at **1,505 chars — 31 to spare**, so it lands in that tier. Under the cap, not failing, but
+  one edit from truncating trigger text: worth a trim in a future release.
+
+`--json` gains `min_headroom`, `counts.critical_headroom` and per-skill `critical`/`headroom`.
+Cap arithmetic unchanged, so no figure in this changelog moves.
+
+No protocol, persona, or output changes. Test suite 499/499.
+
 ## [3.8.2] — 2026-08-05 — Accuracy: the v3.8.1 coverage table did not reproduce
 
 The v3.8.1 entry cited coverage figures with no command and no named harness. They came from an
