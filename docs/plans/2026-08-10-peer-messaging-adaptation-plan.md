@@ -364,7 +364,7 @@ describe("v3.9.0 blocked reviewer is not a clean vote", () => {
     );
     assert.match(
       phase3,
-      /[Dd]o not return findings as though you had reviewed/,
+      /do NOT return findings as though you had reviewed/i,
       "a blocked reviewer must not fabricate a clean review"
     );
   });
@@ -377,7 +377,7 @@ describe("v3.9.0 blocked reviewer is not a clean vote", () => {
     );
     assert.match(
       skillMd,
-      /re-dispatch once with explicit materialized paths/,
+      /re-dispatch once with explicit\s+materialized paths/,
       "the not-clean rule must prescribe one re-dispatch with real paths"
     );
   });
