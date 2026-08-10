@@ -19,7 +19,7 @@ description: >
   reduced cost. Uses specialist domain-expert reviewers.
 ---
 
-# Agent Review Panel v3.8.3
+# Agent Review Panel v3.9.0
 
 A multi-agent adversarial review system based on nine research foundations:
 ChatEval (ICLR 2024), AutoGen, Du et al. (ICML 2024), MachineSoM (ACL 2024),
@@ -1674,7 +1674,7 @@ Tell user:
 - Counts: consensus points, disagreements, action items, verification verdicts
 - Top P0 action item (if any)
 - Note: HTML report requires internet connection for Tailwind CSS, Chart.js, and Prism.js CDNs
-- HTML footer should read "Agent Review Panel v3.8.3" (MUST match the full semver from `plugin.json` — update this line whenever the version is bumped)
+- HTML footer should read "Agent Review Panel v3.9.0" (MUST match the full semver from `plugin.json` — update this line whenever the version is bumped)
 
 ---
 
