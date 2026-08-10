@@ -1389,4 +1389,166 @@ describe("v3.9.0 blocked reviewer is not a clean vote", () => {
       "Edge Cases must cover the blocked-reviewer case"
     );
   });
+
+  it("the Edge Cases entry points at Phase 3 instead of restating the rule", () => {
+    const idx = skillMd.indexOf("- **Reviewer cannot see the work under review");
+    assert.ok(idx >= 0, "the blocked-reviewer edge case must exist");
+    const entry = skillMd.slice(idx, skillMd.indexOf("\n", idx));
+    assert.match(
+      entry,
+      /\*\*Blocked reviewers\*\* in Phase 3/,
+      "the edge case must defer to the single Phase 3 statement of the rule"
+    );
+    assert.ok(
+      !/COMPRESSED RUN/.test(entry),
+      "the edge case must not re-state the Phase 3 handling (duplication)"
+    );
+  });
+});
+
+describe("v3.9.0 a blocked reviewer stops voting, and BLOCKED has two anchors", () => {
+  it("Phase 3 drops a still-blocked reviewer from the persistent-reviewer set", () => {
+    const idx = skillMd.indexOf("**Blocked reviewers (v3.9.0).**");
+    assert.ok(idx >= 0, "the Phase 3 blocked-reviewers paragraph must exist");
+    const para = skillMd.slice(idx, idx + 1200);
+    assert.match(
+      para,
+      /drop it from the\s+persistent-reviewer set/,
+      "a still-blocked reviewer must leave the persistent-reviewer set"
+    );
+    assert.match(
+      para,
+      /persona → agentId map/,
+      "dropping it must be concrete: remove it from the persona → agentId map"
+    );
+    assert.match(
+      para,
+      /no Phase 4, 5 or 7 prompt/,
+      "a dropped reviewer must receive no further phase prompts, so it never votes"
+    );
+  });
+
+  it("Phase 13.5 re-dispatch is BLOCKED-aware and stays unrecoverable on success", () => {
+    const start = skillMd.indexOf("**On gate failure for any file:**");
+    assert.ok(start >= 0, "the Phase 13.5 gate-failure list must exist");
+    const section = skillMd.slice(start, start + 1600);
+    assert.match(
+      section,
+      /`reviewer_<slug>_BLOCKED\.md` exists for that persona/,
+      "the re-dispatch step must branch on an existing BLOCKED file"
+    );
+    assert.match(
+      section,
+      /re-dispatch MUST\s+supply explicit materialized paths/,
+      "a BLOCKED re-dispatch must carry explicit materialized paths"
+    );
+    assert.match(
+      section,
+      /unrecoverable\s+for banner purposes \*\*even if the retry succeeds\*\*/,
+      "a late successful retry must not buy a green light"
+    );
+    assert.match(
+      section,
+      /green light\) — unless step 2 found a\s+`reviewer_\*_BLOCKED\.md`/,
+      "a passing gate must still force the COMPRESSED header when a BLOCKED file was found"
+    );
+  });
+
+  it("Phase 15.1 second-anchors BLOCKED by globbing the state directory", () => {
+    const start = skillMd.indexOf("**No-debate warning (v3.5.0)");
+    assert.ok(start >= 0, "the Phase 15.1 no-debate check must exist");
+    const section = skillMd.slice(start, start + 1400);
+    assert.match(
+      section,
+      /in the same pass, whether any `reviewer_\*_BLOCKED\.md` exists there/,
+      "Phase 15.1 must glob for BLOCKED files alongside the round-1 files"
+    );
+    assert.match(
+      section,
+      /BLOCKED file forces the COMPRESSED RUN block/,
+      "a BLOCKED file found at Phase 15.1 must emit the COMPRESSED RUN block"
+    );
+    assert.match(
+      section,
+      /never reaches the Phase 13\.5 gate/,
+      "the second anchor must state why Phase 13.5 alone is not enough"
+    );
+  });
+
+  it("a failed send is fresh-spawned, never re-sent or silently dropped", () => {
+    const idx = skillMd.indexOf("- **Check the result.**");
+    assert.ok(idx >= 0, "the check-the-result bullet must exist");
+    const bullet = skillMd.slice(idx, idx + 700);
+    assert.match(
+      bullet,
+      /fresh spawn, not a second send/,
+      "the retry for an unreachable agent must be a fresh spawn, not another send"
+    );
+    assert.match(
+      bullet,
+      /"minimum 2 reviewers" is not the fallback/,
+      "the retry-once rule's drop-to-2-reviewers tail must be excluded here"
+    );
+  });
+
+  it("budget mode is scoped to both Phase 5 and Phase 7 persistent sends", () => {
+    assert.match(
+      skillMd,
+      /\*\*Applies to budget mode too\*\* — its Phase 5 and Phase 7 drive the same/,
+      "budget mode runs a debate round through the same agents, not just Phase 7"
+    );
+  });
+});
+
+describe("v3.9.0 Phase 3 template orders BLOCKED before the write instruction", () => {
+  const templates = readFileSync(
+    resolve(ROOT, "skills/agent-review-panel/references/prompt-templates.md"),
+    "utf-8"
+  );
+  const phase3 = templates.slice(
+    templates.indexOf("## Phase 3"),
+    templates.indexOf("## Phase 4")
+  );
+
+  it("the BLOCKED clause is the first branch of the Output protocol", () => {
+    const protocol = phase3.indexOf("**Output protocol (v3.1.0+):**");
+    const blocked = phase3.indexOf("_BLOCKED.md");
+    const write = phase3.indexOf("_phase_3.md`");
+    assert.ok(protocol >= 0, "Phase 3 must carry the output protocol");
+    assert.ok(
+      protocol < blocked && blocked < write,
+      "BLOCKED must sit inside the Output protocol and BEFORE the write-your-review instruction"
+    );
+    assert.match(
+      phase3,
+      /take the FIRST branch that applies/,
+      "the protocol must be explicitly first-match, not a list of unconditional steps"
+    );
+    assert.match(
+      phase3,
+      /\*\*Otherwise,\*\* write your full review/,
+      "the normal write must be conditional on not being blocked"
+    );
+  });
+
+  it("BLOCKED triggers on unreadable work, not on a missing Bash tool alone", () => {
+    assert.match(
+      phase3,
+      /work content above was not\s+provided to you and you cannot fetch it/,
+      "the operative trigger must be that the work is unreachable"
+    );
+    assert.match(
+      phase3,
+      /\*verification\s+commands\* is NOT blocked/,
+      "losing only the verification commands must not qualify as BLOCKED"
+    );
+  });
+
+  it("a blocked reviewer returns the BLOCKED file's path", () => {
+    assert.match(
+      phase3,
+      /The absolute path you wrote to — the BLOCKED file if you wrote one/,
+      "the return must name the BLOCKED path when that branch was taken"
+    );
+  });
 });
