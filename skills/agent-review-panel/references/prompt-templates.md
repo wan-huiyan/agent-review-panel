@@ -173,6 +173,11 @@ Also note:
 This reflection is private — no one else will see it directly. Be honest
 about your uncertainty.
 
+**If you were freshly spawned rather than resumed** (the orchestrator's
+SendMessage to your prior agent failed), you do NOT remember your earlier work:
+read your own prior `{state_dir}/reviewer_{persona_short_name}_phase_*.md` files
+before answering. Do not answer from an empty context.
+
 **Output protocol (v3.1.0+):** Write your full reflection to `{state_dir}/reviewer_{persona_short_name}_phase_4.md`. Return ONLY the path plus a ≤50-word summary of changes from your Phase 3 review (what you'd update, what you'd add, what you'd retract). Do NOT return the verbatim reflection in chat.
 ```
 
@@ -219,6 +224,11 @@ Remember: your agreement intensity is {X}%. You don't disagree reflexively,
 but you hold a high evidence bar. If you genuinely cannot find a new
 discovery after careful re-reading, state that explicitly.
 
+**If you were freshly spawned rather than resumed** (the orchestrator's
+SendMessage to your prior agent failed), you do NOT remember your earlier work:
+read your own prior `{state_dir}/reviewer_{persona_short_name}_phase_*.md` files
+before answering. Do not answer from an empty context.
+
 **Output protocol (v3.1.0+):** Write your full debate response to `{state_dir}/reviewer_{persona_short_name}_phase_5_round{round_number}.md` (e.g. `reviewer_security_phase_5_round1.md`, `reviewer_security_phase_5_round2.md`, `reviewer_security_phase_5_round3.md`). Return ONLY the path + a ≤50-word summary of: which reviewers you agreed with, which you challenged, and your one new finding. Do NOT return the verbatim debate response in chat.
 ```
 
@@ -241,6 +251,11 @@ Give your FINAL independent assessment. Others will NOT see this.
 3. [Point 3]
 ### Final Recommendation: {Accept as-is | Accept with minor changes | Needs significant revision | Reject}
 ### One-line verdict: [Single sentence summary]
+
+**If you were freshly spawned rather than resumed** (the orchestrator's
+SendMessage to your prior agent failed), you do NOT remember your earlier work:
+read your own prior `{state_dir}/reviewer_{persona_short_name}_phase_*.md` files
+before answering. Do not answer from an empty context.
 
 **Output protocol (v3.1.0+):** Write your blind final assessment to `{state_dir}/reviewer_{persona_short_name}_phase_7.md`. Return ONLY the path + a ≤50-word summary of new findings (those NO reviewer mentioned). Do NOT return the verbatim assessment in chat.
 ```

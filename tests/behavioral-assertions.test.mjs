@@ -1304,3 +1304,36 @@ describe("v3.9.0 reviewer addressing contract", () => {
     );
   });
 });
+
+describe("v3.9.0 fresh-spawn fallback reads prior state", () => {
+  const templates = readFileSync(
+    resolve(ROOT, "skills/agent-review-panel/references/prompt-templates.md"),
+    "utf-8"
+  );
+
+  const sections = [
+    ["Phase 4", "## Phase 4: Private Reflection Prompt", "## Phase 5"],
+    ["Phase 5", "## Phase 5: Debate Round Prompt", "## Phase 7"],
+    ["Phase 7", "## Phase 7: Blind Final Assessment Prompt", "## Phase 8"],
+  ];
+
+  for (const [label, startAnchor, endAnchor] of sections) {
+    it(`${label} template tells a freshly spawned reviewer to read its prior state`, () => {
+      const start = templates.indexOf(startAnchor);
+      assert.ok(start >= 0, `${startAnchor} must exist`);
+      const end = templates.indexOf(endAnchor, start);
+      assert.ok(end > start, `${endAnchor} must follow ${startAnchor}`);
+      const section = templates.slice(start, end);
+      assert.match(
+        section,
+        /freshly spawned rather than resumed/,
+        `${label} must handle the fresh-spawn fallback case`
+      );
+      assert.match(
+        section,
+        /reviewer_\{persona_short_name\}_phase_\*\.md/,
+        `${label} must name the prior state files to read`
+      );
+    });
+  }
+});
