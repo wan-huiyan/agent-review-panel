@@ -19,7 +19,7 @@ description: >
   reduced cost. Uses specialist domain-expert reviewers.
 ---
 
-# Agent Review Panel v3.9.0
+# Agent Review Panel v3.9.1
 
 A multi-agent adversarial review system based on nine research foundations:
 ChatEval (ICLR 2024), AutoGen, Du et al. (ICML 2024), MachineSoM (ACL 2024),
@@ -1181,7 +1181,7 @@ whole panel** (or `state/run_<N>/` in multi-run mode):
      is non-skippable per the protocol) and re-run this assertion.
   2. **If debate is genuinely unavailable for this execution shape** (e.g.,
      the run is executing as a parallel Workflow / ultracode fan-out with no
-     sequential cross-talk primitive — see *Debate inside a Workflow* below),
+     sequential cross-talk primitive — see *Debate-in-Workflow recipe* below),
      stamp the **`[NO-DEBATE]` banner** (Phase 15.1 / 15.3) and lower the
      verdict confidence (cap at Medium). The judge still rules, but the report
      announces that no adversarial cross-examination happened.
@@ -1368,6 +1368,20 @@ In a no-debate run:
   run can never report High confidence.
 - The "Debate Rounds + Summaries" collapsible in Detailed Reviews renders the
   placeholder "No debate rounds — Phase 5 did not run for this panel."
+
+**Chokepoint limit — a Workflow run reaches Phase 15.1 only if its script
+authors a report stage.** Phase 15.1 is terminal for *orchestrator-driven*
+runs: the orchestrator walks the phase list, so every such run passes through
+it. A Workflow / ultracode run has no orchestrator walking that list — its
+stages are whatever the script author wrote. A script that ends at `Judge`
+never executes Phase 15.1, so neither the NO-DEBATE check nor the COMPRESSED
+check ever fires, no matter how much the run skipped. This is a real hole in
+the chokepoint, and it cannot be closed by detection from inside the skill.
+The mitigation is authorial: the **Debate-in-Workflow recipe** below requires a
+terminal `Report` stage that IS Phase 15.1, and requires the COMPRESSED RUN
+banner inside it. A Workflow that returns findings without a Phase 15.1 report
+stage has not run this panel, and its output MUST NOT be presented as a panel
+report.
 
 **Banner stacking & the COMPRESSED overlap.** COMPRESSED (per-file loss) and
 NO-DEBATE (wholesale Phase-5 absence) are distinct signals and **stack**: when
@@ -1683,7 +1697,7 @@ Tell user:
 - Counts: consensus points, disagreements, action items, verification verdicts
 - Top P0 action item (if any)
 - Note: HTML report requires internet connection for Tailwind CSS, Chart.js, and Prism.js CDNs
-- HTML footer should read "Agent Review Panel v3.9.0" (MUST match the full semver from `plugin.json` — update this line whenever the version is bumped)
+- HTML footer should read "Agent Review Panel v3.9.1" (MUST match the full semver from `plugin.json` — update this line whenever the version is bumped)
 
 ---
 
@@ -1737,7 +1751,27 @@ under a Workflow, you must author debate as an explicit phase.
 Debate IS achievable inside a Workflow — it just isn't the default shape. The
 trick: a debate "round" is just re-spawning each reviewer agent **with its
 peers' prior-round findings injected** (it reads peer state files). Sequential
-cross-talk becomes a pipeline where stage N reads stage N−1's siblings:
+cross-talk becomes a pipeline where stage N reads stage N−1's siblings.
+
+**This recipe is a compressed run and MUST declare itself one.** It reproduces
+Phases 1, 3, 5, 8, 10, 11, 14 and 15.1 and skips everything else. Authoring a
+`Debate` phase makes the round-1 state files exist, which satisfies the
+NO-DEBATE check **and nothing else** — it buys nothing toward completeness,
+citation, or severity verification. A Workflow that authors `Debate` and stops
+there passes the debate detector while skipping every verification pass. That
+is exactly the silently-degraded run this skill forbids (same principle as
+Budget Mode: degraded rigor is chosen and loudly bannered, never silently
+applied). So the recipe has **five mandatory stages, not three**, plus a
+mandatory banner. Dropping stage 3 or stage 5 makes the run non-compliant.
+
+**Why stage 3 is not optional (measured, 2026-08-10).** A panel run authored
+from the earlier three-stage form of this recipe shipped two wrong findings: a
+reviewer cited a changelog entry to the wrong Claude Code version (Phase 10
+verifies citations against source), and a reviewer filed a P0 that a single
+read-only probe falsified (Phase 11 re-reads ground truth for every P0 and
+downgrades overstated ones). Both were caught by hand afterwards, not by the
+protocol. Stage 3 reuses budget mode's **consolidated verifier** (Phases 8 +
+10 + 11 in one agent, spec'd in Budget Mode below) — one `agent()` call.
 
 ```js
 // 1. Round 1 — independent reviews, in parallel (no cross-talk yet).
@@ -1754,16 +1788,46 @@ const round2 = await parallel(PERSONAS.map((p, i) => () =>
          Write to state/reviewer_${p.key}_phase_5_round2.md`,
         {phase: 'Debate', schema: REBUTTAL_SCHEMA})));
 
-// 3. Judge reconciles WITH the debate record (not alone).
-const ruling = await agent(`Adjudicate. Read the round-1 and round-2 state files;
-  rule on each disagreement citing how the debate moved (or didn't).`,
+// 3. MANDATORY — consolidated verification (Phases 8 + 10 + 11 in one agent).
+//    Omitting this stage is the silent degradation this recipe exists to prevent.
+const verified = await agent(`Consolidated verifier per Budget Mode. Read the round-1 and
+  round-2 state files, then: completeness sweep for risks no reviewer examined; check every
+  P0/P1 citation against the cited source (file, line, version, changelog entry) and label
+  what does not check out; re-read ground truth for every P0/P1 and downgrade any severity
+  the source does not support. Write state/phase_8_10_11_verification.md`,
+  {phase: 'Verify', schema: VERIFICATION_SCHEMA});
+
+// 4. Judge reconciles WITH the debate record AND the verifier (not alone).
+const ruling = await agent(`Adjudicate. Read the round-1, round-2 and
+  phase_8_10_11_verification state files; rule on each disagreement citing how the debate
+  moved (or didn't). Do NOT restore a severity the verifier downgraded, and do NOT accept a
+  finding whose citation the verifier could not confirm.`,
   {phase: 'Judge', schema: RULING_SCHEMA});
+
+// 5. MANDATORY — report stage. This stage IS Phase 15.1: it applies the Phase 15.1
+//    banner rules, including the COMPRESSED RUN block below. A Workflow with no report
+//    stage never reaches the Phase 15.1 chokepoint, so no banner check ever fires.
+const report = await agent(`Write review_panel_report.md per the skill's Phase 15.1 spec,
+  opening with the mandatory COMPRESSED RUN banner for debate-in-Workflow runs and
+  appending [COMPRESSED] to every action item's epistemic label.`, {phase: 'Report'});
 ```
 
-Authoring an explicit `Debate` phase (the audit's one debating run used
-`phases [Review, Debate, Audit+Verify, Judge]`) is what makes the round-1
-state files exist — which in turn satisfies the NO-DEBATE check. A Workflow
-that skips the `Debate` phase will (correctly) get the NO-DEBATE banner.
+**Mandatory banner.** Every run authored from this recipe MUST open its report
+with this block. The phases-skipped list is fixed because the recipe's shape is
+fixed — it is not recomputed per run:
+
+```markdown
+> ⚠️ **COMPRESSED RUN — Phases skipped: 2 (data flow trace), 4 (private reflection), 6 (round summarization), 7 (blind final), 9 (verification commands), 12 (tier assignment), 13 (targeted verification), 13.5 (pre-judge gate), 14.5 (post-judge gate), 15.2/15.3 (process + HTML reports)**
+>
+> This run executed as a Workflow (ultracode) via the debate-in-Workflow recipe:
+> debate and consolidated verification ran, the phases above did not. Findings
+> are **lower confidence** than a full-run report. Re-run the panel as a skill
+> for the complete protocol.
+```
+
+Per Phase 15.1, every action item in such a report also carries `[COMPRESSED]`
+on its epistemic label. A Workflow that skips the `Debate` phase gets the
+`[NO-DEBATE]` banner as well (stacked first).
 
 ---
 

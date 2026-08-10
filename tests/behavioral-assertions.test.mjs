@@ -1552,3 +1552,152 @@ describe("v3.9.0 Phase 3 template orders BLOCKED before the write instruction", 
     );
   });
 });
+
+describe("v3.9.1 debate-in-Workflow recipe cannot produce a silent skip", () => {
+  const recipe = skillMd.slice(
+    skillMd.indexOf("### Debate-in-Workflow recipe (ultracode-mode)"),
+    skillMd.indexOf("## Orchestrator Efficiency Discipline")
+  );
+
+  it("the recipe section was located (guards the slice above)", () => {
+    assert.ok(
+      recipe.length > 500,
+      "the Debate-in-Workflow recipe section must exist and be non-trivial"
+    );
+  });
+
+  it("the recipe declares itself a compressed run and names the phases it runs", () => {
+    assert.match(
+      recipe,
+      /This recipe is a compressed run and MUST declare itself one/i,
+      "the recipe must declare itself a compressed run"
+    );
+    assert.match(
+      recipe,
+      /reproduces\s+Phases 1, 3, 5, 8, 10, 11, 14 and 15\.1 and skips everything else/i,
+      "the recipe must state exactly which phases it reproduces"
+    );
+  });
+
+  it("the recipe no longer advertises satisfying the NO-DEBATE check as sufficient", () => {
+    // The v3.8.3 text read: "...is what makes the round-1 state files exist —
+    // which in turn satisfies the NO-DEBATE check." That taught the reader to
+    // satisfy the debate detector while skipping the verification machinery.
+    assert.doesNotMatch(
+      recipe,
+      /which in turn satisfies the NO-DEBATE check/i,
+      "the recipe must not present satisfying the NO-DEBATE check as the goal"
+    );
+    assert.match(
+      recipe,
+      /satisfies the\s+NO-DEBATE check \*\*and nothing else\*\*/i,
+      "the recipe must state that the debate phase buys nothing toward verification"
+    );
+    assert.match(
+      recipe,
+      /passes the debate detector while skipping every verification pass/i,
+      "the recipe must name the silent-degradation failure mode it prevents"
+    );
+  });
+
+  it("the recipe mandates five stages, including consolidated verification", () => {
+    assert.match(
+      recipe,
+      /\*\*five mandatory stages, not three\*\*/,
+      "the recipe must require five stages, not the original three"
+    );
+    assert.match(
+      recipe,
+      /MANDATORY — consolidated verification \(Phases 8 \+ 10 \+ 11 in one agent\)/,
+      "the recipe's code must carry a mandatory consolidated-verification stage"
+    );
+    assert.match(
+      recipe,
+      /state\/phase_8_10_11_verification\.md/,
+      "the verification stage must write the budget-mode consolidated verifier state file"
+    );
+  });
+
+  it("the mandatory verifier covers the two defect classes the 2026-08-10 run shipped", () => {
+    assert.match(
+      recipe,
+      /check every\s+P0\/P1 citation against the cited source/i,
+      "the consolidated verifier must do the Phase 10 citation check"
+    );
+    assert.match(
+      recipe,
+      /re-read ground truth for every P0\/P1 and downgrade any severity/i,
+      "the consolidated verifier must do the Phase 11 severity re-read"
+    );
+    assert.match(
+      recipe,
+      /Do NOT restore a severity the verifier downgraded/,
+      "the judge stage must be forbidden from undoing the verifier's downgrades"
+    );
+  });
+
+  it("the recipe requires a terminal Report stage that IS Phase 15.1", () => {
+    assert.match(
+      recipe,
+      /MANDATORY — report stage\. This stage IS Phase 15\.1/,
+      "the recipe must require a terminal report stage bound to Phase 15.1"
+    );
+    assert.match(
+      recipe,
+      /A Workflow with no report\s+\/\/\s+stage never reaches the Phase 15\.1 chokepoint/,
+      "the recipe must explain why the report stage is what makes the chokepoint fire"
+    );
+  });
+
+  it("the recipe mandates a COMPRESSED RUN banner with a fixed phases-skipped list", () => {
+    assert.match(
+      recipe,
+      /\*\*Mandatory banner\.\*\*[\s\S]{0,400}MUST open its report/i,
+      "the recipe must mandate the banner"
+    );
+    const banner =
+      recipe.match(/> ⚠️ \*\*COMPRESSED RUN — Phases skipped: ([^*]+)\*\*/) || [];
+    assert.ok(banner[1], "the recipe must spell out a COMPRESSED RUN banner");
+    // Every phase the recipe omits must be named in the banner it stamps.
+    for (const phase of [
+      "2 (data flow trace)",
+      "4 (private reflection)",
+      "6 (round summarization)",
+      "7 (blind final)",
+      "9 (verification commands)",
+      "12 (tier assignment)",
+      "13 (targeted verification)",
+      "13.5 (pre-judge gate)",
+      "14.5 (post-judge gate)",
+      "15.2/15.3 (process + HTML reports)",
+    ]) {
+      assert.ok(
+        banner[1].includes(phase),
+        `the COMPRESSED RUN banner must enumerate Phase ${phase}`
+      );
+    }
+    assert.match(
+      recipe,
+      /\[COMPRESSED\]`\s+on its epistemic label/,
+      "the recipe must carry the [COMPRESSED] action-item suffix through to Phase 15.1"
+    );
+  });
+
+  it("Phase 15.1 documents that its chokepoint cannot see a report-less Workflow run", () => {
+    assert.match(
+      skillMd,
+      /Chokepoint limit — a Workflow run reaches Phase 15\.1 only if its script\s+authors a report stage/i,
+      "Phase 15.1 must document the workflow-shape hole in its own detection"
+    );
+    assert.match(
+      skillMd,
+      /A script that ends at `Judge`\s+never executes Phase 15\.1/,
+      "Phase 15.1 must state that a judge-terminated script never fires the banner checks"
+    );
+    assert.match(
+      skillMd,
+      /has not run this panel, and its output MUST NOT be presented as a panel\s+report/,
+      "Phase 15.1 must forbid presenting a report-less Workflow run as a panel report"
+    );
+  });
+});
