@@ -763,6 +763,17 @@ prior state files from disk. Record each spawn result's `agentId` into the
 persona → agentId map as you launch — that id is the only address Phases 4/5/7
 can use (see Addressing persistent reviewers).
 
+**Blocked reviewers (v3.9.0).** A reviewer that could not see the code returns
+no findings, and no findings reads as agreement — the Phase 13.5 gate checks
+existence, size and headers, all of which a well-formed "no findings" review
+from a blind reviewer passes. So: a **BLOCKED reviewer is never a clean vote.**
+A blocked reviewer writes `state/reviewer_<slug>_BLOCKED.md` instead of its
+required phase file; the orchestrator must re-dispatch once with explicit
+materialized paths (a pre-generated diff file, a checked-out worktree). If it is
+still blocked, it counts as a missing reviewer and the existing COMPRESSED RUN
+machinery reports it. Never let a BLOCKED return pass silently into the judge's
+input as consensus.
+
 ---
 
 ## Phase 4: Private Reflection
@@ -2186,6 +2197,7 @@ orchestrator window small.
 - **HTML report soft size cap (v2.15):** Target 150–250KB, soft cap 500KB. If the combined structured data (all 10 expandable sections across all findings) exceeds 500KB, the Phase 15.3 agent SHOULD offer a "slim" mode that drops verbatim `fullEvidence` and `debateTranscript` content (replacing with summaries). Slim mode is indicated in the report header and footer.
 - **Prism.js CDN unreachable (v2.15):** If the Prism.js CDN fails to load, code evidence blocks render as unstyled `<pre><code>` elements (still readable, just without syntax colors). Wrap Prism calls in `try/catch` to prevent a CDN failure from breaking the page. This is consistent with the existing graceful-degradation approach for Tailwind and Chart.js CDN failures.
 - **Empty expandable sections (v2.15):** When a finding lacks data for any of the 10 accordion sections (e.g., no debate, no prior runs), render a "No {section} data" placeholder instead of omitting the section. Every expanded card must show all 10 sections in the same order for consistent structure. This prevents the v2.13 nice-shtern compliance gap where agents silently omitted the expand button when evidence fields were empty.
+- **Reviewer cannot see the work under review (v3.9.0):** the reviewer writes `state/reviewer_<slug>_BLOCKED.md` in place of its required phase file and reports BLOCKED in its return. Re-dispatch once with explicit materialized paths; if still blocked, count it as a missing reviewer (COMPRESSED RUN), never as a clean vote. Most common cause is a reviewer subagent provisioned without `Bash`, so it cannot run `gh pr diff` or `git checkout`.
 
 For full prompt templates, see `references/prompt-templates.md`.
 For version history, see `references/changelog.md`.

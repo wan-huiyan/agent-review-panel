@@ -142,6 +142,15 @@ like "could be better" is not useful. If you find no issues in an area, say so
 explicitly rather than manufacturing criticism. If the line-by-line audit found
 nothing, state: "Line-by-line audit: no issues found."
 
+**If you cannot read the work under review** — you have no `Bash` tool, the
+branch is not checked out in the working tree, or a given path does not exist —
+do NOT guess and do NOT return findings as though you had reviewed. Write
+`{state_dir}/reviewer_{persona_short_name}_BLOCKED.md` naming exactly what you
+could not reach and what you tried, **INSTEAD of your required phase file**, and
+say "BLOCKED" in your ≤50-word return. Writing the BLOCKED file in place of the
+required file is deliberate: it makes the required file genuinely absent so the
+Phase 13.5 gate detects the gap instead of counting you as agreeing.
+
 **Output protocol (v3.1.0+):** Write your full review to `{state_dir}/reviewer_{persona_short_name}_phase_3.md`. Then return ONLY:
 
 1. The absolute path you wrote to.

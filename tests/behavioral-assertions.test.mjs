@@ -1337,3 +1337,56 @@ describe("v3.9.0 fresh-spawn fallback reads prior state", () => {
     });
   }
 });
+
+describe("v3.9.0 blocked reviewer is not a clean vote", () => {
+  const templates = readFileSync(
+    resolve(ROOT, "skills/agent-review-panel/references/prompt-templates.md"),
+    "utf-8"
+  );
+
+  it("Phase 3 template instructs a blocked reviewer to write a BLOCKED file instead", () => {
+    const start = templates.indexOf("## Phase 3");
+    assert.ok(start >= 0, "Phase 3 template must exist");
+    const end = templates.indexOf("## Phase 4", start);
+    const phase3 = templates.slice(start, end);
+    assert.match(
+      phase3,
+      /reviewer_\{persona_short_name\}_BLOCKED\.md/,
+      "Phase 3 must name the BLOCKED state file"
+    );
+    assert.match(
+      phase3,
+      /INSTEAD of your required phase file/i,
+      "the BLOCKED file must replace the required file so the gate detects it"
+    );
+    assert.match(
+      phase3,
+      /do NOT return findings as though you had reviewed/i,
+      "a blocked reviewer must not fabricate a clean review"
+    );
+  });
+
+  it("SKILL.md states a BLOCKED reviewer is never counted as clean", () => {
+    assert.match(
+      skillMd,
+      /BLOCKED reviewer is (never|not) a clean vote/,
+      "SKILL.md must carry the not-clean rule"
+    );
+    assert.match(
+      skillMd,
+      /re-dispatch once with explicit\s+materialized paths/,
+      "the not-clean rule must prescribe one re-dispatch with real paths"
+    );
+  });
+
+  it("SKILL.md has an edge case for a reviewer that cannot see the work", () => {
+    const idx = skillMd.indexOf("## Edge Cases");
+    assert.ok(idx >= 0, "Edge Cases section must exist");
+    const edge = skillMd.slice(idx);
+    assert.match(
+      edge,
+      /cannot see the work under review/i,
+      "Edge Cases must cover the blocked-reviewer case"
+    );
+  });
+});
