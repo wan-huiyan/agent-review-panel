@@ -759,7 +759,9 @@ summary. The orchestrator does NOT hold verbatim reviews in its window.
 spawns of the run — Phases 4, 5, and 7 are driven by SendMessage to these same
 agents (see Orchestrator Efficiency Discipline). If SendMessage to an agent
 fails or is unavailable, fall back to a fresh spawn that reads that persona's
-prior state files from disk.
+prior state files from disk. Record each spawn result's `agentId` into the
+persona → agentId map as you launch — that id is the only address Phases 4/5/7
+can use (see Addressing persistent reviewers).
 
 ---
 
@@ -1768,6 +1770,29 @@ always, not just under a budget constraint.
    the reliable signal: after dispatching a wave, do NOT end the turn to
    "wait" — poll the state directory for the expected files (sleep loop),
    verify, and proceed.
+
+   **Addressing persistent reviewers (v3.9.0).** `SendMessage` has resolved a
+   subagent by its `agentId` since Claude Code 2.1.77; panel reviewers are
+   spawned without a name, so that is the only address that works.
+
+   - **Capture it.** Every Phase 3 spawn result carries an `agentId` (foreground
+     and background spawns alike). Record a **persona → agentId map** before
+     leaving Phase 3, **per-run in multi-run mode**. Keep it in orchestrator
+     context — do NOT write a state file for it; nothing would read it.
+   - **Use only it.** Address every Phase 4 / 5 / 7 send by that raw `agentId`.
+     Never the persona label, never the `description` string passed to the Agent
+     tool — neither resolves, and a send to one returns
+     `{"success": false, "message": "No agent named '<X>' is reachable..."}`.
+     Addressing by `agentId` also avoids the name-reuse misrouting fixed in
+     2.1.199, which Run 3 is exposed to because it spawns three Devil's
+     Advocates at once.
+   - **Check the result.** Since 2.1.224 a failed delivery returns
+     `{"success": false, ...}` instead of reporting success. Treat it as a
+     failed agent under the existing retry-once rule in Implementation Notes,
+     firing the fresh-spawn fallback in the same turn. Never assume a send
+     landed.
+   - **Applies to budget mode too** — its Phase 7 drives the same persistent
+     reviewers.
 3. **≤50-word agent returns** — every subagent returns a state-file path +
    a ≤50-word summary, never verbatim content (tightened from 100 words in
    v3.8.0).
@@ -2112,7 +2137,9 @@ orchestrator window small.
   disk instead of requiring the orchestrator to inject all data in-context.
 - **Context management:** Full content in Phases 2, 3, 8, 14. Phase 6 summaries
   with source excerpts in debate rounds for long works (>500 lines).
-- **Error handling:** Retry failed agents once. Proceed with minimum 2 reviewers.
+- **Error handling:** Retry failed agents once — including a `SendMessage` that
+  returns `success: false`, which is a failed agent, not a delivered message.
+  Proceed with minimum 2 reviewers.
   Note gaps in report. Phase 15.3 has an explicit verification gate (v2.16.4):
   if the HTML file is missing after the agent returns, retry once before
   degrading to 2-file output with a manual recovery instruction for the user.

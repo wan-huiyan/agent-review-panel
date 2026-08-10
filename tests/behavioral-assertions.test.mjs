@@ -1221,3 +1221,86 @@ describe("v3.8.0 orchestrator efficiency discipline", () => {
     );
   });
 });
+
+describe("v3.9.0 reviewer addressing contract", () => {
+  const discipline39 = skillMd.slice(
+    skillMd.indexOf("## Orchestrator Efficiency Discipline (v3.8.0 — all modes)")
+  );
+
+  it("mandates capturing the agentId from the Phase 3 spawn result", () => {
+    assert.match(
+      discipline39,
+      /agentId/,
+      "the discipline section must name agentId as the reviewer address"
+    );
+    assert.match(
+      discipline39,
+      /persona\s*→\s*agentId map/,
+      "must instruct the orchestrator to keep a persona → agentId map"
+    );
+  });
+
+  it("forbids addressing a reviewer by persona name or description", () => {
+    assert.match(
+      discipline39,
+      /[Nn]ever the persona (label|name), never the `description`/,
+      "must forbid name/description addressing, which does not resolve"
+    );
+  });
+
+  it("names success: false as a delivery failure that triggers the fallback", () => {
+    assert.match(
+      discipline39,
+      /`\{"success": false/,
+      "must name the literal failed-send result shape"
+    );
+    assert.match(
+      discipline39,
+      /failed agent under the existing retry-once rule/,
+      "a failed send must route into the existing retry-once rule"
+    );
+  });
+
+  it("scopes the agentId map per-run in multi-run mode", () => {
+    assert.match(
+      discipline39,
+      /per-run in multi-run mode/,
+      "multi-run must not share one map across runs"
+    );
+  });
+
+  it("keeps the two v3.8.0 pinned strings intact", () => {
+    assert.match(
+      discipline39,
+      /\*\*Persistent reviewers\*\* — spawn each persona ONCE in Phase 3/,
+      "v3.8.0 persistent-reviewer string must survive the v3.9.0 append"
+    );
+    assert.match(
+      discipline39,
+      /Fallback: if SendMessage fails or is unavailable, fresh-spawn/,
+      "v3.8.0 fallback string must survive the v3.9.0 append"
+    );
+  });
+
+  it("Phase 3 tells the orchestrator to capture the spawn result's agentId", () => {
+    const idx = skillMd.indexOf("**Persistent reviewers (v3.8.0):**");
+    assert.ok(idx >= 0, "Phase 3 persistent-reviewer paragraph must exist");
+    const para = skillMd.slice(idx, idx + 900);
+    assert.match(
+      para,
+      /agentId/,
+      "Phase 3 must say the spawn result's agentId is captured"
+    );
+  });
+
+  it("Implementation Notes treats a failed send as a failed agent", () => {
+    const idx = skillMd.indexOf("- **Error handling:**");
+    assert.ok(idx >= 0, "Implementation Notes error-handling bullet must exist");
+    const bullet = skillMd.slice(idx, idx + 700);
+    assert.match(
+      bullet,
+      /success: false/,
+      "error handling must name a failed SendMessage as a failed agent"
+    );
+  });
+});
