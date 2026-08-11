@@ -2,6 +2,55 @@
 
 All notable changes to Agent Review Panel.
 
+## [3.9.1] — 2026-08-11 — The debate-in-Workflow recipe taught a silently degraded run
+
+The worked example at *Review-Mode Spectrum & Debate-in-Workflow* was presented as how to get the
+panel's depth under the Workflow / ultracode engine. It was three stages — round 1 → peers-injected
+round 2 → judge — and it silently omitted **Phases 4, 6, 7, 8, 9, 10, 11, 12, 13, 13.5, 14.5 and
+15**. Worse, it advertised that authoring a `Debate` phase *"is what makes the round-1 state files
+exist — which in turn satisfies the NO-DEBATE check"*, which taught the reader to satisfy the debate
+detector while skipping every verification pass. In a skill whose stated principle is that degraded
+rigor must be loudly bannered and never silently applied, the worked example produced a silently
+degraded run.
+
+**This is not hypothetical.** A panel run authored from that recipe on 2026-08-10 shipped two wrong
+findings, each of an omitted phase's defect class:
+
+| Wrong finding | Phase that catches it |
+|---|---|
+| A reviewer cited a changelog entry to the wrong Claude Code version | **Phase 10** — verifies citations against source |
+| A reviewer filed a P0 claiming a foreground subagent's `SendMessage` to `"main"` is a silent no-op; it is not (the verbatim result is `{"success":true,"message":"Message queued for the main conversation's next turn."}`) | **Phase 11** — re-reads ground truth for every P0 and downgrades overstated ones; one read-only probe falsified this |
+
+Both were caught by hand afterwards, not by the protocol.
+
+**Fix — banner-first, plus one bought-back stage.** SKILL.md loads into orchestrator context on every
+invocation, so expanding the recipe into a full 16-phase transcription would tax every run. Instead:
+
+- **The recipe now declares itself a compressed run** and MUST stamp a `COMPRESSED RUN` banner whose
+  phases-skipped list is fixed (the recipe's shape is fixed, so the list is not recomputed per run).
+  Every action item carries `[COMPRESSED]`, per Phase 15.1. No new banner type was invented.
+- **Five mandatory stages, not three.** Stage 3 is the *consolidated verifier* budget mode already
+  specifies (Phases 8 + 10 + 11 in one agent, writing `state/phase_8_10_11_verification.md`) — one
+  `agent()` call, and it is exactly what catches the two defects above. The judge stage may not
+  restore a severity the verifier downgraded, nor accept a finding whose citation it could not
+  confirm. Stage 5 is a terminal `Report` stage that *is* Phase 15.1.
+- **The NO-DEBATE sentence is gone.** The recipe now states that authoring `Debate` satisfies the
+  NO-DEBATE check **and nothing else**, and names the failure mode: passing the debate detector while
+  skipping every verification pass.
+
+**Phase 15.1's chokepoint has a documented hole.** Phase 15.1 is terminal for orchestrator-driven
+runs, but a Workflow has no orchestrator walking the phase list — a script that ends at `Judge` never
+executes Phase 15.1, so neither the NO-DEBATE nor the COMPRESSED check ever fires, however much the
+run skipped. That cannot be closed by detection from inside the skill; it is now stated plainly in
+Phase 15.1, with the authorial mitigation (the recipe's mandatory `Report` stage) and the rule that a
+Workflow returning findings without a Phase 15.1 report stage has not run this panel and must not be
+presented as one.
+
+Also fixes a dangling cross-reference in the Phase 13.5 debate-presence assertion (*"see Debate
+inside a Workflow below"* → the section is *Debate-in-Workflow recipe*).
+
+Tests: 521 → 529 (8 new behavioral assertions; 7 verified failing against the pre-fix text). No
+persona, scoring, or report-format changes.
 ## [3.9.0] — 2026-08-10 — Reviewer addressing contract + blocked-reviewer handling
 
 Investigated adapting the panel to Claude Code's cross-session/peer messaging update (2.1.224). Most of what that surfaced was not new capability — two of the three changes here are defects the skill already had, which the update only made *detectable*.
