@@ -19,7 +19,7 @@ description: >
   reduced cost. Uses specialist domain-expert reviewers.
 ---
 
-# Agent Review Panel v3.8.3
+# Agent Review Panel v3.9.0
 
 A multi-agent adversarial review system based on nine research foundations:
 ChatEval (ICLR 2024), AutoGen, Du et al. (ICML 2024), MachineSoM (ACL 2024),
@@ -759,7 +759,21 @@ summary. The orchestrator does NOT hold verbatim reviews in its window.
 spawns of the run — Phases 4, 5, and 7 are driven by SendMessage to these same
 agents (see Orchestrator Efficiency Discipline). If SendMessage to an agent
 fails or is unavailable, fall back to a fresh spawn that reads that persona's
-prior state files from disk.
+prior state files from disk. Record each spawn result's `agentId` into the
+persona → agentId map as you launch — that id is the only address Phases 4/5/7
+can use (see Addressing persistent reviewers).
+
+**Blocked reviewers (v3.9.0).** A blind reviewer's well-formed "no findings"
+review passes every Phase 13.5 check (existence, size, headers), so its silence
+reads as agreement. A **BLOCKED reviewer is never a clean vote.**
+A blocked reviewer writes `state/reviewer_<slug>_BLOCKED.md` instead of its
+required phase file; the orchestrator must re-dispatch once with explicit
+materialized paths (a pre-generated diff file, a checked-out worktree). If it is
+still blocked, it counts as a missing reviewer: **drop it from the
+persistent-reviewer set** — remove it from the persona → agentId map and send it
+no Phase 4, 5 or 7 prompt — and let the existing COMPRESSED RUN machinery report
+it. Never let a BLOCKED return pass silently into the judge's input as
+consensus.
 
 ---
 
@@ -1136,7 +1150,11 @@ Plus panel-level files:
 **On gate failure for any file:**
 
 1. Log loudly: `GATE FAIL: <file> missing | stub | malformed`
-2. Re-dispatch the subagent for the missing/malformed phase output.
+2. Re-dispatch the subagent for the missing/malformed phase output. **If a
+   `reviewer_<slug>_BLOCKED.md` exists for that persona,** the re-dispatch MUST
+   supply explicit materialized paths, and that phase counts as unrecoverable
+   for banner purposes **even if the retry succeeds** — the persona was blind
+   through the debate, so its recovered review never entered it.
 3. Re-run the gate after re-dispatch.
 4. **Single retry only.** If the second attempt also fails, do NOT block the
    run. Mark the phase as unrecoverable, write the COMPRESSED RUN header in
@@ -1145,7 +1163,8 @@ Plus panel-level files:
    than failing entirely — partial review with loud warning beats no review.
 
 **On full gate pass:** proceed to Phase 14. The COMPRESSED RUN header is NOT
-emitted (its absence is the green light).
+emitted (its absence is the green light) — unless step 2 found a
+`reviewer_*_BLOCKED.md`, which forces the header even on a passing gate.
 
 **Debate-presence assertion (v3.5.0) — distinct from per-file compression.**
 The per-file gate above re-dispatches an *individual* missing file. But the
@@ -1320,11 +1339,14 @@ NO-DEBATE detection is anchored HERE (not only in the Phase 13.5 gate, which
 an inline/workflow-shaped run can skip — that is precisely how the audit's
 silent skips slipped past). **Before writing the report, the orchestrator
 MUST independently check whether any `reviewer_*_phase_5_round1.md` state
-files exist** (under `state/`, or any `state/run_<N>/` in multi-run mode). If
-**none exist** — the adversarial debate (Phase 5) did not run for this panel —
-Phase 15.1 MUST emit this block as report content (immediately AFTER the
-COMPRESSED RUN block if one is present, otherwise FIRST, before the Executive
-Summary):
+files exist** (under `state/`, or any `state/run_<N>/` in multi-run mode) —
+**and, in the same pass, whether any `reviewer_*_BLOCKED.md` exists there.** Any
+BLOCKED file forces the COMPRESSED RUN block above (BLOCKED's second anchor: an
+inline/workflow-shaped run never reaches the Phase 13.5 gate that reads it). If
+**no `reviewer_*_phase_5_round1.md` exists** — the adversarial debate (Phase 5)
+did not run for this panel — Phase 15.1 MUST emit this block as report content
+(immediately AFTER the COMPRESSED RUN block if one is present, otherwise FIRST,
+before the Executive Summary):
 
 ```markdown
 > ⚠️ **[NO-DEBATE] — adversarial debate (Phase 5) did not run.**
@@ -1661,7 +1683,7 @@ Tell user:
 - Counts: consensus points, disagreements, action items, verification verdicts
 - Top P0 action item (if any)
 - Note: HTML report requires internet connection for Tailwind CSS, Chart.js, and Prism.js CDNs
-- HTML footer should read "Agent Review Panel v3.8.3" (MUST match the full semver from `plugin.json` — update this line whenever the version is bumped)
+- HTML footer should read "Agent Review Panel v3.9.0" (MUST match the full semver from `plugin.json` — update this line whenever the version is bumped)
 
 ---
 
@@ -1768,6 +1790,31 @@ always, not just under a budget constraint.
    the reliable signal: after dispatching a wave, do NOT end the turn to
    "wait" — poll the state directory for the expected files (sleep loop),
    verify, and proceed.
+
+   **Addressing persistent reviewers (v3.9.0).** `SendMessage` has resolved a
+   subagent by its `agentId` since Claude Code 2.1.77; panel reviewers are
+   spawned without a name, so that is the only address that works.
+
+   - **Capture it.** Every Phase 3 spawn result carries an `agentId` (foreground
+     and background spawns alike). Record a **persona → agentId map** before
+     leaving Phase 3, **per-run in multi-run mode**. Keep it in orchestrator
+     context — do NOT write a state file for it; nothing would read it.
+   - **Use only it.** Address every Phase 4 / 5 / 7 send by that raw `agentId`.
+     Never the persona label, never the `description` string passed to the Agent
+     tool — neither resolves, and a send to one returns
+     `{"success": false, "message": "No agent named '<X>' is reachable..."}`.
+     Addressing by `agentId` also avoids the name-reuse misrouting fixed in
+     2.1.199, which Run 3 is exposed to because it spawns three Devil's
+     Advocates at once.
+   - **Check the result.** Since 2.1.224 a failed delivery returns
+     `{"success": false, ...}` instead of reporting success. Treat it as a
+     failed agent under the existing retry-once rule in Implementation Notes —
+     but that rule's retry here is a **fresh spawn, not a second send**: the
+     agent is unreachable, so re-sending cannot work, and dropping to
+     "minimum 2 reviewers" is not the fallback either. Fresh-spawn the persona
+     in the same turn. Never assume a send landed.
+   - **Applies to budget mode too** — its Phase 5 and Phase 7 drive the same
+     persistent reviewers.
 3. **≤50-word agent returns** — every subagent returns a state-file path +
    a ≤50-word summary, never verbatim content (tightened from 100 words in
    v3.8.0).
@@ -2112,7 +2159,9 @@ orchestrator window small.
   disk instead of requiring the orchestrator to inject all data in-context.
 - **Context management:** Full content in Phases 2, 3, 8, 14. Phase 6 summaries
   with source excerpts in debate rounds for long works (>500 lines).
-- **Error handling:** Retry failed agents once. Proceed with minimum 2 reviewers.
+- **Error handling:** Retry failed agents once — including a `SendMessage` that
+  returns `success: false`, which is a failed agent, not a delivered message.
+  Proceed with minimum 2 reviewers.
   Note gaps in report. Phase 15.3 has an explicit verification gate (v2.16.4):
   if the HTML file is missing after the agent returns, retry once before
   degrading to 2-file output with a manual recovery instruction for the user.
@@ -2159,6 +2208,7 @@ orchestrator window small.
 - **HTML report soft size cap (v2.15):** Target 150–250KB, soft cap 500KB. If the combined structured data (all 10 expandable sections across all findings) exceeds 500KB, the Phase 15.3 agent SHOULD offer a "slim" mode that drops verbatim `fullEvidence` and `debateTranscript` content (replacing with summaries). Slim mode is indicated in the report header and footer.
 - **Prism.js CDN unreachable (v2.15):** If the Prism.js CDN fails to load, code evidence blocks render as unstyled `<pre><code>` elements (still readable, just without syntax colors). Wrap Prism calls in `try/catch` to prevent a CDN failure from breaking the page. This is consistent with the existing graceful-degradation approach for Tailwind and Chart.js CDN failures.
 - **Empty expandable sections (v2.15):** When a finding lacks data for any of the 10 accordion sections (e.g., no debate, no prior runs), render a "No {section} data" placeholder instead of omitting the section. Every expanded card must show all 10 sections in the same order for consistent structure. This prevents the v2.13 nice-shtern compliance gap where agents silently omitted the expand button when evidence fields were empty.
+- **Reviewer cannot see the work under review (v3.9.0):** usual cause is a reviewer subagent provisioned without `Bash`, so it cannot run `gh pr diff` or `git checkout`. Handling is specified once, under **Blocked reviewers** in Phase 3.
 
 For full prompt templates, see `references/prompt-templates.md`.
 For version history, see `references/changelog.md`.

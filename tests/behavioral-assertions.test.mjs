@@ -1221,3 +1221,334 @@ describe("v3.8.0 orchestrator efficiency discipline", () => {
     );
   });
 });
+
+describe("v3.9.0 reviewer addressing contract", () => {
+  const discipline39 = skillMd.slice(
+    skillMd.indexOf("## Orchestrator Efficiency Discipline (v3.8.0 — all modes)")
+  );
+
+  it("mandates capturing the agentId from the Phase 3 spawn result", () => {
+    assert.match(
+      discipline39,
+      /agentId/,
+      "the discipline section must name agentId as the reviewer address"
+    );
+    assert.match(
+      discipline39,
+      /persona\s*→\s*agentId map/,
+      "must instruct the orchestrator to keep a persona → agentId map"
+    );
+  });
+
+  it("forbids addressing a reviewer by persona name or description", () => {
+    assert.match(
+      discipline39,
+      /[Nn]ever the persona (label|name), never the `description`/,
+      "must forbid name/description addressing, which does not resolve"
+    );
+  });
+
+  it("names success: false as a delivery failure that triggers the fallback", () => {
+    assert.match(
+      discipline39,
+      /`\{"success": false/,
+      "must name the literal failed-send result shape"
+    );
+    assert.match(
+      discipline39,
+      /failed agent under the existing retry-once rule/,
+      "a failed send must route into the existing retry-once rule"
+    );
+  });
+
+  it("scopes the agentId map per-run in multi-run mode", () => {
+    assert.match(
+      discipline39,
+      /per-run in multi-run mode/,
+      "multi-run must not share one map across runs"
+    );
+  });
+
+  it("keeps the two v3.8.0 pinned strings intact", () => {
+    assert.match(
+      discipline39,
+      /\*\*Persistent reviewers\*\* — spawn each persona ONCE in Phase 3/,
+      "v3.8.0 persistent-reviewer string must survive the v3.9.0 append"
+    );
+    assert.match(
+      discipline39,
+      /Fallback: if SendMessage fails or is unavailable, fresh-spawn/,
+      "v3.8.0 fallback string must survive the v3.9.0 append"
+    );
+  });
+
+  it("Phase 3 tells the orchestrator to capture the spawn result's agentId", () => {
+    const idx = skillMd.indexOf("**Persistent reviewers (v3.8.0):**");
+    assert.ok(idx >= 0, "Phase 3 persistent-reviewer paragraph must exist");
+    const para = skillMd.slice(idx, idx + 900);
+    assert.match(
+      para,
+      /agentId/,
+      "Phase 3 must say the spawn result's agentId is captured"
+    );
+  });
+
+  it("Implementation Notes treats a failed send as a failed agent", () => {
+    const idx = skillMd.indexOf("- **Error handling:**");
+    assert.ok(idx >= 0, "Implementation Notes error-handling bullet must exist");
+    const bullet = skillMd.slice(idx, idx + 700);
+    assert.match(
+      bullet,
+      /success: false/,
+      "error handling must name a failed SendMessage as a failed agent"
+    );
+  });
+});
+
+describe("v3.9.0 fresh-spawn fallback reads prior state", () => {
+  const templates = readFileSync(
+    resolve(ROOT, "skills/agent-review-panel/references/prompt-templates.md"),
+    "utf-8"
+  );
+
+  const sections = [
+    ["Phase 4", "## Phase 4: Private Reflection Prompt", "## Phase 5"],
+    ["Phase 5", "## Phase 5: Debate Round Prompt", "## Phase 7"],
+    ["Phase 7", "## Phase 7: Blind Final Assessment Prompt", "## Phase 8"],
+  ];
+
+  for (const [label, startAnchor, endAnchor] of sections) {
+    it(`${label} template tells a freshly spawned reviewer to read its prior state`, () => {
+      const start = templates.indexOf(startAnchor);
+      assert.ok(start >= 0, `${startAnchor} must exist`);
+      const end = templates.indexOf(endAnchor, start);
+      assert.ok(end > start, `${endAnchor} must follow ${startAnchor}`);
+      const section = templates.slice(start, end);
+      assert.match(
+        section,
+        /freshly spawned rather than resumed/,
+        `${label} must handle the fresh-spawn fallback case`
+      );
+      assert.match(
+        section,
+        /reviewer_\{persona_short_name\}_phase_\*\.md/,
+        `${label} must name the prior state files to read`
+      );
+    });
+  }
+});
+
+describe("v3.9.0 blocked reviewer is not a clean vote", () => {
+  const templates = readFileSync(
+    resolve(ROOT, "skills/agent-review-panel/references/prompt-templates.md"),
+    "utf-8"
+  );
+
+  it("Phase 3 template instructs a blocked reviewer to write a BLOCKED file instead", () => {
+    const start = templates.indexOf("## Phase 3");
+    assert.ok(start >= 0, "Phase 3 template must exist");
+    const end = templates.indexOf("## Phase 4", start);
+    const phase3 = templates.slice(start, end);
+    assert.match(
+      phase3,
+      /reviewer_\{persona_short_name\}_BLOCKED\.md/,
+      "Phase 3 must name the BLOCKED state file"
+    );
+    assert.match(
+      phase3,
+      /INSTEAD of your required phase file/i,
+      "the BLOCKED file must replace the required file so the gate detects it"
+    );
+    assert.match(
+      phase3,
+      /do NOT return findings as though you had reviewed/i,
+      "a blocked reviewer must not fabricate a clean review"
+    );
+  });
+
+  it("SKILL.md states a BLOCKED reviewer is never counted as clean", () => {
+    assert.match(
+      skillMd,
+      /BLOCKED reviewer is (never|not) a clean vote/,
+      "SKILL.md must carry the not-clean rule"
+    );
+    assert.match(
+      skillMd,
+      /re-dispatch once with explicit\s+materialized paths/,
+      "the not-clean rule must prescribe one re-dispatch with real paths"
+    );
+  });
+
+  it("SKILL.md has an edge case for a reviewer that cannot see the work", () => {
+    const idx = skillMd.indexOf("## Edge Cases");
+    assert.ok(idx >= 0, "Edge Cases section must exist");
+    const edge = skillMd.slice(idx);
+    assert.match(
+      edge,
+      /cannot see the work under review/i,
+      "Edge Cases must cover the blocked-reviewer case"
+    );
+  });
+
+  it("the Edge Cases entry points at Phase 3 instead of restating the rule", () => {
+    const idx = skillMd.indexOf("- **Reviewer cannot see the work under review");
+    assert.ok(idx >= 0, "the blocked-reviewer edge case must exist");
+    const entry = skillMd.slice(idx, skillMd.indexOf("\n", idx));
+    assert.match(
+      entry,
+      /\*\*Blocked reviewers\*\* in Phase 3/,
+      "the edge case must defer to the single Phase 3 statement of the rule"
+    );
+    assert.ok(
+      !/COMPRESSED RUN/.test(entry),
+      "the edge case must not re-state the Phase 3 handling (duplication)"
+    );
+  });
+});
+
+describe("v3.9.0 a blocked reviewer stops voting, and BLOCKED has two anchors", () => {
+  it("Phase 3 drops a still-blocked reviewer from the persistent-reviewer set", () => {
+    const idx = skillMd.indexOf("**Blocked reviewers (v3.9.0).**");
+    assert.ok(idx >= 0, "the Phase 3 blocked-reviewers paragraph must exist");
+    const para = skillMd.slice(idx, idx + 1200);
+    assert.match(
+      para,
+      /drop it from the\s+persistent-reviewer set/,
+      "a still-blocked reviewer must leave the persistent-reviewer set"
+    );
+    assert.match(
+      para,
+      /persona → agentId map/,
+      "dropping it must be concrete: remove it from the persona → agentId map"
+    );
+    assert.match(
+      para,
+      /no Phase 4, 5 or 7 prompt/,
+      "a dropped reviewer must receive no further phase prompts, so it never votes"
+    );
+  });
+
+  it("Phase 13.5 re-dispatch is BLOCKED-aware and stays unrecoverable on success", () => {
+    const start = skillMd.indexOf("**On gate failure for any file:**");
+    assert.ok(start >= 0, "the Phase 13.5 gate-failure list must exist");
+    const section = skillMd.slice(start, start + 1600);
+    assert.match(
+      section,
+      /`reviewer_<slug>_BLOCKED\.md` exists for that persona/,
+      "the re-dispatch step must branch on an existing BLOCKED file"
+    );
+    assert.match(
+      section,
+      /re-dispatch MUST\s+supply explicit materialized paths/,
+      "a BLOCKED re-dispatch must carry explicit materialized paths"
+    );
+    assert.match(
+      section,
+      /unrecoverable\s+for banner purposes \*\*even if the retry succeeds\*\*/,
+      "a late successful retry must not buy a green light"
+    );
+    assert.match(
+      section,
+      /green light\) — unless step 2 found a\s+`reviewer_\*_BLOCKED\.md`/,
+      "a passing gate must still force the COMPRESSED header when a BLOCKED file was found"
+    );
+  });
+
+  it("Phase 15.1 second-anchors BLOCKED by globbing the state directory", () => {
+    const start = skillMd.indexOf("**No-debate warning (v3.5.0)");
+    assert.ok(start >= 0, "the Phase 15.1 no-debate check must exist");
+    const section = skillMd.slice(start, start + 1400);
+    assert.match(
+      section,
+      /in the same pass, whether any `reviewer_\*_BLOCKED\.md` exists there/,
+      "Phase 15.1 must glob for BLOCKED files alongside the round-1 files"
+    );
+    assert.match(
+      section,
+      /BLOCKED file forces the COMPRESSED RUN block/,
+      "a BLOCKED file found at Phase 15.1 must emit the COMPRESSED RUN block"
+    );
+    assert.match(
+      section,
+      /never reaches the Phase 13\.5 gate/,
+      "the second anchor must state why Phase 13.5 alone is not enough"
+    );
+  });
+
+  it("a failed send is fresh-spawned, never re-sent or silently dropped", () => {
+    const idx = skillMd.indexOf("- **Check the result.**");
+    assert.ok(idx >= 0, "the check-the-result bullet must exist");
+    const bullet = skillMd.slice(idx, idx + 700);
+    assert.match(
+      bullet,
+      /fresh spawn, not a second send/,
+      "the retry for an unreachable agent must be a fresh spawn, not another send"
+    );
+    assert.match(
+      bullet,
+      /"minimum 2 reviewers" is not the fallback/,
+      "the retry-once rule's drop-to-2-reviewers tail must be excluded here"
+    );
+  });
+
+  it("budget mode is scoped to both Phase 5 and Phase 7 persistent sends", () => {
+    assert.match(
+      skillMd,
+      /\*\*Applies to budget mode too\*\* — its Phase 5 and Phase 7 drive the same/,
+      "budget mode runs a debate round through the same agents, not just Phase 7"
+    );
+  });
+});
+
+describe("v3.9.0 Phase 3 template orders BLOCKED before the write instruction", () => {
+  const templates = readFileSync(
+    resolve(ROOT, "skills/agent-review-panel/references/prompt-templates.md"),
+    "utf-8"
+  );
+  const phase3 = templates.slice(
+    templates.indexOf("## Phase 3"),
+    templates.indexOf("## Phase 4")
+  );
+
+  it("the BLOCKED clause is the first branch of the Output protocol", () => {
+    const protocol = phase3.indexOf("**Output protocol (v3.1.0+):**");
+    const blocked = phase3.indexOf("_BLOCKED.md");
+    const write = phase3.indexOf("_phase_3.md`");
+    assert.ok(protocol >= 0, "Phase 3 must carry the output protocol");
+    assert.ok(
+      protocol < blocked && blocked < write,
+      "BLOCKED must sit inside the Output protocol and BEFORE the write-your-review instruction"
+    );
+    assert.match(
+      phase3,
+      /take the FIRST branch that applies/,
+      "the protocol must be explicitly first-match, not a list of unconditional steps"
+    );
+    assert.match(
+      phase3,
+      /\*\*Otherwise,\*\* write your full review/,
+      "the normal write must be conditional on not being blocked"
+    );
+  });
+
+  it("BLOCKED triggers on unreadable work, not on a missing Bash tool alone", () => {
+    assert.match(
+      phase3,
+      /work content above was not\s+provided to you and you cannot fetch it/,
+      "the operative trigger must be that the work is unreachable"
+    );
+    assert.match(
+      phase3,
+      /\*verification\s+commands\* is NOT blocked/,
+      "losing only the verification commands must not qualify as BLOCKED"
+    );
+  });
+
+  it("a blocked reviewer returns the BLOCKED file's path", () => {
+    assert.match(
+      phase3,
+      /The absolute path you wrote to — the BLOCKED file if you wrote one/,
+      "the return must name the BLOCKED path when that branch was taken"
+    );
+  });
+});

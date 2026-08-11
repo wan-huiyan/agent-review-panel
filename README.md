@@ -434,10 +434,10 @@ Both are activated by natural language or by `/roundtable:agent-review-panel` an
 
 ## Tests
 
-The test suite (499 tests) uses Node's built-in test runner — zero dependencies, requires Node ≥18:
+The test suite (521 tests) uses Node's built-in test runner — zero dependencies, requires Node ≥18:
 
 ```bash
-npm test                    # run all 499 tests
+npm test                    # run all 521 tests
 npm run test:triggers       # trigger classification
 npm run test:manifest       # manifest consistency + phase/opus enforcement
 npm run test:eval-suite     # eval suite integrity
@@ -531,6 +531,7 @@ See [CHANGELOG.md](CHANGELOG.md) for detailed version history and [ROADMAP.md](R
 
 | Version | Highlights |
 |---|---|
+| **v3.9** | **Reviewer addressing contract** — persistent reviewers are addressed by the `agentId` from their spawn result (a nameless subagent has no other address), and a `SendMessage` returning `success: false` is a failed agent, not a delivered message. Plus: the fresh-spawn fallback now reads its own prior state files, and a reviewer that could not see the code writes a BLOCKED file instead of its phase file so the Phase 13.5 gate catches it rather than counting it as a clean vote |
 | **v3.8** | **Orchestrator Efficiency Discipline** — the quality-free part of the turn diet becomes the default for *every* mode: persistent reviewers via SendMessage, batched launches, ≤50-word agent returns, no inter-phase narration, ≤40-turn target (measured pre-discipline run: 157 turns = 69% of cost). No review, debate, or verification work removed |
 | **v3.7** | **Budget mode** — explicit opt-in reduced-cost profile (~20–25% of full-run cost), targeting *measured* cost drivers: orchestrator turn diet (the measured 69%), 3 sonnet reviewers + opus judge, single debate round, consolidated verification, markdown-only output, `[BUDGET-MODE]` banner |
 | **v3.6** | **Assessment mode** — quality *discrimination* for subjective deliverables (vs defect-finding): subtract-points + veto, swap test, out-of-band currency check, and the **control-validation gate** (drop personas that can't beat a no-input control) |

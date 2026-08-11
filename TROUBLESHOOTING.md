@@ -94,6 +94,18 @@ runs — interrupt the session and re-invoke the panel. If it reproduces,
 file an issue (see [Support](README.md#support)) with the content type
 (code/plan/docs) and approximate size.
 
+## A `reviewer_<slug>_BLOCKED.md` file appeared in the state directory
+
+That reviewer could not reach the work under review — usually a reviewer
+subagent provisioned without `Bash`, so it could not run `gh pr diff` or
+`git checkout`. It writes that file *instead of* its own phase file on purpose,
+so the panel counts it as a missing reviewer rather than reading a content-free
+"no findings" review as agreement. The panel re-dispatches it once with explicit
+paths; if it is still blocked, the report carries the ⚠️ COMPRESSED RUN banner
+and that persona's findings are absent. Open the file — it names what the
+reviewer tried — then re-run with the branch checked out or a pre-generated diff
+file on disk.
+
 ## Update appears to work but old behavior persists
 
 Same root cause as "Old version keeps loading" above — a loose
