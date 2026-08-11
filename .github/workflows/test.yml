@@ -26,3 +26,19 @@ jobs:
 
       - name: Release-check (doc-drift gate)
         run: bash scripts/release-check.sh
+
+  # Stable aggregation gate. Branch protection requires THIS check, not the
+  # matrix legs: the legs are named "test (20)" / "test (22)", so changing the
+  # matrix (drop 20, add 24) would orphan a required context and deadlock every
+  # merge. `if: always()` plus an explicit result check makes this job FAIL
+  # rather than skip when a leg fails — a skipped required check also deadlocks.
+  test-gate:
+    if: always()
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify the test matrix succeeded
+        run: |
+          if [ "${{ needs.test.result }}" != "success" ]; then
+            echo "test matrix did not succeed: ${{ needs.test.result }}"; exit 1
+          fi
