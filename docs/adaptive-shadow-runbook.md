@@ -107,3 +107,18 @@ npm run replay:adaptive -- docs/reviews > /private/path/adaptive-history-replay.
 ```
 
 Archived runs that lack Phase 3 state fall back to the earliest available Phase 5 round-1 files and are explicitly marked as such; those cases cannot answer what adaptive would have done *before* debate with the same evidentiary strength as a complete Phase 3 archive.
+
+## Compare historical later rounds
+
+After replay, inspect whether later archived debate introduced candidate information that is not
+obviously present in round 1:
+
+```sh
+npm run compare:adaptive-history -- docs/reviews > /private/path/adaptive-history-comparison.json
+```
+
+The scorer is intentionally conservative. It reports lexical candidate novelty, severity changes,
+and where judge-carried findings appear to be first visible. It always emits
+`counterfactual_claim: false`. A quiet round 2 is **not proof** that adaptive could have skipped it;
+a novel round-2 candidate is evidence against casually declaring that round redundant. Use these
+results to select cases for the later controlled A/B trial, not to estimate savings directly.
