@@ -99,3 +99,11 @@ Those are separate reviewable slices. The next useful implementation after this 
 machine is a read-only extractor that converts existing panel state files into this compact
 schema, followed by historical replay. Only after that should the optional shared Jev adapter
 be added.
+
+Historical replay command:
+
+```sh
+npm run replay:adaptive -- docs/reviews > /private/path/adaptive-history-replay.json
+```
+
+Archived runs that lack Phase 3 state fall back to the earliest available Phase 5 round-1 files and are explicitly marked as such; those cases cannot answer what adaptive would have done *before* debate with the same evidentiary strength as a complete Phase 3 archive.
