@@ -4,7 +4,7 @@
   "private": true,
   "description": "Multi-agent adversarial review panel for Claude Code",
   "scripts": {
-    "test": "node --test tests/trigger-classification.test.mjs tests/manifest-consistency.test.mjs tests/eval-suite-integrity.test.mjs tests/report-structure.test.mjs tests/behavioral-assertions.test.mjs tests/golden-file.test.mjs tests/voltagent-catalog.test.mjs tests/description-cap.test.mjs tests/adaptive-orchestration.test.mjs tests/adaptive-shadow.test.mjs tests/adaptive-history.test.mjs",
+    "test": "node --test tests/trigger-classification.test.mjs tests/manifest-consistency.test.mjs tests/eval-suite-integrity.test.mjs tests/report-structure.test.mjs tests/behavioral-assertions.test.mjs tests/golden-file.test.mjs tests/voltagent-catalog.test.mjs tests/description-cap.test.mjs tests/adaptive-orchestration.test.mjs tests/adaptive-shadow.test.mjs tests/adaptive-history.test.mjs tests/adaptive-history-scorer.test.mjs",
     "test:triggers": "node --test tests/trigger-classification.test.mjs",
     "test:voltagent": "node --test tests/voltagent-catalog.test.mjs",
     "test:description-cap": "node --test tests/description-cap.test.mjs",
@@ -14,9 +14,10 @@
     "test:behavioral": "node --test tests/behavioral-assertions.test.mjs",
     "test:golden": "node --test tests/golden-file.test.mjs",
     "test:golden:update": "UPDATE_GOLDEN=1 node --test tests/golden-file.test.mjs",
-    "test:adaptive": "node --test tests/adaptive-orchestration.test.mjs tests/adaptive-shadow.test.mjs tests/adaptive-history.test.mjs",
+    "test:adaptive": "node --test tests/adaptive-orchestration.test.mjs tests/adaptive-shadow.test.mjs tests/adaptive-history.test.mjs tests/adaptive-history-scorer.test.mjs",
     "shadow:adaptive": "node scripts/adaptive-shadow.mjs",
-    "replay:adaptive": "node scripts/adaptive-history-replay.mjs"
+    "replay:adaptive": "node scripts/adaptive-history-replay.mjs",
+    "compare:adaptive-history": "node scripts/adaptive-history-compare.mjs"
   },
   "type": "module",
   "devDependencies": {
