@@ -53,7 +53,7 @@ describe("adaptive v4 design safety contract", () => {
 
   it("keeps blocked reviewers from becoming consensus", () => {
     assert.match(contract, /Blocked\/missing reviewers are missing evidence, never clean consensus/);
-    assert.match(skill, /A BLOCKED reviewer is never a clean vote/);
+    assert.match(skill, /BLOCKED reviewer is never a clean vote/);
   });
 
   it("does not claim savings from planned call counts", () => {
