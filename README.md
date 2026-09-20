@@ -434,10 +434,10 @@ Both are activated by natural language or by `/roundtable:agent-review-panel` an
 
 ## Tests
 
-The test suite (557 tests) uses Node's built-in test runner — zero dependencies, requires Node ≥18:
+The test suite (561 tests) uses Node's built-in test runner — zero dependencies, requires Node ≥18:
 
 ```bash
-npm test                    # run all 557 tests
+npm test                    # run all 561 tests
 npm run test:triggers       # trigger classification
 npm run test:manifest       # manifest consistency + phase/opus enforcement
 npm run test:eval-suite     # eval suite integrity
