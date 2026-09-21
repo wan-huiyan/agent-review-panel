@@ -10,8 +10,13 @@ Keep the input outside the repository:
 
 ```sh
 umask 077
-npm run shadow:adaptive -- /private/path/adaptive-input.json > /private/path/adaptive-decision.json
+npm run --silent shadow:adaptive -- /private/path/adaptive-input.json > /private/path/adaptive-decision.json
 ```
+
+`--silent` is required, not cosmetic. Without it npm prints its own two-line banner to stdout
+ahead of the script's output, the redirect captures it, and the resulting file is not valid JSON
+(`SyntaxError: Unexpected token '>'`). The same applies to the replay and compare commands below.
+Calling `node scripts/adaptive-shadow.mjs <input> > out.json` directly works too.
 
 Example schema:
 
@@ -103,10 +108,25 @@ be added.
 Historical replay command:
 
 ```sh
-npm run replay:adaptive -- docs/reviews > /private/path/adaptive-history-replay.json
+npm run --silent replay:adaptive -- docs/reviews > /private/path/adaptive-history-replay.json
 ```
 
 Archived runs that lack Phase 3 state fall back to the earliest available Phase 5 round-1 files and are explicitly marked as such; those cases cannot answer what adaptive would have done *before* debate with the same evidentiary strength as a complete Phase 3 archive.
+
+### Sample size, stated plainly
+
+`docs/reviews/` currently holds **two** archived runs:
+
+| Run | Earliest state | Round 2? | Judge? |
+|---|---|---|---|
+| `2026-05-14-readme` | Phase 3 (4 reviewers) | no | yes |
+| `2026-08-10-peer-messaging-design` | Phase 5 round 1 | yes | yes |
+
+So replay has n=2, and the question the comparison scorer exists to inform — *did a second debate
+round add anything?* — has **n=1**, because only one archived run has a round 2. Nothing in this
+harness can answer that question at n=1. Treat every replay and comparison output as a way to
+pick cases for the later controlled A/B trial, never as evidence about debate value. Growing this
+corpus is a prerequisite for the evaluation, not a nice-to-have.
 
 ## Compare historical later rounds
 
@@ -114,7 +134,7 @@ After replay, inspect whether later archived debate introduced candidate informa
 obviously present in round 1:
 
 ```sh
-npm run compare:adaptive-history -- docs/reviews > /private/path/adaptive-history-comparison.json
+npm run --silent compare:adaptive-history -- docs/reviews > /private/path/adaptive-history-comparison.json
 ```
 
 The scorer is intentionally conservative. It reports lexical candidate novelty, severity changes,

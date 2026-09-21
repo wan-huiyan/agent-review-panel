@@ -87,8 +87,15 @@ Otherwise report an Adaptive Review Outcome with evidence/provenance and no fake
 
 ## Jev integration
 
-Use the shared provider/runtime proposed in memory-hygiene#12 and consumed by
-agent-traffic-control#71. Do not create a second transport implementation or another skill.
+Use the shared provider/runtime proposed in memory-hygiene#12 (the shared context registry,
+router and optional Jev provider) and consumed by agent-traffic-control#71 (the workflow adapter
+and its safeguards). Do not create a second transport implementation or another skill.
+
+Both of those are **open, unmerged drafts** as of 2026-09-21. A reachable Jev endpoint is not the
+missing piece — the shared registry/router/provider module this contract says to reuse is. Until
+one of those PRs lands there is nothing to import, so every decision point below has to work with
+`provider: {"status": "not_requested"}`, and this repo must not grow its own transport in the
+meantime.
 
 Candidate bounded questions include:
 - which candidate personas are materially non-overlapping for this task?
@@ -107,18 +114,28 @@ Every decision should be serializable without raw private work content:
 
 ```json
 {
+  "policy_version": "adaptive-v4-shadow-1",
   "mode": "shadow",
-  "policy_version": "adaptive-v4-draft-1",
+  "executes_panel": false,
+  "authorizes_execution": false,
+  "explicit_mode": "adaptive",
   "selected_personas": ["..."],
-  "finding_count": 0,
+  "finding_decisions": [
+    {"id": "F1", "action": "VERIFY_FIRST", "verification_floor": "LIGHT", "independent_evidence": 1}
+  ],
   "debate_decision": "VERIFY_FIRST",
-  "verification_tiers": {"F1": "LIGHT"},
   "judge_needed": false,
   "full_escalation": false,
+  "report_label": "[DEBATE-DEFERRED-TO-VERIFICATION]",
+  "reasons": ["factual_disputes_have_direct_evidence_path"],
   "provider": {"status": "not_requested"},
-  "cost_observed": null
+  "observed_usage": null
 }
 ```
+
+This block is the literal shape `scripts/adaptive-orchestrator.mjs` emits; `POLICY_VERSION` in
+that file is the single source of truth for `policy_version`. Verification tiers are per-finding
+in `finding_decisions[].verification_floor`, not a top-level map.
 
 Do not infer token savings from this record. The host evaluation harness must attach actual usage.
 
@@ -131,4 +148,4 @@ Do not infer token savings from this record. The host evaluation harness must at
 - `[NO-DEBATE]`: debate was required/expected but unavailable or accidentally omitted.
 - `[COMPRESSED]`, `[LIVE-VERIFIED]`, `[STATIC-INFERENCE]`, verification labels, and BLOCKED handling keep their current meanings.
 
-This distinction is load-bearing: a successful adaptive stop must not be reported as a protocol failure.
+Getting this distinction wrong is what makes the label useless: a successful adaptive stop must not be reported as a protocol failure.

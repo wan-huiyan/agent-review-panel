@@ -7,13 +7,13 @@ import { fileURLToPath } from "node:url";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
 const design = readFileSync(resolve(ROOT, "docs/adaptive-review-v4-design.md"), "utf8");
-const contract = readFileSync(resolve(ROOT, "skills/agent-review-panel/references/adaptive-orchestration.md"), "utf8");
+const contract = readFileSync(resolve(ROOT, "docs/adaptive-orchestration-contract.md"), "utf8");
 const skill = readFileSync(resolve(ROOT, "skills/agent-review-panel/SKILL.md"), "utf8");
 
 describe("adaptive v4 design safety contract", () => {
   it("does not replace the current full protocol", () => {
     assert.match(design, /current v3\.9\.1 protocol, preserved/);
-    assert.match(design, /full 15-phase protocol remains/);
+    assert.match(design, /full 16-phase protocol remains/);
   });
 
   it("distinguishes intentional no-debate from execution failure", () => {

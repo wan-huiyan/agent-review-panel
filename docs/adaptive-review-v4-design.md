@@ -8,11 +8,52 @@ Companion context-routing work:
 
 ## Why change the default
 
-The current v3.9.1 full panel is deliberately thorough, but it pays for many expensive
-reasoning calls before it knows whether those calls will add information. A normal full run
-can include 4–6 Opus reviewers, reflection, up to 3 debate rounds, completeness audit,
-claim/severity verification, targeted verification agents, an Opus judge, post-judge
-verification, and report generation.
+The current v3.9.1 full panel is deliberately thorough, but it buys expensive reasoning before
+it knows whether that reasoning will change the answer. A normal full run can include 4–6 Opus
+reviewers, reflection, up to 3 debate rounds, completeness audit, claim/severity verification,
+targeted verification agents, an Opus judge, post-judge verification, and report generation.
+
+### What this is not
+
+**It is not primarily a cost argument, and the numbers matter here.**
+[`docs/analysis/2026-07-16-panel-token-split-audit.md`](analysis/2026-07-16-panel-token-split-audit.md)
+parsed the transcripts of one real full-protocol run ($162.01) and found the cost sits almost
+nowhere near the reviewer fan-out:
+
+| Line | Cost | Share |
+|---|---|---|
+| Main session (orchestrator) — 157 turns, context 270k→630k, 58.75M cache-read | $111.49 | 69% |
+| Supreme Judge (ran twice) | $13.53 | 8% |
+| Verification agents (P8, P10, P11 + ad-hoc) | $10.98 | 7% |
+| 4 reviewers, Phases 3–7 | $11.86 | 7% |
+| HTML report agent (P15.3) | $6.50 | 4% |
+| P14.5 judge-output verifier | $4.77 | 3% |
+
+That audit also splits the orchestrator's $111.49 by stretch: pre-panel baseline $15,
+**Phase 3–14.5 coordination only ~$13**, **Phase 15.x report-driving ~$60**, post-panel
+follow-ups ~$23.
+
+So the phases adaptive routing can touch — the reviewer line, debate rounds inside it, the judge
+and its verifier, part of the verification agents, and the ~$13 of coordination that drives them —
+come to roughly $48 of $162, about 30% of the run. The ~$60 Phase 15.x report-driving stretch is
+the single largest item in the whole run at 37%, and nothing in this design touches it. Budget
+mode (v3.7) is cheaper than a full run largely *because* it went after that line
+(markdown-only output, 15.2/15.3 offered post-hoc).
+
+`HOW_WE_BUILT_THIS.md` Lesson 51 states the general form: "Everyone (including this repo's own
+earlier analysis) assumed the N-reviewer fan-out dominated. It was 7%." Halving the reviewer
+count is a small lever, and this design should not be sold as a cost reduction.
+
+**The real argument for v4 is evidence ordering.** Checking a cheap factual claim before sending
+reviewers to argue about it is better epistemics whatever it costs, and buying a judge only when
+a decision is genuinely unresolved keeps the judge's verdict meaningful. Those hold even if the
+token bill is unchanged.
+
+**The open risk runs the other way.** Adaptive routing adds orchestrator decision points — triage,
+normalize, classify, verify-before-debate, re-evaluate after a debate round, escalation gate — and
+Lesson 52 is "the cheapest agent is a turn the orchestrator never takes." Replacing "drive rounds
+1–3" with "gate, then maybe one round" may just as plausibly remove turns. **Which way it goes is
+unknown, and the evaluation below has to be able to measure it.**
 
 Claude Workflow / Agent can now supply parallel workers natively. The enduring value of this
 plugin is therefore no longer “can it spawn several reviewers?” The value is the accumulated
@@ -53,7 +94,7 @@ request
   -> judge only when a material unresolved decision remains
 ```
 
-The existing full 15-phase protocol remains the explicit high-stakes / maximum-coverage path.
+The existing full 16-phase protocol remains the explicit high-stakes / maximum-coverage path.
 
 ## Modes
 
@@ -86,6 +127,11 @@ Jev is **not a reviewer, fact checker, safety authority, or judge of truth**.
 
 Use the same optional shared provider introduced in memory-hygiene#12. No separate Jev skill
 or second transport implementation should be added here.
+
+Both companion PRs are still open drafts as of 2026-09-21, so there is nothing to import yet.
+Note the distinction: a reachable Jev endpoint is not what blocks this: the shared
+registry/router/provider module is. Whichever companion PR lands first defines the interface;
+this repo consumes it and does not grow a second one.
 
 Good bounded decisions:
 
@@ -151,7 +197,7 @@ Suggested risk signals:
 - novel/external domain;
 - user explicitly wants adversarial debate / maximum coverage.
 
-Output a structured task capsule. This is also the only input Jev should see, after the
+Output a structured summary of the request — content type, explicit modes and personas, codebase state, risk signals. That summary is also the only input Jev should see, after the
 existing outbound privacy approval rules.
 
 Adaptive must **not** steal routine single-review work. The existing negative triggers remain.
@@ -217,9 +263,10 @@ Emit one of:
 
 - `[DEBATE-NOT-NEEDED]`: no material disagreement remains after evidence normalization;
 - `[DEBATE-DEFERRED-TO-VERIFICATION]`: factual dispute is better resolved by a tool/specialist;
-- `[DEBATE-RUN]`: substantive judgment/trade-off remains and cross-examination can add information;
-- `[DEBATE-UNAVAILABLE]`: execution shape could not provide debate. This is a limitation and maps
-  to the existing lower-confidence NO-DEBATE semantics.
+- `[ADAPTIVE]`: substantive judgment/trade-off remains and cross-examination can add information,
+  so one debate round runs;
+- `[NO-DEBATE]`: execution shape could not provide debate. This is a limitation and keeps the
+  existing lower-confidence NO-DEBATE semantics.
 
 **Only accidental/unavailable debate absence is `[NO-DEBATE]`.**
 A deliberate evidence-backed stop must not be penalized as if the protocol silently failed.
@@ -258,6 +305,10 @@ smallest next step:
 
 A judge-less adaptive run must not pretend a “Supreme Judge verdict” exists. Use an
 `Adaptive Review Outcome` section and deterministic confidence rules.
+
+This gate overlaps issue #59 (Supreme Judge model override, plus an advisory-demotion path when a
+stronger judge model is available). Whichever lands first should define the judge-invocation
+contract; the other should adopt it rather than adding a second one.
 
 ### A8 — reporting
 
@@ -324,13 +375,29 @@ Primary quality metrics:
 - owner-rated usefulness / task success.
 
 Efficiency:
-- total model input/output/cached tokens;
+- **orchestrator turn count**;
+- **orchestrator context size at first and last turn, and cumulative cache-read tokens**;
+- total model input/output/cached tokens, split orchestrator vs subagents;
 - Opus vs Sonnet calls;
 - Jev input usage;
 - elapsed time;
 - debate rounds;
 - verification count;
 - judge/full-escalation frequency.
+
+The first two are not optional. The 2026-07-16 audit had to measure exactly those to find that
+69% of a run sits in the main loop, and an A/B that compares only subagent tokens can show
+adaptive ahead while it is behind overall, or the reverse. Reproduce them the way that audit did:
+parse the main-session transcript plus every `subagents/agent-*.jsonl`, dedupe usage by message
+id, and label agents from `agent-*.meta.json`.
+
+Report efficiency against the **addressable ~30%**, not against the whole run. A 20% saving on
+the phases adaptive routing controls is about 6% of total run cost, and the report should say so
+rather than leaving a reader to assume 20% off the bill.
+
+Cost regressions are failures too, not just disappointments:
+- orchestrator turn count higher than the matched full/budget arm;
+- total run cost higher than budget mode on the same task family.
 
 Safety regressions are hard failures:
 - manual/explicit full request silently downgraded;

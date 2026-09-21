@@ -444,7 +444,13 @@ npm run test:eval-suite     # eval suite integrity
 npm run test:report         # report structure validation
 npm run test:behavioral     # behavioral assertion framework
 npm run test:golden         # golden-file structural snapshots
+npm run test:adaptive       # v4 adaptive shadow engine + historical replay (proposal only)
 ```
+
+Of the 561, 10 are documentation-consistency checks for the v4 adaptive proposal — they assert
+that `docs/adaptive-review-v4-design.md` and `docs/adaptive-orchestration-contract.md` still say
+what the safety contract requires. They pin wording, not behaviour, and are not a claim that
+adaptive orchestration works.
 
 Tests enforce key invariants: all 16 top-level phases (plus 13.5 / 14.5) present in `SKILL.md`; every `subagent_type:` launch co-occurs with `model: "opus"`; Phase 15.3 spec documents all 10 expandable-card sections; the canonical `SKILL.md` lives at `skills/agent-review-panel/SKILL.md`.
 

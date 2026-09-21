@@ -120,6 +120,39 @@ Proposed 6 changes from 19-source deep research (`references/research-v28.md`). 
 
 ---
 
+## Proposed / Shadow (v4, not adopted)
+
+Design work that exists as a written proposal with a shadow-only implementation. Nothing here
+changes runtime behaviour, and none of it is adopted until the evaluation it specifies has run.
+
+### Adaptive evidence-driven review orchestration (v4 draft)
+
+**Idea:** stop buying the whole 16-phase protocol up front. Start with 2–3 materially different
+independent reviewers, resolve cheap factual disputes by direct evidence *before* debate, and
+escalate to debate, targeted verification, a judge, or the full panel only when unresolved risk
+justifies it. Explicit full/deep/exhaustive/named-persona requests stay authoritative floors.
+
+Also proposes a reporting change: separate a deliberate evidence-backed stop
+(`[DEBATE-NOT-NEEDED]`) from a debate that was expected but did not happen (`[NO-DEBATE]`), so a
+successful adaptive stop is not recorded as a protocol failure.
+
+**Status:** design + deterministic shadow engine + read-only historical replay, PR #71
+(adaptive evidence-driven review orchestration). No SKILL.md change, no Jev calls, no agent
+launches, no report changes.
+
+**Why not adopted:** two reasons, both about evidence.
+
+1. The saving is smaller than it looks. Per
+   [`docs/analysis/2026-07-16-panel-token-split-audit.md`](docs/analysis/2026-07-16-panel-token-split-audit.md),
+   the phases adaptive routing controls are roughly 30% of a run; the 69% orchestrator main loop
+   is dominated by the Phase 15.x report-driving stretch, which this design does not touch.
+   Whether adaptive routing raises or lowers orchestrator turn count is unmeasured.
+2. The replay corpus is n=2 (`docs/reviews/`), and only one of those runs has a second debate
+   round — so the harness cannot yet say whether a debate round earns its cost.
+
+**Design:** [`docs/adaptive-review-v4-design.md`](docs/adaptive-review-v4-design.md).
+**Safety contract:** [`docs/adaptive-orchestration-contract.md`](docs/adaptive-orchestration-contract.md).
+
 ## Deferred (Pre-v2.8)
 
 Techniques with clear value but requiring architectural changes, additional infrastructure, or more research before adoption.
