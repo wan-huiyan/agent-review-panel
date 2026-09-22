@@ -118,6 +118,17 @@ export function classifySignals(signals) {
   };
 }
 
+function highImpactCategories(categories) {
+  return categories.filter(c => SIGNAL_TABLE.get(c).high_impact);
+}
+
+// The escalation branch's own predicate, exported so a caller can ask whether a signal set
+// could reach ESCALATE_FULL without re-deriving the rule from a copy of the table.
+// Unrecognised signals are not high impact here, exactly as they are not in the decision.
+export function highImpactSignals(signals) {
+  return highImpactCategories(classifySignals(signals).categories);
+}
+
 export function verificationFloor(finding) {
   const t = finding.claim_type ?? "unknown";
   if (t === "external" || t === "runtime") return "DEEP";
@@ -211,7 +222,7 @@ export function deterministicPersonaSelection(input) {
 export function decideAdaptiveShadow(raw) {
   const input = validateShadowInput(raw);
   const { categories, unrecognised } = classifySignals(input.signals);
-  const highImpactSignal = categories.some(c => SIGNAL_TABLE.get(c).high_impact);
+  const highImpactSignal = highImpactCategories(categories).length > 0;
   const highImpact = input.high_stakes || highImpactSignal;
   const findings = input.findings.map(f => classifyFinding(f));
   const unresolved = findings.filter(f => !["RESOLVED", "NO_ESCALATION"].includes(f.action));

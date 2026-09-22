@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { POLICY_VERSION, classifyFinding, decideAdaptiveShadow, deterministicPersonaSelection, verificationFloor } from "../scripts/adaptive-orchestrator.mjs";
+import { POLICY_VERSION, classifyFinding, classifySignals, decideAdaptiveShadow, deterministicPersonaSelection, highImpactSignals, verificationFloor } from "../scripts/adaptive-orchestrator.mjs";
 
 const base = {
   content_type: "code",
@@ -215,6 +215,44 @@ describe("adaptive shadow signal vocabulary", () => {
     const r = decideAdaptiveShadow({...base, signals:["quantum-flux"]});
     assert.deepEqual(r.unrecognised_signals, ["quantum-flux"]);
     assert.ok(r.reasons.includes("unrecognised_signal_recorded_not_classified"));
+  });
+
+  // Every category the vocabulary recognises, with the escalation flag the engine applies.
+  // A caller (the history extractor) asks highImpactSignals() whether ESCALATE_FULL was
+  // reachable for an archived run, so this list pins the two answers together.
+  const RECOGNISED = [
+    ["security", true], ["payments", true], ["data-loss", true], ["compliance", true],
+    ["production", true], ["infrastructure", true], ["migration", true],
+    ["reliability", false], ["data", false]
+  ];
+
+  it("reports which recognised categories are high impact", () => {
+    assert.deepEqual(highImpactSignals(["payments"]), ["payments"]);
+    assert.deepEqual(highImpactSignals(["reliability"]), []);
+    // Recognised but not high impact is a different thing from unrecognised.
+    assert.deepEqual(classifySignals(["reliability"]).categories, ["reliability"]);
+    assert.deepEqual(classifySignals(["reliability"]).unrecognised, []);
+    assert.deepEqual(highImpactSignals(["documentation-authoring"]), []);
+    assert.deepEqual(highImpactSignals([]), []);
+  });
+
+  it("keeps the exported high-impact flag in step with the escalation decision", () => {
+    for (const [signal, expected] of RECOGNISED) {
+      assert.equal(highImpactSignals([signal]).length > 0, expected, `${signal} high-impact flag`);
+      const r = decideAdaptiveShadow({...base, signals:[signal], uncertainty_high:true, findings:[disputedJudgment]});
+      assert.deepEqual(r.signal_categories, [signal], `${signal} should be recognised`);
+      // The flag and the branch it feeds must not drift apart.
+      assert.equal(r.full_escalation, expected, `${signal} escalation`);
+      assert.equal(r.reasons.includes("high_impact_signal_present"), expected, `${signal} reason`);
+    }
+  });
+
+  it("applies the same spellings to the exported helper as to the decision", () => {
+    assert.deepEqual(highImpactSignals(["payment"]), ["payments"]);
+    assert.deepEqual(highImpactSignals(["data loss"]), ["data-loss"]);
+    assert.deepEqual(highImpactSignals(["infra"]), ["infrastructure"]);
+    assert.deepEqual(highImpactSignals(["auth"]), ["security"]);
+    assert.deepEqual(highImpactSignals(["payments", "reliability"]), ["payments"]);
   });
 
   it("decides the same way whatever order signals arrive in", () => {
