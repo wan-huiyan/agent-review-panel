@@ -205,6 +205,22 @@ describe("real archived runs: unreachable decisions", () => {
     assert.deepEqual(p.unreachable_debate_decisions, []);
   });
 
+  // The signals leg must use the engine's own high-impact predicate, not "any signal the
+  // engine recognises". `reliability` is recognised and is NOT high impact, so treating
+  // recognition as enough would drop the escalation warning from a run that still cannot
+  // escalate — under-warning, which is the direction this whole bundle closes.
+  it("asks the engine which signals are high impact rather than which are recognised", () => {
+    const reachableWith = signals => extractHistoricalState(README, { signals, uncertainty_high: true })
+      .provenance.unreachable_debate_decisions.includes("ESCALATE_FULL") === false;
+
+    assert.equal(reachableWith(["security"]), true, "a high-impact signal must reopen ESCALATE_FULL");
+    assert.equal(reachableWith(["auth"]), true, "the engine's aliases must resolve");
+    assert.equal(reachableWith(["reliability"]), false, "recognised but low impact must stay unreachable");
+    assert.equal(reachableWith(["data"]), false, "recognised but low impact must stay unreachable");
+    assert.equal(reachableWith(["documentation-authoring"]), false, "an unrecognised signal is not high impact");
+    assert.equal(reachableWith([]), false, "no signals cannot reopen the branch");
+  });
+
   it("states which debate decisions and report labels cannot fire", () => {
     for (const state of [README, PEER]) {
       const p = extractHistoricalState(state).provenance;

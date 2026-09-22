@@ -6,7 +6,7 @@
 
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
-import { classifySignals } from "./adaptive-orchestrator.mjs";
+import { highImpactSignals } from "./adaptive-orchestrator.mjs";
 
 // A severity token is [P0]-[P3], or a word-bounded bare P0-P3, which also covers
 // the ID forms "P1-1" and the trailing "— P1". The \b rejects a plural such as
@@ -155,10 +155,10 @@ const EXPLICIT_FULL_INPUTS = ["explicit_mode", "user_requested_full", "explicit_
 function unreachableDecisions(unrecoverable, signals) {
   const missing = field => unrecoverable.includes(field);
   const explicitFullReachable = EXPLICIT_FULL_INPUTS.some(f => !missing(f));
-  // The engine's per-category high-impact flag is not exported, so any signal it
-  // recognises is treated as possibly high-impact. That errs toward calling the
-  // escalation branch reachable, and the branch also needs uncertainty_high.
-  const highImpactReachable = !missing("high_stakes") || classifySignals(signals).categories.length > 0;
+  // The engine's own escalation predicate, so this is exact rather than conservative:
+  // a recognised but low-impact signal such as `reliability` does not make the branch
+  // reachable, and neither does an unrecognised one. The branch also needs uncertainty_high.
+  const highImpactReachable = !missing("high_stakes") || highImpactSignals(signals).length > 0;
   const decisions = [];
   const blockedBy = new Set();
   if (!explicitFullReachable && !(highImpactReachable && !missing("uncertainty_high"))) {
