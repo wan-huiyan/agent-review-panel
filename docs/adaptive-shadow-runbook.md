@@ -177,21 +177,33 @@ obviously present in round 1:
 npm run --silent compare:adaptive-history -- docs/reviews > /private/path/adaptive-history-comparison.json
 ```
 
-The scorer always emits `counterfactual_claim: false`, and it is conservative about method. But be
-precise about what it can currently support, because on the archives in this repository the answer
-is close to nothing:
+The scorer always emits `counterfactual_claim: false`, and every row now carries its own coverage
+figures. Read those before reading any count as a measurement.
 
-- **Candidate novelty is pinned, not measured.** The highest Jaccard score across all 1071
-  round-1-by-round-2 title pairs in the only archive with a round 2 is **0.3125**, against the
-  scorer's own 0.35 novelty threshold. So every round-2 finding comes out "novel" by construction,
-  and `round2_severity_change_candidate_count` comes out 0 for the same reason.
-- **First-seen attribution is mostly unusable.** 22 of 26 judge findings in that archive fail to
-  match anything at the 0.12 threshold. The single round-2 attribution rests on a match between
-  two near-empty section headings.
-- **The other archive contributes nothing.** Its judge ruling parses to zero findings and its
-  reviewer state is Phase 3, which the comparer does not read.
+**As found, two of its three headline numbers were artifacts of thresholds this corpus cannot
+reach.** Across all 1248 early-phase-by-round-2 title pairs the maximum Jaccard is **0.313**
+against a 0.35 novelty threshold, so every round-2 finding was counted novel by construction and
+severity-change came out 0 for the same reason. The one positive attribution that round 2 mattered
+was a match between two content-free section headings. And the other archive contributed nothing at
+all: its judge ruling parsed to 0 findings and its Phase 3 reviewer state was not read.
 
-Read every number the comparer prints as a pointer to a case worth looking at by hand, and check
-the parser-coverage fields before reading any count as a measurement. A quiet round 2 is **not
-proof** that adaptive could have skipped it, and on this corpus a *loud* round 2 is not evidence
-either — the threshold guarantees it. Never use these results to estimate savings.
+**What the output now tells you instead:**
+
+- `round2_novelty_coverage` gives the pair count, the score distribution (median 0.048, max 0.313)
+  and `novelty_threshold_reachable: false`. `round2_novel_candidate_count` carries an
+  `_is_measured` flag, and on this corpus it is `false`.
+- `judge_parser_coverage` gives headings seen, headings matched and the unmatched headings by name.
+  One ruling reports 7 seen and 0 matched; the other 29 seen and 22 matched.
+- The lexical judge channel is **reported and not used**. In its place, `round2_finding_id_citation`
+  matches finding-ID tokens exactly rather than by similarity: 14 of 26 round-2 headings name an ID
+  the earlier phase carries, 4 name only IDs that resolve to nothing, 8 name none.
+- `interpretation` is **withheld** — `null`, with `interpretation_withheld_reasons` — when coverage
+  is zero. Where it survives, `interpretation_basis` names what it rests on.
+- `evidence_strength` grades coverage rather than data presence, so the run zeroed by a glob now
+  reads `unmeasurable_parser_returned_nothing_for_a_present_source` instead of "weak", and the run
+  whose matcher failed hardest is no longer graded "stronger" than it.
+
+So the instrument can now say "I cannot measure this", which is the only way a shadow evaluation
+can return a negative result. That still does not make a quiet round 2 proof that adaptive could
+have skipped it, and on this corpus a *loud* round 2 is not evidence either — the novelty threshold
+guarantees it. Never use these results to estimate savings.
