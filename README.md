@@ -434,17 +434,23 @@ Both are activated by natural language or by `/roundtable:agent-review-panel` an
 
 ## Tests
 
-The test suite (529 tests) uses Node's built-in test runner — zero dependencies, requires Node ≥18:
+The test suite (661 tests) uses Node's built-in test runner — zero dependencies, requires Node ≥18:
 
 ```bash
-npm test                    # run all 529 tests
+npm test                    # run all 661 tests
 npm run test:triggers       # trigger classification
 npm run test:manifest       # manifest consistency + phase/opus enforcement
 npm run test:eval-suite     # eval suite integrity
 npm run test:report         # report structure validation
 npm run test:behavioral     # behavioral assertion framework
 npm run test:golden         # golden-file structural snapshots
+npm run test:adaptive       # v4 adaptive shadow engine + historical replay (proposal only)
 ```
+
+Of the 661, 10 are documentation-consistency checks for the v4 adaptive proposal — they assert
+that `docs/adaptive-review-v4-design.md` and `docs/adaptive-orchestration-contract.md` still say
+what the safety contract requires. They pin wording, not behaviour, and are not a claim that
+adaptive orchestration works.
 
 Tests enforce key invariants: all 16 top-level phases (plus 13.5 / 14.5) present in `SKILL.md`; every `subagent_type:` launch co-occurs with `model: "opus"`; Phase 15.3 spec documents all 10 expandable-card sections; the canonical `SKILL.md` lives at `skills/agent-review-panel/SKILL.md`.
 
