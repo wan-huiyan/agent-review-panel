@@ -33,12 +33,37 @@ That audit also splits the orchestrator's $111.49 by stretch: pre-panel baseline
 **Phase 3–14.5 coordination only ~$13**, **Phase 15.x report-driving ~$60**, post-panel
 follow-ups ~$23.
 
-So the phases adaptive routing can touch — the reviewer line, debate rounds inside it, the judge
-and its verifier, part of the verification agents, and the ~$13 of coordination that drives them —
-come to roughly $48 of $162, about 30% of the run. The ~$60 Phase 15.x report-driving stretch is
-the single largest item in the whole run at 37%, and nothing in this design touches it. Budget
-mode (v3.7) is cheaper than a full run largely *because* it went after that line
-(markdown-only output, 15.2/15.3 offered post-hoc).
+So the phases adaptive routing can touch are the reviewer line, debate rounds inside it, the judge
+and its verifier, some of the verification agents, and the ~$13 of coordination that drives them:
+
+```
+reviewers            $11.86
+judge                $13.53
+P14.5 verifier        $4.77
+P3-14.5 coordination ~$13
+                    -------
+                     $43.16   = 27% of $162   (before any verification-agent share)
++ all verification   $10.98
+                    -------
+                     $54.14   = 33% of $162
+```
+
+Call it **roughly a quarter to a third**. The exact share depends on how much of the verification
+line adaptive routing actually removes, which this design does not settle — it keeps the evidence
+floors, so probably not all of it. The ~$60 Phase 15.x report-driving stretch is the single
+largest item in the whole run at 37%, and nothing in this design touches it. Budget mode (v3.7)
+is cheaper than a full run largely *because* it went after that line (markdown-only output,
+15.2/15.3 offered post-hoc).
+
+**That share is measured against a protocol that no longer runs.** The audited run executed
+2026-07-02. v3.7.0 (budget mode) and v3.8.0 (the orchestrator turn diet, default for *every* mode)
+both shipped 2026-07-16, two weeks later. `README.md` says it plainly: the turn diet "applies to
+**every** mode since v3.8.0 ... so even full-protocol runs should now cost a fraction of the
+audited baseline", against a ≤40-turn target where the audited run took 157. The turn diet cuts
+the whole main loop, including the ~$13 of coordination that sits *inside* the addressable set, so
+both the numerator and the denominator moved and **neither the current share nor its direction is
+derivable from this audit.** Re-measuring a present-day full run is a prerequisite for the
+evaluation below, not an optional extra.
 
 `HOW_WE_BUILT_THIS.md` Lesson 51 states the general form: "Everyone (including this repo's own
 earlier analysis) assumed the N-reviewer fan-out dominated. It was 7%." Halving the reviewer
@@ -391,9 +416,14 @@ adaptive ahead while it is behind overall, or the reverse. Reproduce them the wa
 parse the main-session transcript plus every `subagents/agent-*.jsonl`, dedupe usage by message
 id, and label agents from `agent-*.meta.json`.
 
-Report efficiency against the **addressable ~30%**, not against the whole run. A 20% saving on
-the phases adaptive routing controls is about 6% of total run cost, and the report should say so
-rather than leaving a reader to assume 20% off the bill.
+Report efficiency against arm A's **own measured baseline**, not against the 2026-07-16 audit.
+That audit describes a pre-v3.8.0 protocol (see "What this is not"), so it fixes neither the
+numerator nor the denominator for a present-day run; using it as a reference would misreport the
+saving by an unknown amount in an unknown direction.
+
+Then state the saving twice: once as a share of the phases adaptive routing controls, and once as
+a share of the whole run. A 20% saving on a quarter of the run is about 5% of the bill, and a
+report that gives only the first number invites a reader to hear the second.
 
 Cost regressions are failures too, not just disappointments:
 - orchestrator turn count higher than the matched full/budget arm;

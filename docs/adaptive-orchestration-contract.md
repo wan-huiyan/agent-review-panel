@@ -9,10 +9,29 @@ any default behavior changes.
 1. The current full panel remains available and authoritative for explicit full/high-stakes requests.
 2. Adaptive routing chooses *what expensive reasoning happens next*; it never establishes truth.
 3. User-explicit modes, personas, exhaustive trace, deep research, multi-run, or full-panel requests are floors.
+   Each has its own input field — `explicit_full_panel`, `explicit_exhaustive_trace`,
+   `explicit_deep_research`, `explicit_multi_run` — and the ones that fired are named in
+   `explicit_floors`, so the record never claims a full-panel request the caller did not make.
+   `explicit_mode` is validated against a closed set and **throws** on an unknown token rather than
+   degrading silently to adaptive.
 4. Mandatory evidence rules from v3.9.1 cannot be weakened by Jev or by cost pressure.
 5. Blocked/missing reviewers are missing evidence, never clean consensus.
 6. Same-artifact consensus remains one source.
 7. Live-state P0 claims still require live evidence.
+
+Invariants 6 and 7 are **enforced by the engine, not just asserted here.** A caller's
+`verified: true` is a claim, not a discharge: the engine decides whether it clears the floor, and
+records the outcome in `finding_decisions[].verification_status`.
+
+| Floor | To discharge it |
+|---|---|
+| LIGHT | one evidence source, and a stated `verification_method` |
+| STANDARD | **two independent** evidence sources |
+| DEEP | two independent sources **and** a `live` or `authoritative-source` method |
+| any floor, `claim_type: "runtime"` | specifically `live` — invariant 7 |
+
+`static-inference` discharges nothing. A finding that is `verified` *and* still `disputed` stays
+unresolved, because the dispute has become one about whether the verification settles it.
 8. A judge-less run must not claim a Supreme Judge verdict.
 9. Intentional evidence-backed debate omission is `[DEBATE-NOT-NEEDED]`; accidental/unavailable debate remains `[NO-DEBATE]`.
 10. Router/provider failure falls back to a declared deterministic path, never a silent partial full-panel run.
@@ -114,24 +133,57 @@ Every decision should be serializable without raw private work content:
 
 ```json
 {
-  "policy_version": "adaptive-v4-shadow-1",
+  "policy_version": "adaptive-v4-shadow-3",
   "mode": "shadow",
   "executes_panel": false,
   "authorizes_execution": false,
   "explicit_mode": "adaptive",
+  "explicit_floors": [],
   "selected_personas": ["..."],
+  "signal_categories": ["security"],
+  "unrecognised_signals": [],
   "finding_decisions": [
-    {"id": "F1", "action": "VERIFY_FIRST", "verification_floor": "LIGHT", "independent_evidence": 1}
+    {
+      "id": "F1",
+      "action": "VERIFY_FIRST",
+      "severity": "P1",
+      "claim_type": "local-fact",
+      "disputed": true,
+      "verification_floor": "LIGHT",
+      "independent_evidence": 1,
+      "verification_method": "unknown",
+      "verification_status": "not_claimed"
+    }
   ],
   "debate_decision": "VERIFY_FIRST",
-  "judge_needed": false,
+  "debate_mechanism_unavailable": false,
+  "judge_needed": null,
   "full_escalation": false,
   "report_label": "[DEBATE-DEFERRED-TO-VERIFICATION]",
-  "reasons": ["factual_disputes_have_direct_evidence_path"],
+  "reasons": ["factual_disputes_have_direct_evidence_path", "high_impact_signal_present"],
   "provider": {"status": "not_requested"},
   "observed_usage": null
 }
 ```
+
+18 top-level keys and 9 per finding. A test asserts both key sets exactly, so this block and the
+engine cannot drift apart again; `POLICY_VERSION` in `scripts/adaptive-orchestrator.mjs` is the
+single source of truth for `policy_version`. Verification tiers are per-finding in
+`finding_decisions[].verification_floor`, never a top-level map.
+
+**`judge_needed` has three states, not two**, because collapsing a pending question onto `false`
+biases the record toward less review:
+
+| Value | Meaning |
+|---|---|
+| `true` | a judge is required now |
+| `false` | no judge is needed, and nothing is pending |
+| `null` | unresolved work is pending, so the question has no answer yet |
+
+`null` is deliberate rather than a string: it is falsy, so no caller doing `if (judge_needed)` can
+start firing judges on a deferred run, and it is still visibly distinct from `false` in the emitted
+JSON. A test pins that falsiness. The `reasons` list names what the decision is waiting on —
+`judge_decision_deferred_pending_verification` or `..._pending_debate_round`.
 
 This block is the literal shape `scripts/adaptive-orchestrator.mjs` emits; `POLICY_VERSION` in
 that file is the single source of truth for `policy_version`. Verification tiers are per-finding

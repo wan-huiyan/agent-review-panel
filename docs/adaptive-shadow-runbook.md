@@ -32,6 +32,10 @@ Example schema:
   ],
   "explicit_personas": [],
   "explicit_mode": "adaptive",
+  "explicit_full_panel": false,
+  "explicit_exhaustive_trace": false,
+  "explicit_deep_research": false,
+  "explicit_multi_run": false,
   "high_stakes": false,
   "uncertainty_high": false,
   "material_recommendation_unresolved": false,
@@ -43,11 +47,47 @@ Example schema:
       "disputed": true,
       "reviewers": ["Correctness Hawk", "Security Auditor"],
       "evidence_sources": ["src/auth.ts"],
+      "verification_method": "grep",
       "verified": false
     }
   ]
 }
 ```
+
+The input is validated strictly, and it throws rather than guessing. This is deliberate: the engine's
+job is to decide how much review to buy, so a field it cannot read must not quietly resolve to the
+value that buys less.
+
+- `explicit_mode` must be one of `adaptive`, `budget`, `full`, `maximum-coverage`,
+  `exhaustive-panel`. An unknown token throws instead of degrading to adaptive.
+- The four `explicit_*` booleans are the floors the contract's invariant 3 names. Each is
+  independent, and the ones that fired come back in `explicit_floors`, so the record never claims a
+  full-panel request the caller did not make.
+- `severity` must be `P0`-`P3`. `"p0"`, `"P0 "`, `"critical"` and `0` all throw. An **omitted**
+  severity is recorded as `"unknown"` and routed as material, not as cheap.
+- Booleans must be real booleans: the string `"true"` throws. An explicit `null` array throws too,
+  which is not the same as leaving the field out.
+- Duplicate finding ids throw.
+- `signals` are matched as whole tokens against one vocabulary, so `payments`, `data loss` and
+  `infrastructure` all count as high-impact and a signal like `documentation-authoring` no longer
+  puts a security reviewer on a documentation review. Anything unrecognised comes back in
+  `unrecognised_signals` rather than being dropped.
+
+### Verification is earned, not asserted
+
+`verified: true` is a **claim**. The engine decides whether it discharges the finding's floor and
+reports the outcome in `verification_status`. Supply `verification_method` to say how the check was
+made:
+
+| Floor | To discharge it |
+|---|---|
+| LIGHT | one evidence source and a stated method |
+| STANDARD | **two independent** evidence sources |
+| DEEP | two independent sources **and** a `live` or `authoritative-source` method |
+| any floor, `claim_type: "runtime"` | specifically `live` |
+
+`static-inference` discharges nothing, and a finding that is verified but still `disputed` stays
+unresolved — the dispute has become one about whether the verification settles it.
 
 Claim types are intentionally small:
 - `local-fact` — direct single-source read/grep/constant check;
@@ -137,8 +177,21 @@ obviously present in round 1:
 npm run --silent compare:adaptive-history -- docs/reviews > /private/path/adaptive-history-comparison.json
 ```
 
-The scorer is intentionally conservative. It reports lexical candidate novelty, severity changes,
-and where judge-carried findings appear to be first visible. It always emits
-`counterfactual_claim: false`. A quiet round 2 is **not proof** that adaptive could have skipped it;
-a novel round-2 candidate is evidence against casually declaring that round redundant. Use these
-results to select cases for the later controlled A/B trial, not to estimate savings directly.
+The scorer always emits `counterfactual_claim: false`, and it is conservative about method. But be
+precise about what it can currently support, because on the archives in this repository the answer
+is close to nothing:
+
+- **Candidate novelty is pinned, not measured.** The highest Jaccard score across all 1071
+  round-1-by-round-2 title pairs in the only archive with a round 2 is **0.3125**, against the
+  scorer's own 0.35 novelty threshold. So every round-2 finding comes out "novel" by construction,
+  and `round2_severity_change_candidate_count` comes out 0 for the same reason.
+- **First-seen attribution is mostly unusable.** 22 of 26 judge findings in that archive fail to
+  match anything at the 0.12 threshold. The single round-2 attribution rests on a match between
+  two near-empty section headings.
+- **The other archive contributes nothing.** Its judge ruling parses to zero findings and its
+  reviewer state is Phase 3, which the comparer does not read.
+
+Read every number the comparer prints as a pointer to a case worth looking at by hand, and check
+the parser-coverage fields before reading any count as a measurement. A quiet round 2 is **not
+proof** that adaptive could have skipped it, and on this corpus a *loud* round 2 is not evidence
+either — the threshold guarantees it. Never use these results to estimate savings.
